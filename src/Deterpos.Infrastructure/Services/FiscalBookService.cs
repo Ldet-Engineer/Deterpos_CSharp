@@ -232,6 +232,14 @@ public class FiscalBookService : IFiscalBookService
 
         analytics.TotalCostUSD = totalCost;
 
+        // Gastos Operativos del período (para P&L / Estado de Resultados Real)
+        var totalExpenses = await context.OperatingExpenses
+            .Where(e => e.ExpenseDate >= fromUtc && e.ExpenseDate <= toUtc)
+            .AsNoTracking()
+            .SumAsync(e => (decimal?)e.AmountUSD) ?? 0m;
+
+        analytics.TotalOperatingExpensesUSD = totalExpenses;
+
         // Top 15 productos
         analytics.TopProducts = productAggregates.Values
             .Where(p => p.qty > 0)

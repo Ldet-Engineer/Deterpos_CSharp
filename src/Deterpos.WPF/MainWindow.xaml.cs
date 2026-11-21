@@ -29,12 +29,14 @@ public partial class MainWindow : RibbonWindow
                     if (vm.IsCreditNoteFilterRequested)
                     {
                         ViewSalesInvoices.SelectCreditNotesFilter();
+                        vm.IsCreditNoteFilterRequested = false;
                     }
                 }
                 else if (args.PropertyName == nameof(MainViewModel.IsNewPurchaseRequested))
                 {
                     if (vm.IsNewPurchaseRequested)
                     {
+                        vm.IsNewPurchaseRequested = false;
                         ViewPurchases.OpenNewPurchaseDialog();
                     }
                 }

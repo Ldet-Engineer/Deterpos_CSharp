@@ -617,7 +617,11 @@ public class MainViewModel : ViewModelBase
                         ExportExcelRequested++;
                         break;
                     case "Valoración Inventario":
+                    case "Valoración Stock":
+                        CurrentModule = ActiveViewModule.Inventory;
+                        break;
                     case "Ganancias y Pérdidas":
+                    case "Estado de Resultados":
                         CurrentModule = ActiveViewModule.FiscalReports;
                         FiscalReportTabRequested = 3;
                         break;

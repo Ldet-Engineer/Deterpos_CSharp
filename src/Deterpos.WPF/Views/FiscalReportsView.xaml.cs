@@ -106,12 +106,12 @@ public partial class FiscalReportsView : UserControl
                 BorderReportActiveBadge.Background = (Brush)new BrushConverter().ConvertFromString("#FFF4CE")!;
                 break;
             case 3:
-                TxtReportActiveTitle.Text = "Rentabilidad y Top Productos";
+                TxtReportActiveTitle.Text = "Ganancias y Pérdidas (P&L • Estado de Resultados)";
                 IconReportActive.Symbol = FluentIcons.Common.Symbol.ArrowTrendingLines;
-                IconReportActive.Foreground = (Brush)new BrushConverter().ConvertFromString("#7C3AED")!;
-                TxtReportActiveBadge.Text = "MARGEN BRUTO • ANÁLISIS DE VENTAS";
-                TxtReportActiveBadge.Foreground = (Brush)new BrushConverter().ConvertFromString("#7C3AED")!;
-                BorderReportActiveBadge.Background = (Brush)new BrushConverter().ConvertFromString("#F3E8FF")!;
+                IconReportActive.Foreground = (Brush)new BrushConverter().ConvertFromString("#15803D")!;
+                TxtReportActiveBadge.Text = "ESTADO DE RESULTADOS • UTILIDAD NETA • GASTOS";
+                TxtReportActiveBadge.Foreground = (Brush)new BrushConverter().ConvertFromString("#15803D")!;
+                BorderReportActiveBadge.Background = (Brush)new BrushConverter().ConvertFromString("#F0FDF4")!;
                 break;
         }
 
@@ -285,10 +285,13 @@ public partial class FiscalReportsView : UserControl
 
         TxtProfitCostUSD.Text = $"$ {_currentAnalytics.TotalCostUSD:N2}";
         TxtProfitGrossUSD.Text = $"$ {_currentAnalytics.GrossProfitUSD:N2}";
-        TxtProfitGrossVES.Text = $"{_currentAnalytics.GrossProfitUSD * rate:N2} Bs.";
+        TxtProfitGrossMargin.Text = $"Margen: {_currentAnalytics.ProfitMarginPercentage:N1} %";
 
-        TxtProfitMarginPct.Text = $"{_currentAnalytics.ProfitMarginPercentage:N1} %";
-        TxtProfitAvgTicket.Text = $"Ticket Prom: ${_currentAnalytics.AverageTicketUSD:N2} ({_currentAnalytics.TotalInvoicesCount} facturas)";
+        TxtProfitExpensesUSD.Text = $"$ {_currentAnalytics.TotalOperatingExpensesUSD:N2}";
+        TxtProfitExpensesVES.Text = $"{_currentAnalytics.TotalOperatingExpensesUSD * rate:N2} Bs.";
+
+        TxtProfitNetUSD.Text = $"$ {_currentAnalytics.NetProfitUSD:N2}";
+        TxtProfitNetMargin.Text = $"Rendimiento Neto: {_currentAnalytics.NetMarginPercentage:N1} % (Ticket Prom: ${_currentAnalytics.AverageTicketUSD:N2})";
 
         GridTopProducts.ItemsSource = _currentAnalytics.TopProducts;
         GridPaymentMethods.ItemsSource = _currentAnalytics.PaymentMethods;

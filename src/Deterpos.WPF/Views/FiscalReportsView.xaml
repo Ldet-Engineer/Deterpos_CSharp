@@ -420,47 +420,57 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <!-- KPI Margen y Utilidad Real -->
+                <!-- KPI Estado de Resultados Real (P&L) -->
                 <Grid Grid.Row="0" Margin="0,0,0,14">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="10" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="10" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="10" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="1.1*" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                    <Border Grid.Column="0" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
                         <StackPanel>
-                            <TextBlock Text="INGRESOS POR VENTAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
-                            <TextBlock x:Name="TxtProfitRevenueUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,2,0,0" />
-                            <TextBlock x:Name="TxtProfitRevenueVES" Text="0.00 Bs." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="INGRESOS VENTAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                            <TextBlock x:Name="TxtProfitRevenueUSD" Text="$ 0.00" FontSize="15" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,2,0,0" />
+                            <TextBlock x:Name="TxtProfitRevenueVES" Text="0.00 Bs." FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                    <Border Grid.Column="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
                         <StackPanel>
-                            <TextBlock Text="COSTO DE MERCANCÍA VENDIDA" FontSize="10" FontWeight="Bold" Foreground="#D83B01" />
-                            <TextBlock x:Name="TxtProfitCostUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="#D83B01" Margin="0,2,0,0" />
-                            <TextBlock Text="Valuación a Costo Promedio Ponderado" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="COSTO MERCANCÍA" FontSize="10" FontWeight="Bold" Foreground="#D83B01" />
+                            <TextBlock x:Name="TxtProfitCostUSD" Text="$ 0.00" FontSize="15" FontWeight="Bold" Foreground="#D83B01" Margin="0,2,0,0" />
+                            <TextBlock Text="Costo Reposición Ventas" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="4" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                    <Border Grid.Column="4" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
                         <StackPanel>
-                            <TextBlock Text="GANANCIA BRUTA REAL" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
-                            <TextBlock x:Name="TxtProfitGrossUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" Margin="0,2,0,0" />
-                            <TextBlock x:Name="TxtProfitGrossVES" Text="0.00 Bs." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="UTILIDAD BRUTA" FontSize="10" FontWeight="Bold" Foreground="#498205" />
+                            <TextBlock x:Name="TxtProfitGrossUSD" Text="$ 0.00" FontSize="15" FontWeight="Bold" Foreground="#498205" Margin="0,2,0,0" />
+                            <TextBlock x:Name="TxtProfitGrossMargin" Text="Margen: 0.0 %" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="6" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                    <Border Grid.Column="6" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
                         <StackPanel>
-                            <TextBlock Text="MARGEN DE RENTABILIDAD" FontSize="10" FontWeight="Bold" Foreground="#8E562E" />
-                            <TextBlock x:Name="TxtProfitMarginPct" Text="0.00 %" FontSize="16" FontWeight="Bold" Foreground="#8E562E" Margin="0,2,0,0" />
-                            <TextBlock x:Name="TxtProfitAvgTicket" Text="Ticket Prom: $ 0.00" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="GASTOS OPERATIVOS" FontSize="10" FontWeight="Bold" Foreground="#8E562E" />
+                            <TextBlock x:Name="TxtProfitExpensesUSD" Text="$ 0.00" FontSize="15" FontWeight="Bold" Foreground="#8E562E" Margin="0,2,0,0" />
+                            <TextBlock x:Name="TxtProfitExpensesVES" Text="0.00 Bs." FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="8" Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1.5" CornerRadius="8" Padding="12,10">
+                        <StackPanel>
+                            <TextBlock Text="UTILIDAD NETA (P&amp;L)" FontSize="10" FontWeight="Bold" Foreground="#15803D" />
+                            <TextBlock x:Name="TxtProfitNetUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="#15803D" Margin="0,2,0,0" />
+                            <TextBlock x:Name="TxtProfitNetMargin" Text="Rendimiento Neto: 0.0 %" FontSize="10" FontWeight="SemiBold" Foreground="#166534" />
                         </StackPanel>
                     </Border>
                 </Grid>

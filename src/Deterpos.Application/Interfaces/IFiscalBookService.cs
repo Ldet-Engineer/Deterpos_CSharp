@@ -117,6 +117,12 @@ public class SalesAnalyticsDto
     public decimal TotalCostUSD { get; set; }
     public decimal GrossProfitUSD => TotalRevenueUSD - TotalCostUSD;
     public decimal ProfitMarginPercentage => TotalRevenueUSD > 0 ? decimal.Round((GrossProfitUSD / TotalRevenueUSD) * 100, 2) : 0;
+    
+    // Estado de Resultados Real (P&L con Gastos Operativos)
+    public decimal TotalOperatingExpensesUSD { get; set; }
+    public decimal NetProfitUSD => GrossProfitUSD - TotalOperatingExpensesUSD;
+    public decimal NetMarginPercentage => TotalRevenueUSD > 0 ? decimal.Round((NetProfitUSD / TotalRevenueUSD) * 100, 2) : 0;
+
     public int TotalInvoicesCount { get; set; }
     public decimal AverageTicketUSD => TotalInvoicesCount > 0 ? decimal.Round(TotalRevenueUSD / TotalInvoicesCount, 2) : 0;
 
