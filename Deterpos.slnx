@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Deterpos.Application/Deterpos.Application.csproj" />
+    <Project Path="src/Deterpos.Domain/Deterpos.Domain.csproj" />
+    <Project Path="src/Deterpos.Infrastructure/Deterpos.Infrastructure.csproj" />
+    <Project Path="src/Deterpos.WPF/Deterpos.WPF.csproj" />
+  </Folder>
+</Solution>

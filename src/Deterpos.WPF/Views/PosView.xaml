@@ -1,0 +1,425 @@
+﻿<UserControl x:Class="Deterpos.WPF.Views.PosView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+             FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
+
+    <Grid Margin="24,14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ============================================== -->
+        <!--  FILA 0: ENCABEZADO SUPERIOR DEL POS           -->
+        <!-- ============================================== -->
+        <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,12" Margin="0,0,0,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Estado Terminal & Turno -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <fluentIcons:SymbolIcon Symbol="ShoppingBag" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,12,0" VerticalAlignment="Center" />
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Punto de Venta (POS F1)" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,10,0" />
+                            <Border x:Name="BadgeShift" Background="#E6F4EA" CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtShiftBadge" Text="TURNO ACTIVO" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
+                            </Border>
+                        </StackPanel>
+                        <TextBlock x:Name="TxtTerminalCashier" Text="Caja: POS-01 • Cajero: Administrador" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Cliente Asignado -->
+                <Border Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#F6F8FA" BorderBrush="#E1E4E8" BorderThickness="1" CornerRadius="6" Padding="14,6">
+                    <StackPanel Orientation="Horizontal">
+                        <fluentIcons:SymbolIcon Symbol="Person" FontSize="18" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <StackPanel Margin="0,0,14,0" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtClientDoc" Text="V-00000000" FontSize="11" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                            <TextBlock x:Name="TxtClientName" Text="Cliente de Contado / Genérico" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        </StackPanel>
+                        <Button Click="BtnChangeCustomer_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="10,4" Cursor="Hand" VerticalAlignment="Center">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="4" />
+                                </Style>
+                            </Button.Resources>
+                            <TextBlock Text="[F2] Cambiar" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Button>
+                    </StackPanel>
+                </Border>
+
+                <!-- Tasa Oficial BCV -->
+                <Border Grid.Column="2" Background="#EBF3FB" CornerRadius="6" Padding="14,6" VerticalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Right">
+                        <TextBlock Text="TASA OFICIAL BCV" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Right" />
+                        <TextBlock x:Name="TxtBcvRateDisplay" Text="1 USD = 55.4000 Bs." FontSize="14" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Right" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ============================================== -->
+        <!--  FILA 1: LAYOUT PRINCIPAL REDISEÑADO           -->
+        <!--  IZQUIERDA: CATÁLOGO Y BÚSQUEDA                -->
+        <!--  DERECHA: LISTA DE ARTÍCULOS Y TOTALES         -->
+        <!-- ============================================== -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5.8*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="4.2*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ============================================== -->
+            <!--  COLUMNA IZQUIERDA: CATÁLOGO Y BÚSQUEDA        -->
+            <!-- ============================================== -->
+            <Border Grid.Column="0" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Barra de Búsqueda y Escáner Láser -->
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Input del Lector -->
+                        <Grid Grid.Column="0">
+                            <TextBox x:Name="TxtBarcodeSearch" Text="" KeyDown="TxtBarcodeSearch_KeyDown"
+                                     TextChanged="TxtBarcodeSearch_TextChanged"
+                                     VerticalContentAlignment="Center" Padding="36,9,12,9" FontSize="13" FontWeight="SemiBold" />
+                            <fluentIcons:SymbolIcon Symbol="BarcodeScanner" FontSize="18" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                            <TextBlock x:Name="TxtSearchPlaceholder" Text="Escanear código de barras o escribir producto..." FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="38,0,0,0" IsHitTestVisible="False" />
+                        </Grid>
+
+                        <!-- Botón Buscar / Agregar -->
+                        <Button Grid.Column="2" Click="BtnAddFromSearch_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0" Padding="16,8" Cursor="Hand" FontWeight="SemiBold">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6" />
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <fluentIcons:SymbolIcon Symbol="Add" FontSize="16" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Agregar" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <!-- Barra de Filtro de Categorías -->
+                    <Border Grid.Row="1" Background="#F8FAFD" BorderBrush="#D0DFEE" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Categorías:" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="6,0,10,0" />
+                            <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                                <StackPanel x:Name="PanelCategoryPills" Orientation="Horizontal" />
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+
+                    <!-- Tabla del Catálogo de Productos Disponibles -->
+                    <DataGrid x:Name="DgCatalog" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True"
+                              CanUserAddRows="False" CanUserDeleteRows="False"
+                              GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E1E4E8"
+                              Background="White" RowHeight="42" ColumnHeaderHeight="34"
+                              BorderThickness="1" BorderBrush="#E1E4E8" HeadersVisibility="Column" SelectionMode="Single"
+                              MouseDoubleClick="DgCatalog_MouseDoubleClick">
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#F6F8FA" />
+                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                                <Setter Property="FontSize" Value="11" />
+                                <Setter Property="Padding" Value="10,0" />
+                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                <Setter Property="BorderBrush" Value="#D0D7DE" />
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
+                        <DataGrid.RowStyle>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="FontSize" Value="13" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#F0F6FC" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.RowStyle>
+                        <DataGrid.Columns>
+                            <!-- Código -->
+                            <DataGridTemplateColumn Header="CÓDIGO" Width="90">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Code}" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="8,0" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Descripción / Nombre -->
+                            <DataGridTemplateColumn Header="DESCRIPCIÓN DEL PRODUCTO" Width="2.5*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel VerticalAlignment="Center" Margin="8,0">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding CategoryName}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Stock Disponible -->
+                            <DataGridTemplateColumn Header="STOCK" Width="85">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{Binding StockBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding StockDisplay}" FontSize="11" FontWeight="Bold" Foreground="{Binding StockBadgeForeground}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- IVA -->
+                            <DataGridTemplateColumn Header="ALÍCUOTA" Width="70">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding VatDisplay}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Precio USD -->
+                            <DataGridTemplateColumn Header="PRECIO ($)" Width="90">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding PriceUSDDisplay}" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Precio VES -->
+                            <DataGridTemplateColumn Header="PRECIO (Bs.)" Width="105">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding PriceVESDisplay}" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Botón Agregar -->
+                            <DataGridTemplateColumn Header="ACCIÓN" Width="65">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Click="BtnAddCatalogItem_Click" Background="#EBF3FB" Foreground="{StaticResource PrimaryBrandBrush}" BorderThickness="0" Padding="6,3" Cursor="Hand" HorizontalAlignment="Center">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="4" />
+                                                </Style>
+                                            </Button.Resources>
+                                            <fluentIcons:SymbolIcon Symbol="Add" FontSize="14" />
+                                        </Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                </Grid>
+            </Border>
+
+            <!-- ============================================== -->
+            <!--  COLUMNA DERECHA: LISTA DE ARTÍCULOS Y TOTALES -->
+            <!-- ============================================== -->
+            <Border Grid.Column="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Encabezado de la Lista de Artículos -->
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Artículos a Facturar" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBlock x:Name="TxtItemsCountSubtitle" Text="0 artículos en el carrito" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+
+                        <Button Grid.Column="1" Click="BtnClearCart_Click" Background="White" BorderBrush="#F8D7DA" BorderThickness="1" Padding="10,5" Cursor="Hand" ToolTip="Vaciar Carrito">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="4" />
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <fluentIcons:SymbolIcon Symbol="Delete" FontSize="14" Foreground="#DC3545" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Limpiar" FontSize="11" Foreground="#DC3545" FontWeight="SemiBold" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <!-- EN LA PARTE SUPERIOR: LISTA DE LOS ARTÍCULOS A FACTURAR -->
+                    <Border Grid.Row="1" BorderBrush="#E1E4E8" BorderThickness="1" CornerRadius="6" Background="White">
+                        <DataGrid x:Name="DgCart" AutoGenerateColumns="False" IsReadOnly="True"
+                                  CanUserAddRows="False" CanUserDeleteRows="False"
+                                  GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E1E4E8"
+                                  Background="White" RowHeight="44" ColumnHeaderHeight="32"
+                                  BorderThickness="0" HeadersVisibility="Column" SelectionMode="Single">
+                            <DataGrid.ColumnHeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="Background" Value="#F6F8FA" />
+                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                    <Setter Property="FontSize" Value="11" />
+                                    <Setter Property="Padding" Value="8,0" />
+                                    <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                    <Setter Property="BorderBrush" Value="#D0D7DE" />
+                                </Style>
+                            </DataGrid.ColumnHeaderStyle>
+                            <DataGrid.Columns>
+                                <!-- Descripción -->
+                                <DataGridTemplateColumn Header="ARTÍCULO" Width="2*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel VerticalAlignment="Center" Margin="8,0">
+                                                <TextBlock Text="{Binding ProductName}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding UnitPriceUSDDisplay}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Controles Cantidad (+/-) -->
+                                <DataGridTemplateColumn Header="CANT" Width="95">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <Button Click="BtnDecreaseQty_Click" Background="#F0F0F0" BorderThickness="0" Width="22" Height="22" Cursor="Hand" FontWeight="Bold">-</Button>
+                                                <TextBlock Text="{Binding QuantityDisplay}" FontWeight="Bold" Width="30" TextAlignment="Center" VerticalAlignment="Center" />
+                                                <Button Click="BtnIncreaseQty_Click" Background="#F0F0F0" BorderThickness="0" Width="22" Height="22" Cursor="Hand" FontWeight="Bold">+</Button>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Total USD -->
+                                <DataGridTemplateColumn Header="TOTAL ($)" Width="85">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding TotalPriceUSDDisplay}" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Quitar -->
+                                <DataGridTemplateColumn Header="" Width="35">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Click="BtnRemoveCartItem_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Center">
+                                                <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="13" Foreground="#DC3545" />
+                                            </Button>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <!-- AL FINAL: SUBTOTAL, IMPUESTO CON IVA Y TOTAL FINAL -->
+                    <StackPanel Grid.Row="2" Margin="0,12,0,0">
+
+                        <!-- Desglose Impositivo Fiscal SENIAT -->
+                        <Border Background="#F6F8FA" BorderBrush="#E1E4E8" BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,0,0,10">
+                            <StackPanel TextElement.FontSize="12">
+                                <Grid Margin="0,2">
+                                    <TextBlock Text="Subtotal Exento (0%):" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock x:Name="TxtSubtotalExento" Text="$ 0.00" HorizontalAlignment="Right" FontWeight="SemiBold" />
+                                </Grid>
+                                <Grid Margin="0,2">
+                                    <TextBlock Text="Base Imponible (16%):" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock x:Name="TxtBase16" Text="$ 0.00" HorizontalAlignment="Right" FontWeight="SemiBold" />
+                                </Grid>
+                                <Grid Margin="0,2">
+                                    <TextBlock Text="Impuesto con IVA (16%):" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock x:Name="TxtIva16" Text="$ 0.00" HorizontalAlignment="Right" FontWeight="SemiBold" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- TOTAL FINAL (USD Y VES) -->
+                        <Border Background="#E6F4EA" BorderBrush="#34A853" BorderThickness="1.2" CornerRadius="8" 
+                                Padding="18,6" HorizontalAlignment="Center" MinWidth="250" MaxWidth="300" Margin="0,0,0,10">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="TOTAL FINAL A PAGAR" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="TxtGrandTotalUSD" Text="$ 0.00" FontSize="22" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" HorizontalAlignment="Center" Margin="0,1,0,1" />
+                                <TextBlock x:Name="TxtGrandTotalVES" Text="0.00 Bs." FontSize="13" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Botones de Cobro / Facturación -->
+                        <Button x:Name="BtnCheckout" Click="BtnCheckout_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0"
+                                Padding="14,12" Cursor="Hand" Margin="0,0,0,8" IsEnabled="False">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8" />
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <fluentIcons:SymbolIcon Symbol="Payment" FontSize="20" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <TextBlock Text="[F12] COBRAR VENTA" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Button Click="BtnClearCart_Click" Background="White" BorderBrush="#F8D7DA" BorderThickness="1" Padding="8,7" Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6" />
+                                    </Style>
+                                </Button.Resources>
+                                <TextBlock Text="[F4] Cancelar" FontWeight="SemiBold" Foreground="#DC3545" FontSize="12" HorizontalAlignment="Center" />
+                            </Button>
+
+                            <Button Grid.Column="2" Click="BtnRecentSales_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="8,7" Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6" />
+                                    </Style>
+                                </Button.Resources>
+                                <TextBlock Text="[F8] Recientes" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" FontSize="12" HorizontalAlignment="Center" />
+                            </Button>
+                        </Grid>
+
+                    </StackPanel>
+
+                </Grid>
+            </Border>
+
+        </Grid>
+    </Grid>
+</UserControl>

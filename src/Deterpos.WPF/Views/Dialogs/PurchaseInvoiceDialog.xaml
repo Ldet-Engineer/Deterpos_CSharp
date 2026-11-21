@@ -1,0 +1,333 @@
+﻿<Window x:Class="Deterpos.WPF.Views.Dialogs.PurchaseInvoiceDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+        Title="Registrar Factura de Compra" 
+        MinHeight="620" Height="720" MaxHeight="860" Width="900"
+        WindowStyle="None" 
+        AllowsTransparency="True" 
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="False"
+        FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
+
+    <!-- Sombra Perimetral Moderna -->
+    <Border Margin="15" Background="White" CornerRadius="12" BorderBrush="#D0D7DE" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="30" Direction="270" ShadowDepth="4" Opacity="0.25" Color="#000000" />
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Encabezado Modal Arrastrable -->
+            <Border Grid.Row="0" Background="#F6F8FA" CornerRadius="12,12,0,0" Padding="22,14" BorderBrush="#E1E4E8" BorderThickness="0,0,0,1" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <fluentIcons:SymbolIcon Grid.Column="0" Symbol="AddSquare" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Registrar Compra y Recepción de Mercancía" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Actualización de Inventario, Costeo Promedio Ponderado en USD y Libro de Compras SENIAT" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="2" Click="BtnCancel_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6" VerticalAlignment="Center">
+                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Contenido Principal -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,16">
+                <StackPanel>
+
+                    <!-- Datos Fiscales del Proveedor y Factura -->
+                    <Border Background="#F9FAFB" BorderBrush="#E1E4E8" BorderThickness="1" CornerRadius="8" Padding="16,12" Margin="0,0,0,14">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="10" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2.2*" />
+                                <ColumnDefinition Width="14" />
+                                <ColumnDefinition Width="1.4*" />
+                                <ColumnDefinition Width="14" />
+                                <ColumnDefinition Width="1.4*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Proveedor con botón nuevo rápido -->
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="Proveedor Emisor:" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                                    <Button Click="BtnQuickNewSupplier_Click" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="4,0" ToolTip="Registrar Nuevo Proveedor">
+                                        <StackPanel Orientation="Horizontal">
+                                            <fluentIcons:SymbolIcon Symbol="Add" FontSize="12" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="0,0,3,0" />
+                                            <TextBlock Text="Nuevo" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                                <ComboBox x:Name="CmbSuppliers" DisplayMemberPath="DisplayName" SelectedValuePath="Id" Padding="8,5" />
+                            </StackPanel>
+
+                            <!-- N° Factura Proveedor -->
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock Text="N° Factura Proveedor:" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
+                                <TextBox x:Name="TxtInvoiceNumber" Padding="8,5" />
+                            </StackPanel>
+
+                            <!-- N° Control SENIAT -->
+                            <StackPanel Grid.Row="0" Grid.Column="4">
+                                <TextBlock Text="N° de Control SENIAT:" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
+                                <TextBox x:Name="TxtControlNumber" Padding="8,5" />
+                            </StackPanel>
+
+                            <!-- Fila 2: Fecha Factura, Condición y Tasa BCV -->
+                            <StackPanel Grid.Row="2" Grid.Column="0">
+                                <TextBlock Text="Condición de Pago:" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <RadioButton x:Name="RbContado" Content="Contado" IsChecked="True" Checked="Condition_Checked" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                    <RadioButton Grid.Column="2" x:Name="RbCredito" Content="Crédito (CxP)" Checked="Condition_Checked" VerticalAlignment="Center" FontWeight="SemiBold" />
+                                </Grid>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="2">
+                                <TextBlock Text="Fecha Factura Física:" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
+                                <DatePicker x:Name="DpInvoiceDate" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="4">
+                                <TextBlock Text="Tasa Oficial BCV:" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
+                                <TextBox x:Name="TxtBcvRate" IsReadOnly="True" Background="#F0F0F0" Padding="8,5" FontWeight="Bold" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Tarjeta para Agregar Renglones a la Compra -->
+                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2.5*" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="85" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="110" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Selección de Producto -->
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Seleccionar Producto a Recibir:" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,3" />
+                                <ComboBox x:Name="CmbProducts" DisplayMemberPath="DisplayName" SelectedValuePath="Id" SelectionChanged="CmbProducts_SelectionChanged" Padding="8,5" />
+                            </StackPanel>
+
+                            <!-- Cantidad -->
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Cantidad:" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,3" />
+                                <TextBox x:Name="TxtInputQty" Text="1" Padding="6,5" TextAlignment="Center" FontWeight="Bold" />
+                            </StackPanel>
+
+                            <!-- Costo Unitario USD -->
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="Costo Compra ($):" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,3" />
+                                <TextBox x:Name="TxtInputCostUSD" Text="0.00" Padding="6,5" TextAlignment="Right" FontWeight="Bold" KeyDown="TxtInputCostUSD_KeyDown" />
+                            </StackPanel>
+
+                            <!-- Botón Agregar -->
+                            <Button Grid.Column="6" Click="BtnAddItem_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                                    Padding="14,6" VerticalAlignment="Bottom" Cursor="Hand" FontWeight="SemiBold">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6" />
+                                    </Style>
+                                </Button.Resources>
+                                <StackPanel Orientation="Horizontal">
+                                    <fluentIcons:SymbolIcon Symbol="Add" FontSize="14" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="Agregar" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- Tabla de Renglones Recibidos -->
+                    <Border BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Background="White" Margin="0,0,0,14">
+                        <DataGrid x:Name="DgPurchaseItems" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE"
+                                  BorderThickness="0" Background="White" RowHeight="38" MaxHeight="190" SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <!-- Nombre Producto -->
+                                <DataGridTemplateColumn Header="ARTÍCULO" Width="2*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel VerticalAlignment="Center" Margin="8,0">
+                                                <TextBlock Text="{Binding ProductName}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding ProductCode}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Alícuota IVA -->
+                                <DataGridTemplateColumn Header="ALÍCUOTA" Width="75">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding VatRateDisplay}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Cantidad -->
+                                <DataGridTemplateColumn Header="CANT." Width="70">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding QuantityDisplay}" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Costo Unitario USD -->
+                                <DataGridTemplateColumn Header="COSTO ($)" Width="85">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding UnitCostDisplay}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Total Renglón USD -->
+                                <DataGridTemplateColumn Header="TOTAL ($)" Width="90">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding TotalPriceDisplay}" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Trazabilidad Costo Promedio -->
+                                <DataGridTemplateColumn Header="NUEVO COSTO PROMEDIO" Width="1.6*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#F0F7FF" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="4,0">
+                                                <TextBlock Text="{Binding CostImpactDisplay}" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <!-- Quitar -->
+                                <DataGridTemplateColumn Header="" Width="40">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Click="BtnRemoveItem_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Center">
+                                                <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="13" Foreground="#DC3545" />
+                                            </Button>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <!-- Resumen Fiscal y Liquidación -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.2*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Col Izquierda: Opciones de Pago y Notas -->
+                        <StackPanel Grid.Column="0">
+                            <CheckBox x:Name="ChkPayFromCashShift" Content="Pagar en efectivo desde Caja Actual (Turno Abierto)" IsChecked="False" FontWeight="SemiBold" Margin="0,4,0,8" />
+                            <TextBlock Text="Observaciones / Justificación de la Compra:" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,3" />
+                            <TextBox x:Name="TxtNotes" Height="50" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="6,4" />
+                        </StackPanel>
+
+                        <!-- Col Derecha: Tarjeta Resumen Fiscal -->
+                        <Border Grid.Column="2" Background="#F6F8FA" BorderBrush="#E1E4E8" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                            <StackPanel TextElement.FontSize="12">
+                                <TextBlock Text="LIQUIDACIÓN FISCAL COMPRA (LIBRO SENIAT)" FontWeight="Bold" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6" />
+
+                                <Grid Margin="0,2">
+                                    <TextBlock Text="Subtotal Exento (0%):" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock x:Name="TxtSubExento" Text="$ 0.00" HorizontalAlignment="Right" FontWeight="SemiBold" />
+                                </Grid>
+
+                                <Grid Margin="0,2">
+                                    <TextBlock Text="Base Imponible (16%):" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock x:Name="TxtBase16" Text="$ 0.00" HorizontalAlignment="Right" FontWeight="SemiBold" />
+                                </Grid>
+
+                                <Grid Margin="0,2">
+                                    <TextBlock Text="Crédito Fiscal IVA (16%):" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock x:Name="TxtIva16" Text="$ 0.00" HorizontalAlignment="Right" FontWeight="SemiBold" />
+                                </Grid>
+
+                                <Separator Background="#E1E4E8" Margin="0,6" />
+
+                                <StackPanel HorizontalAlignment="Center" Margin="0,2">
+                                    <TextBlock Text="TOTAL FACTURA DE COMPRA" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Center" />
+                                    <TextBlock x:Name="TxtGrandTotalUSD" Text="$ 0.00" FontSize="20" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Center" />
+                                    <TextBlock x:Name="TxtGrandTotalVES" Text="0.00 Bs." FontSize="13" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Barra Inferior de Acciones -->
+            <Border Grid.Row="2" Background="#F6F8FA" CornerRadius="0,0,12,12" Padding="20,14" BorderBrush="#E1E4E8" BorderThickness="0,1,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="1" Click="BtnCancel_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                            Padding="18,8" Cursor="Hand" FontWeight="SemiBold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <TextBlock Text="Cancelar" FontSize="13" />
+                    </Button>
+
+                    <Button Grid.Column="3" Click="BtnSubmitPurchase_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0"
+                            Padding="22,8" Cursor="Hand" FontWeight="SemiBold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="CheckmarkCircle" FontSize="16" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Guardar y Recibir Mercancía" FontSize="13" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
+

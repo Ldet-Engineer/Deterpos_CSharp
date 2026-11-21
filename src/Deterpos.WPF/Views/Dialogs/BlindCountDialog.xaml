@@ -1,0 +1,254 @@
+﻿<Window x:Class="Deterpos.WPF.Views.Dialogs.BlindCountDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+        Title="Arqueo Ciego y Cierre de Turno" 
+        Height="630" Width="720"
+        WindowStyle="None" 
+        AllowsTransparency="True" 
+        Background="Transparent"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        FontFamily="Segoe UI, Segoe UI Variable Text, Arial"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True">
+
+    <!-- Sombra Perimetral Moderna -->
+    <Border Margin="14" Background="White" CornerRadius="12" BorderBrush="#D0D7DE" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28" Direction="270" ShadowDepth="4" Opacity="0.22" Color="#000000" />
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Encabezado Modal -->
+            <Border Grid.Row="0" Background="#F6F8FA" CornerRadius="12,12,0,0" Padding="22,16" BorderBrush="#E1E4E8" BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#E6F4EA" CornerRadius="8" Padding="8" Margin="0,0,14,0" VerticalAlignment="Center">
+                        <fluentIcons:SymbolIcon Symbol="ClipboardCheckmark" FontSize="24" Foreground="#107C41" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Arqueo Ciego y Cierre de Turno de Caja" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Declare el conteo físico de gaveta y los cierres de lote bancarios sin ver el teórico del sistema." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="2" Click="BtnCancel_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6" VerticalAlignment="Center">
+                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Contenido Principal: Formulario Rápido Multimétodo -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,18">
+                <StackPanel>
+
+                    <!-- BLOQUE 1: EFECTIVO FÍSICO EN GAVETA (TOTALES GLOBALES) -->
+                    <Border Background="#F8FCF9" BorderBrush="#D2ECD8" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <fluentIcons:SymbolIcon Symbol="Money" FontSize="18" Foreground="#107C41" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="Efectivo Físico en Gaveta" FontWeight="Bold" FontSize="14" Foreground="#107C41" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Text="Conteo en mano o contadora de billetes" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </Grid>
+
+                            <TextBlock Text="Ingrese el total contado de billetes y monedas. No requiere desglosar billete por billete." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,12" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Total Efectivo USD -->
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="TOTAL EFECTIVO DÓLARES ($ USD)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,5" />
+                                    <Border Background="White" BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="$" FontSize="16" FontWeight="Bold" Foreground="#107C41" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                            <TextBox x:Name="TxtCashUSD" Grid.Column="1" Text="0.00" FontSize="17" FontWeight="SemiBold"
+                                                     BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Right"
+                                                     VerticalContentAlignment="Center" GotFocus="TextBox_GotFocus" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- Total Efectivo VES -->
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="TOTAL EFECTIVO BOLÍVARES (VES Bs.)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,5" />
+                                    <Border Background="White" BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="TxtCashVES" Grid.Column="0" Text="0.00" FontSize="17" FontWeight="SemiBold"
+                                                     BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Right"
+                                                     VerticalContentAlignment="Center" GotFocus="TextBox_GotFocus" />
+                                            <TextBlock Grid.Column="1" Text="Bs." FontSize="15" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="6,0,0,0" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- BLOQUE 2: CIERRES DE LOTE Y MEDIOS ELECTRÓNICOS -->
+                    <Border Background="#F8FAFD" BorderBrush="#D0DFEE" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <fluentIcons:SymbolIcon Symbol="Payment" FontSize="18" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="Medios Electrónicos y Cierres de Lote Bancarios" FontWeight="Bold" FontSize="14" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Text="Conciliación contra tickets del datáfono y reportes bancarios" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </Grid>
+
+                            <Grid Margin="0,6,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="12" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="16" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Fila 0, Col 0: Cierre Lote Punto de Venta (Bs.) -->
+                                <StackPanel Grid.Row="0" Grid.Column="0">
+                                    <TextBlock Text="CIERRE DE LOTE PUNTO DE VENTA (Bs.)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                                    <Border Background="White" BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="TxtPosVES" Grid.Column="0" Text="0.00" FontSize="15" FontWeight="SemiBold"
+                                                     BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Right"
+                                                     VerticalContentAlignment="Center" GotFocus="TextBox_GotFocus" />
+                                            <TextBlock Grid.Column="1" Text="Bs." FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="6,0,0,0" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- Fila 0, Col 1: Lote Pago Móvil (Bs.) -->
+                                <StackPanel Grid.Row="0" Grid.Column="2">
+                                    <TextBlock Text="TOTAL LOTE PAGO MÓVIL (Bs.)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                                    <Border Background="White" BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="TxtPagoMovilVES" Grid.Column="0" Text="0.00" FontSize="15" FontWeight="SemiBold"
+                                                     BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Right"
+                                                     VerticalContentAlignment="Center" GotFocus="TextBox_GotFocus" />
+                                            <TextBlock Grid.Column="1" Text="Bs." FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="6,0,0,0" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- Fila 2, Col 0: Zelle / Divisas Electrónicas ($) -->
+                                <StackPanel Grid.Row="2" Grid.Column="0">
+                                    <TextBlock Text="TOTAL ZELLE / TRANSFERENCIAS USD ($)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                                    <Border Background="White" BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="$" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                            <TextBox x:Name="TxtZelleUSD" Grid.Column="1" Text="0.00" FontSize="15" FontWeight="SemiBold"
+                                                     BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Right"
+                                                     VerticalContentAlignment="Center" GotFocus="TextBox_GotFocus" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- Fila 2, Col 1: Transferencias Bancarias Bs. -->
+                                <StackPanel Grid.Row="2" Grid.Column="2">
+                                    <TextBlock Text="TRANSFERENCIAS BANCARIAS DIRECTAS (Bs.)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                                    <Border Background="White" BorderBrush="#D0D7DE" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="TxtTransferVES" Grid.Column="0" Text="0.00" FontSize="15" FontWeight="SemiBold"
+                                                     BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Right"
+                                                     VerticalContentAlignment="Center" GotFocus="TextBox_GotFocus" />
+                                            <TextBlock Grid.Column="1" Text="Bs." FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="6,0,0,0" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- BLOQUE 3: OBSERVACIONES DE CIERRE -->
+                    <TextBlock Text="Observaciones o Justificaciones del Turno" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                    <TextBox x:Name="TxtClosingNotes" Text="" Height="48" TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Top"
+                             Padding="8,6" BorderBrush="#D0D7DE" />
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Barra Inferior de Acciones -->
+            <Border Grid.Row="2" Background="#F6F8FA" CornerRadius="0,0,12,12" Padding="22,14" BorderBrush="#E1E4E8" BorderThickness="0,1,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="1" Click="BtnCancel_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                            Padding="18,8" Cursor="Hand" FontWeight="SemiBold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <TextBlock Text="Cancelar" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+
+                    <Button Grid.Column="3" Click="BtnConfirmAudit_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                            Padding="22,8" Cursor="Hand" FontWeight="SemiBold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="CheckmarkCircle" FontSize="16" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Confirmar Arqueo y Cerrar Turno" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

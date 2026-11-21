@@ -1,0 +1,61 @@
+namespace Deterpos.Domain.Enums;
+
+public enum SaleStatus
+{
+    Completada,
+    Anulada,
+    EnEspera,
+    Devuelta
+}
+
+public enum CashShiftStatus
+{
+    Abierta,
+    Cerrada,
+    Arqueada
+}
+
+public enum TransactionType
+{
+    IngresoVenta,
+    IngresoManual,
+    EgresoCajaChica,
+    EgresoGastoOperativo,
+    PagoProveedor,
+    AbonoCliente,
+    EgresoDevolucion
+}
+
+public enum PaymentMethodType
+{
+    EfectivoUSD,
+    EfectivoVES,
+    PagoMovil,
+    PuntoDeVenta,
+    TransferenciaBancaria,
+    Zelle,
+    EfectivoEUR,
+    EfectivoCOP,
+    Credito
+}
+
+public enum PaymentCondition
+{
+    Contado,
+    Credito
+}
+
+public enum PurchaseStatus
+{
+    Registrada,
+    Anulada
+}
+
+public enum ExpensePaymentOrigin
+{
+    CajaChica,
+    BancoTransferencia,
+    PagoMovil,
+    ZelleUSD,
+    Otro
+}

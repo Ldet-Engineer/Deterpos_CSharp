@@ -1,0 +1,113 @@
+﻿<Window x:Class="Deterpos.WPF.Views.Dialogs.UserPermissionsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+        Title="Matriz de Permisos"
+        Height="580" Width="520"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
+
+    <Border Background="White" CornerRadius="12" BorderBrush="#E2E8F0" BorderThickness="1" Margin="12">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="24" Direction="270" ShadowDepth="4" Opacity="0.2" Color="#000000" />
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Cabecera -->
+            <Border Grid.Row="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" CornerRadius="12,12,0,0" Padding="20,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock x:Name="TxtTitle" Text="Matriz de Permisos por Operador" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock x:Name="TxtSubtitle" Text="Configuración granular de facultades operativas y fiscales" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                    </StackPanel>
+
+                    <Button Grid.Column="1" Click="BtnCancel_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="4">
+                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Lista de Permisos por Secciones -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,14">
+                <StackPanel>
+
+                    <!-- Sección 1: Caja y Efectivo -->
+                    <Border Background="#F8FAFC" CornerRadius="6" Padding="10,4" Margin="0,0,0,8">
+                        <TextBlock Text="OPERACIONES DE CAJA Y FONDOS" FontWeight="Bold" FontSize="11" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    </Border>
+                    <CheckBox x:Name="ChkOpenCash" Content="Apertura de turno de caja y declaración de fondo inicial" Margin="0,0,0,8" />
+                    <CheckBox x:Name="ChkCloseCash" Content="Cierre de caja y emisión de arqueo" Margin="0,0,0,8" />
+                    <CheckBox x:Name="ChkBlindCount" Content="Realizar arqueo ciego (conteo físico sin ver el esperado)" Margin="0,0,0,16" />
+
+                    <!-- Sección 2: Ventas y Facturación -->
+                    <Border Background="#F8FAFC" CornerRadius="6" Padding="10,4" Margin="0,0,0,8">
+                        <TextBlock Text="VENTAS Y DOCUMENTOS FISCALES" FontWeight="Bold" FontSize="11" Foreground="{StaticResource AccentGreenBrush}" />
+                    </Border>
+                    <CheckBox x:Name="ChkEmitInvoices" Content="Emitir facturas en terminal Punto de Venta (POS F1)" Margin="0,0,0,8" />
+                    <CheckBox x:Name="ChkEmitCreditNotes" Content="Emitir Notas de Crédito y devoluciones fiscales SENIAT" Margin="0,0,0,8" />
+                    <CheckBox x:Name="ChkCancelSales" Content="Anular transacciones y pedidos en curso" Margin="0,0,0,16" />
+
+                    <!-- Sección 3: Compras y Créditos -->
+                    <Border Background="#F8FAFC" CornerRadius="6" Padding="10,4" Margin="0,0,0,8">
+                        <TextBlock Text="COMPRAS Y GESTIÓN DE CRÉDITO" FontWeight="Bold" FontSize="11" Foreground="#8E562E" />
+                    </Border>
+                    <CheckBox x:Name="ChkManagePurchases" Content="Registrar compras y recepción de mercancía de proveedores" Margin="0,0,0,8" />
+                    <CheckBox x:Name="ChkManageCredits" Content="Registrar cobros a clientes y pagos a proveedores (CxC / CxP)" Margin="0,0,0,16" />
+
+                    <!-- Sección 4: Finanzas y Auditoría -->
+                    <Border Background="#F8FAFC" CornerRadius="6" Padding="10,4" Margin="0,0,0,8">
+                        <TextBlock Text="FINANZAS, COSTOS Y SEGURIDAD" FontWeight="Bold" FontSize="11" Foreground="#D83B01" />
+                    </Border>
+                    <CheckBox x:Name="ChkManageExpenses" Content="Registrar gastos operativos y salidas de caja chica" Margin="0,0,0,8" />
+                    <CheckBox x:Name="ChkViewFiscalBooks" Content="Ver y exportar Libros Fiscales SENIAT (Compras y Ventas)" Margin="0,0,0,8" />
+                    <CheckBox x:Name="ChkViewCosts" Content="Visualizar costos de mercancía y márgenes de ganancia" Margin="0,0,0,8" />
+                    <CheckBox x:Name="ChkUpdateRates" Content="Modificar tasas de cambio oficiales del BCV y secundarias" Margin="0,0,0,8" />
+                    <CheckBox x:Name="ChkManageUsers" Content="Crear, editar usuarios y reasignar permisos de seguridad" Margin="0,0,0,8" />
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Botones Inferiores -->
+            <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,1,0,0" CornerRadius="0,0,12,12" Padding="20,12">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Click="BtnCancel_Click" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                            Padding="16,8" Margin="0,0,10,0" Cursor="Hand" FontWeight="SemiBold" FontSize="13">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <TextBlock Text="Cancelar" />
+                    </Button>
+
+                    <Button Click="BtnSave_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                            Padding="20,8" Cursor="Hand" FontWeight="SemiBold" FontSize="13">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <TextBlock Text="Guardar Permisos" />
+                    </Button>
+                </StackPanel>
+            </Border>
+
+        </Grid>
+    </Border>
+</Window>
+

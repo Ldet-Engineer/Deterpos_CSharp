@@ -1,0 +1,426 @@
+﻿<UserControl x:Class="Deterpos.WPF.Views.CashControlView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+             FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
+
+    <Grid Margin="30,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ============================================== -->
+        <!--  FILA 0: ENCABEZADO Y ESTADO DEL TURNO         -->
+        <!-- ============================================== -->
+        <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,18">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Estado del Turno y Terminal -->
+                <StackPanel Grid.Column="0">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock Text="Control de Caja y Turnos" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,12,0" />
+                        <Border x:Name="BadgeShiftStatus" Background="#E6F4EA" CornerRadius="6" Padding="10,3" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtShiftStatusBadge" Text="CAJA ABIERTA" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Border>
+                    </StackPanel>
+                    <TextBlock x:Name="TxtShiftDetails" Text="Estación: POS-01 (Caja Principal) • Turno #1 • Cajero: Administrador • Abierta: Hoy 08:00 AM" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+
+                <!-- Barra de Acciones de Caja -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="BtnOpenShift" Click="BtnOpenShift_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0"
+                            Padding="16,8" Margin="0,0,10,0" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="LockOpen" FontSize="16" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Apertura Caja" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="BtnCashIn" Click="BtnCashIn_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                            Padding="14,8" Margin="0,0,8,0" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="ArrowTrendingLines" FontSize="16" Foreground="{StaticResource AccentGreenBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Entrada (+)" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="BtnCashOut" Click="BtnCashOut_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                            Padding="14,8" Margin="0,0,10,0" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="ArrowTrendingDown" FontSize="16" Foreground="#D83B01" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Salida Caja Chica (-)" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button x:Name="BtnCloseShift" Click="BtnCloseShift_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                            Padding="18,8" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="ClipboardCheckmark" FontSize="16" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Cierre / Arqueo Ciego" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ============================================== -->
+        <!--  FILA 1: TARJETAS KPI DE FLUJO DE EFECTIVO     -->
+        <!-- ============================================== -->
+        <Grid Grid.Row="1" Margin="0,0,0,18">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- KPI 1: Fondo Inicial -->
+            <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="FONDO INICIAL" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <fluentIcons:SymbolIcon Symbol="LockOpen" FontSize="20" HorizontalAlignment="Right" Foreground="{StaticResource AccentGreenBrush}" />
+                    </Grid>
+                    <TextBlock x:Name="TxtOpeningUSDDisplay" Text="$ 0.00" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,8,0,2" />
+                    <TextBlock x:Name="TxtOpeningVESDisplay" Text="0.00 Bs." FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <!-- KPI 2: Total Entradas (+) -->
+            <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="TOTAL ENTRADAS (+)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <fluentIcons:SymbolIcon Symbol="ArrowCircleUp" FontSize="20" HorizontalAlignment="Right" Foreground="{StaticResource AccentGreenBrush}" />
+                    </Grid>
+                    <TextBlock x:Name="TxtTotalInUSDDisplay" Text="$ 0.00" FontSize="22" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" Margin="0,8,0,2" />
+                    <TextBlock x:Name="TxtTotalInVESDisplay" Text="0.00 Bs." FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <!-- KPI 3: Total Salidas (-) -->
+            <Border Grid.Column="4" Style="{StaticResource DashboardCardStyle}">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="SALIDAS / CAJA CHICA (-)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <fluentIcons:SymbolIcon Symbol="ArrowCircleDown" FontSize="20" HorizontalAlignment="Right" Foreground="#D83B01" />
+                    </Grid>
+                    <TextBlock x:Name="TxtTotalOutUSDDisplay" Text="$ 0.00" FontSize="22" FontWeight="Bold" Foreground="#D83B01" Margin="0,8,0,2" />
+                    <TextBlock x:Name="TxtTotalOutVESDisplay" Text="0.00 Bs." FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <!-- KPI 4: Saldo Teórico Actual en Caja -->
+            <Border Grid.Column="6" Style="{StaticResource DashboardCardStyle}">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="SALDO TEÓRICO EN CAJA" FontSize="11" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        <fluentIcons:SymbolIcon Symbol="Money" FontSize="20" HorizontalAlignment="Right" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    </Grid>
+                    <TextBlock x:Name="TxtCurrentExpectedUSDDisplay" Text="$ 0.00" FontSize="22" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,8,0,2" />
+                    <TextBlock x:Name="TxtCurrentExpectedVESDisplay" Text="0.00 Bs." FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ============================================== -->
+        <!--  FILA 2: TABLAS (HISTORIAL TURNOS Y MOVIMIENTOS) -->
+        <!-- ============================================== -->
+        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="18">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Selector de Tabla / Pestaña -->
+                <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#EBF3FB" CornerRadius="6" Padding="3">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton x:Name="RbShiftsHistory" Content="Historial de Turnos y Arqueos" IsChecked="True" Checked="TableTab_Changed"
+                                         Padding="14,6" Cursor="Hand" FontWeight="SemiBold" FontSize="12">
+                                <RadioButton.Style>
+                                    <Style TargetType="RadioButton">
+                                        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="RadioButton">
+                                                    <Border x:Name="b" Background="Transparent" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter VerticalAlignment="Center" />
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsChecked" Value="True">
+                                                            <Setter TargetName="b" Property="Background" Value="White" />
+                                                            <Setter Property="Foreground" Value="{StaticResource PrimaryBrandBrush}" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </RadioButton.Style>
+                            </RadioButton>
+
+                            <RadioButton x:Name="RbCurrentMovements" Content="Movimientos del Turno Activo" Checked="TableTab_Changed"
+                                         Padding="14,6" Cursor="Hand" FontWeight="SemiBold" FontSize="12">
+                                <RadioButton.Style>
+                                    <Style TargetType="RadioButton">
+                                        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="RadioButton">
+                                                    <Border x:Name="b" Background="Transparent" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter VerticalAlignment="Center" />
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsChecked" Value="True">
+                                                            <Setter TargetName="b" Property="Background" Value="White" />
+                                                            <Setter Property="Foreground" Value="{StaticResource PrimaryBrandBrush}" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </RadioButton.Style>
+                            </RadioButton>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Botón Refrescar -->
+                    <Button Grid.Column="2" Click="BtnRefresh_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                            Padding="12,6" Cursor="Hand" ToolTip="Recargar datos de caja">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="ArrowClockwise" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Refrescar" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <!-- TABLA 1: HISTORIAL DE TURNOS -->
+                <DataGrid x:Name="DgShifts" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
+                          CanUserAddRows="False" CanUserDeleteRows="False"
+                          GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E1E4E8"
+                          Background="White" RowHeight="42" ColumnHeaderHeight="36"
+                          BorderThickness="1" BorderBrush="#E1E4E8" HeadersVisibility="Column"
+                          SelectionMode="Single" MouseDoubleClick="DgShifts_MouseDoubleClick">
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#F6F8FA" />
+                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                            <Setter Property="FontSize" Value="12" />
+                            <Setter Property="Padding" Value="12,0" />
+                            <Setter Property="BorderThickness" Value="0,0,0,1" />
+                            <Setter Property="BorderBrush" Value="#D0D7DE" />
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+                    <DataGrid.Columns>
+                        <!-- Turno # -->
+                        <DataGridTemplateColumn Header="TURNO" Width="80">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ShiftNumberDisplay}" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Cajero -->
+                        <DataGridTemplateColumn Header="CAJERO" Width="140">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding CashierUsername}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Apertura -->
+                        <DataGridTemplateColumn Header="APERTURA" Width="140">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding OpenedAtDisplay}" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Cierre -->
+                        <DataGridTemplateColumn Header="CIERRE" Width="140">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ClosedAtDisplay}" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Fondo Inicial USD -->
+                        <DataGridTemplateColumn Header="FONDO USD" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding OpeningUSDDisplay}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" FontWeight="SemiBold" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Teórico USD -->
+                        <DataGridTemplateColumn Header="TEÓRICO USD" Width="110">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ExpectedUSDDisplay}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" FontWeight="SemiBold" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Declarado USD -->
+                        <DataGridTemplateColumn Header="DECLARADO USD" Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ActualUSDDisplay}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Descuadre USD -->
+                        <DataGridTemplateColumn Header="DESCUADRE" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding DiffBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding DiffBadgeText}" FontSize="11" FontWeight="Bold" Foreground="{Binding DiffBadgeForeground}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Estado -->
+                        <DataGridTemplateColumn Header="ESTADO" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding StatusBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding StatusText}" FontSize="11" FontWeight="Bold" Foreground="{Binding StatusBadgeForeground}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- TABLA 2: MOVIMIENTOS DEL TURNO ACTUAL -->
+                <DataGrid x:Name="DgMovements" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
+                          CanUserAddRows="False" CanUserDeleteRows="False"
+                          GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E1E4E8"
+                          Background="White" RowHeight="42" ColumnHeaderHeight="36"
+                          BorderThickness="1" BorderBrush="#E1E4E8" HeadersVisibility="Column"
+                          SelectionMode="Single" Visibility="Collapsed">
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#F6F8FA" />
+                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                            <Setter Property="FontSize" Value="12" />
+                            <Setter Property="Padding" Value="12,0" />
+                            <Setter Property="BorderThickness" Value="0,0,0,1" />
+                            <Setter Property="BorderBrush" Value="#D0D7DE" />
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+                    <DataGrid.Columns>
+                        <!-- Hora -->
+                        <DataGridTemplateColumn Header="HORA" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding CreatedAtLocalDisplay}" VerticalAlignment="Center" Margin="12,0" Foreground="{StaticResource TextSecondaryBrush}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Tipo -->
+                        <DataGridTemplateColumn Header="TIPO" Width="160">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding TypeBadgeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="12,0">
+                                        <TextBlock Text="{Binding TypeDisplay}" FontSize="11" FontWeight="Bold" Foreground="{Binding TypeBadgeForeground}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Concepto / Justificación -->
+                        <DataGridTemplateColumn Header="CONCEPTO / JUSTIFICACIÓN" Width="3*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Description}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Autorizado Por -->
+                        <DataGridTemplateColumn Header="AUTORIZADO POR" Width="1.5*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding AuthorizedBy}" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Monto USD -->
+                        <DataGridTemplateColumn Header="MONTO (USD)" Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding AmountUSDDisplay}" FontWeight="Bold" Foreground="{Binding AmountColor}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Monto VES -->
+                        <DataGridTemplateColumn Header="MONTO (VES)" Width="140">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding AmountVESDisplay}" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

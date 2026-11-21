@@ -1,0 +1,259 @@
+﻿<UserControl x:Class="Deterpos.WPF.Views.UsersManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+             FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
+
+    <Grid Margin="30,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ============================================== -->
+        <!--  FILA 0: ENCABEZADO Y TARJETAS MÉTRICAS        -->
+        <!-- ============================================== -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Título y Subtítulo -->
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <TextBlock Text="Usuarios, Roles y Seguridad" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,12,0" />
+                    <Border Background="#EFF6FC" CornerRadius="6" Padding="10,3" VerticalAlignment="Center">
+                        <TextBlock Text="CONTROL DE ACCESOS Y AUDITORÍA" FontSize="11" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    </Border>
+                </StackPanel>
+                <TextBlock Text="Administración de cuentas, roles operativos, facultades granulares y auditoría inmutable contra fraudes." FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
+            </StackPanel>
+
+            <!-- Métricas Resumen -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+
+                <!-- Tarjeta 1: Total Usuarios -->
+                <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,10" Margin="0,0,10,0" MinWidth="130">
+                    <StackPanel>
+                        <TextBlock Text="TOTAL USUARIOS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        <TextBlock x:Name="TxtMetricsTotalUsers" Text="0" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,2,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Tarjeta 2: Activos -->
+                <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,10" Margin="0,0,10,0" MinWidth="130">
+                    <StackPanel>
+                        <TextBlock Text="ACTIVOS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
+                        <TextBlock x:Name="TxtMetricsActiveUsers" Text="0" FontSize="18" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" Margin="0,2,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Tarjeta 3: Administradores -->
+                <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,10" MinWidth="130">
+                    <StackPanel>
+                        <TextBlock Text="ADMINS / SUP." FontSize="10" FontWeight="Bold" Foreground="#8E562E" />
+                        <TextBlock x:Name="TxtMetricsAdmins" Text="0" FontSize="18" FontWeight="Bold" Foreground="#8E562E" Margin="0,2,0,0" />
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </Grid>
+
+        <!-- ============================================== -->
+        <!--  FILA 1: BARRA DE ACCIÓN Y BUSCADOR            -->
+        <!-- ============================================== -->
+        <Border Grid.Row="1" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="250" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Botón Nuevo Usuario -->
+                <Button Grid.Column="0" Click="BtnNewUser_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                        Padding="16,8" Cursor="Hand" FontWeight="SemiBold" FontSize="13">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6" />
+                        </Style>
+                    </Button.Resources>
+                    <StackPanel Orientation="Horizontal">
+                        <fluentIcons:SymbolIcon Symbol="PersonAdd" FontSize="16" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock Text="Nuevo Usuario" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Botón Ver Auditoría -->
+                <Button Grid.Column="2" Click="BtnViewAudit_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                        Padding="14,8" Cursor="Hand" FontWeight="SemiBold" FontSize="13">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6" />
+                        </Style>
+                    </Button.Resources>
+                    <StackPanel Orientation="Horizontal">
+                        <fluentIcons:SymbolIcon Symbol="ShieldCheckmark" FontSize="16" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock Text="Pistas de Auditoría" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Buscador por texto -->
+                <Grid Grid.Column="4">
+                    <TextBox x:Name="TxtSearch" Padding="28,6,8,6" TextChanged="TxtSearch_TextChanged" VerticalAlignment="Center" Height="34">
+                        <TextBox.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </TextBox.Resources>
+                    </TextBox>
+                    <fluentIcons:SymbolIcon Symbol="Search" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" 
+                                            HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" IsHitTestVisible="False" />
+                    <TextBlock x:Name="TxtSearchPlaceholder" Text="Buscar usuario o nombre..." FontSize="12" Foreground="#999999"
+                               VerticalAlignment="Center" Margin="28,0,0,0" IsHitTestVisible="False" />
+                </Grid>
+
+                <!-- Botón Refrescar -->
+                <Button Grid.Column="6" Click="BtnRefresh_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                        Padding="12,6" Height="34" Cursor="Hand" ToolTip="Actualizar">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6" />
+                        </Style>
+                    </Button.Resources>
+                    <StackPanel Orientation="Horizontal">
+                        <fluentIcons:SymbolIcon Symbol="ArrowSync" FontSize="16" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                        <TextBlock Text="Refrescar" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- ============================================== -->
+        <!--  FILA 2: TABLA DE USUARIOS DEL SISTEMA         -->
+        <!-- ============================================== -->
+        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="0">
+            <DataGrid x:Name="GridUsers" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                      BorderThickness="0" Background="Transparent" HeadersVisibility="Column"
+                      RowHeight="42" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE"
+                      SelectionMode="Single" SelectionUnit="FullRow">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50" FontWeight="SemiBold" />
+                    <DataGridTextColumn Header="USUARIO (LOGIN)" Binding="{Binding Username}" Width="140" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    <DataGridTextColumn Header="NOMBRE COMPLETO" Binding="{Binding FullName}" Width="1.5*" FontWeight="SemiBold" />
+                    <DataGridTextColumn Header="CORREO ELECTRÓNICO" Binding="{Binding Email}" Width="1.2*" />
+
+                    <!-- Badge de Rol -->
+                    <DataGridTemplateColumn Header="ROL DEL SISTEMA" Width="140">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="4" Padding="8,3" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#EFF6FC" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Role}" Value="Administrador">
+                                                    <Setter Property="Background" Value="#EBF3FC" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Role}" Value="Supervisor">
+                                                    <Setter Property="Background" Value="#E6F4EA" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Role}" Value="Cajero">
+                                                    <Setter Property="Background" Value="#FFF4CE" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="{Binding Role}" FontWeight="SemiBold" FontSize="11">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource PrimaryBrandBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Role}" Value="Supervisor">
+                                                        <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Role}" Value="Cajero">
+                                                        <Setter Property="Foreground" Value="#8E562E" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Estado Activo/Bloqueado -->
+                    <DataGridTemplateColumn Header="ESTADO" Width="110">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="4" Padding="8,3" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#FDE7E9" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                    <Setter Property="Background" Value="#E6F4EA" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock FontSize="11" FontWeight="SemiBold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Bloqueado" />
+                                                <Setter Property="Foreground" Value="#D83B01" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                        <Setter Property="Text" Value="Activo" />
+                                                        <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="ÚLTIMO ACCESO" Binding="{Binding LastLoginAt, StringFormat={}{0:dd/MM/yyyy HH:mm}}" Width="140" Foreground="{StaticResource TextSecondaryBrush}" />
+
+                    <!-- Acciones -->
+                    <DataGridTemplateColumn Header="ACCIONES" Width="150">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <!-- Editar -->
+                                    <Button Click="BtnEditUser_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Editar usuario" Padding="5,2">
+                                        <fluentIcons:SymbolIcon Symbol="Edit" FontSize="15" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                    </Button>
+
+                                    <!-- Permisos -->
+                                    <Button Click="BtnPermissions_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Modificar matriz de permisos" Padding="5,2">
+                                        <fluentIcons:SymbolIcon Symbol="Key" FontSize="15" Foreground="#8E562E" />
+                                    </Button>
+
+                                    <!-- Bloquear / Desbloquear -->
+                                    <Button Click="BtnToggleStatus_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Activar / Desactivar cuenta" Padding="5,2">
+                                        <fluentIcons:SymbolIcon Symbol="LockClosed" FontSize="15" Foreground="#D83B01" />
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+    </Grid>
+</UserControl>
+

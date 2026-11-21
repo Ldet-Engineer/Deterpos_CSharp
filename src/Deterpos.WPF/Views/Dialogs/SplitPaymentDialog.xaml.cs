@@ -1,0 +1,274 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using Deterpos.Domain.Entities;
+using Deterpos.Domain.Enums;
+
+namespace Deterpos.WPF.Views.Dialogs;
+
+public class SplitPaymentDisplayItem
+{
+    public SalePayment Source { get; set; } = new();
+
+    public string MethodDisplay => Source.Method switch
+    {
+        PaymentMethodType.EfectivoUSD => "Efectivo USD ($)",
+        PaymentMethodType.PagoMovil => "Pago Móvil (Bs.)",
+        PaymentMethodType.PuntoDeVenta => "Punto Débito (Bs.)",
+        PaymentMethodType.EfectivoVES => "Efectivo Bolívares (Bs.)",
+        PaymentMethodType.Zelle => "Zelle ($ USD)",
+        PaymentMethodType.TransferenciaBancaria => "Transferencia Bancaria (Bs.)",
+        PaymentMethodType.Credito => "Crédito Comercial ($)",
+        _ => Source.Method.ToString()
+    };
+
+    public string OriginalAmountDisplay => Source.CurrencyCode == "USD"
+        ? $"$ {Source.AmountOriginal:N2}"
+        : $"{Source.AmountOriginal:N2} Bs.";
+
+    public string RateDisplay => Source.CurrencyCode == "USD"
+        ? "1.0000"
+        : $"{Source.ExchangeRateApplied:N4}";
+
+    public string UsdEquivalentDisplay => $"$ {Source.AmountEquivalentUSD:N2}";
+    public string ReferenceNumber => string.IsNullOrWhiteSpace(Source.ReferenceNumber) ? "N/A" : Source.ReferenceNumber;
+}
+
+public partial class SplitPaymentDialog : Window
+{
+    private readonly decimal _baseSaleTotalUSD;
+    private readonly decimal _bcvRate;
+    private readonly bool _isSpecialTaxpayer;
+    private readonly Customer? _customer;
+
+    public List<SalePayment> ConfirmedPayments { get; } = new();
+    private readonly ObservableCollection<SplitPaymentDisplayItem> _displayedPayments = new();
+
+    public decimal FinalIgtfUSD { get; private set; }
+    public decimal FinalTotalUSD { get; private set; }
+    public decimal ChangeUSD { get; private set; }
+    public decimal ChangeVES { get; private set; }
+
+    public SplitPaymentDialog(decimal baseSaleTotalUSD, decimal bcvRate, bool isSpecialTaxpayer, Customer? customer = null)
+    {
+        InitializeComponent();
+        _baseSaleTotalUSD = decimal.Round(baseSaleTotalUSD, 2);
+        _bcvRate = bcvRate > 0 ? bcvRate : 55.4000m;
+        _isSpecialTaxpayer = isSpecialTaxpayer;
+        _customer = customer;
+
+        TxtClientInfoSubtitle.Text = $"Cliente: {customer?.FullName ?? "Cliente de Contado"} ({customer?.DocumentNumber ?? "V-00000000"}) • Tasa Oficial BCV: {_bcvRate:N4} Bs.";
+        DgPayments.ItemsSource = _displayedPayments;
+
+        TxtTotalSaleUSD.Text = $"$ {_baseSaleTotalUSD:N2}";
+        TxtTotalSaleVES.Text = $"{(_baseSaleTotalUSD * _bcvRate):N2} Bs.";
+
+        Loaded += (_, _) =>
+        {
+            SuggestPaymentAmount();
+            TxtPaymentAmount.Focus();
+            TxtPaymentAmount.SelectAll();
+        };
+
+        RecalculateTotals();
+    }
+
+    private static bool IsForeign(PaymentMethodType method)
+    {
+        return method == PaymentMethodType.EfectivoUSD ||
+               method == PaymentMethodType.Zelle ||
+               method == PaymentMethodType.EfectivoEUR ||
+               method == PaymentMethodType.EfectivoCOP;
+    }
+
+    private void RecalculateTotals()
+    {
+        // 1. Calcular pagos en divisas para base de IGTF
+        decimal foreignPaidUSD = ConfirmedPayments
+            .Where(p => IsForeign(p.Method))
+            .Sum(p => p.AmountEquivalentUSD);
+
+        FinalIgtfUSD = _isSpecialTaxpayer && foreignPaidUSD > 0
+            ? decimal.Round(foreignPaidUSD * 0.03m, 2)
+            : 0m;
+
+        FinalTotalUSD = _baseSaleTotalUSD + FinalIgtfUSD;
+        decimal totalPaidUSD = ConfirmedPayments.Sum(p => p.AmountEquivalentUSD);
+        decimal remainingUSD = FinalTotalUSD - totalPaidUSD;
+
+        TxtIgtfAmountUSD.Text = $"$ {FinalIgtfUSD:N2}";
+        TxtTotalSaleUSD.Text = $"$ {FinalTotalUSD:N2}";
+        TxtTotalSaleVES.Text = $"{(FinalTotalUSD * _bcvRate):N2} Bs.";
+
+        if (remainingUSD <= 0.005m) // Cubierto o con vuelto
+        {
+            ChangeUSD = Math.Abs(remainingUSD);
+            ChangeVES = decimal.Round(ChangeUSD * _bcvRate, 2);
+
+            CardBalance.Background = new SolidColorBrush(Color.FromRgb(230, 244, 234));
+            TxtBalanceTitle.Text = "TOTAL PAGADO";
+            TxtBalanceTitle.Foreground = new SolidColorBrush(Color.FromRgb(16, 124, 65));
+            TxtRemainingUSD.Text = "$ 0.00";
+            TxtRemainingUSD.Foreground = new SolidColorBrush(Color.FromRgb(16, 124, 65));
+
+            if (ChangeUSD > 0.01m)
+            {
+                PanelChange.Visibility = Visibility.Visible;
+                TxtChangeUSD.Text = $"$ {ChangeUSD:N2} USD";
+                TxtChangeVES.Text = $"Equiv: {ChangeVES:N2} Bs.";
+            }
+            else
+            {
+                PanelChange.Visibility = Visibility.Collapsed;
+            }
+
+            BtnConfirmSale.IsEnabled = true;
+        }
+        else
+        {
+            ChangeUSD = 0m;
+            ChangeVES = 0m;
+            PanelChange.Visibility = Visibility.Collapsed;
+
+            CardBalance.Background = new SolidColorBrush(Color.FromRgb(253, 243, 242));
+            TxtBalanceTitle.Text = "POR COBRAR (RESTANTE)";
+            TxtBalanceTitle.Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69));
+            TxtRemainingUSD.Text = $"$ {remainingUSD:N2}";
+            TxtRemainingUSD.Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69));
+
+            BtnConfirmSale.IsEnabled = false;
+        }
+
+        SuggestPaymentAmount();
+    }
+
+    private void SuggestPaymentAmount()
+    {
+        decimal totalPaidUSD = ConfirmedPayments.Sum(p => p.AmountEquivalentUSD);
+        decimal remainingUSD = Math.Max(0m, FinalTotalUSD - totalPaidUSD);
+
+        var selectedTag = (CmbPaymentMethod.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "EfectivoUSD";
+        bool isUSD = selectedTag == "EfectivoUSD" || selectedTag == "Zelle" || selectedTag == "Credito";
+
+        if (isUSD)
+        {
+            TxtPaymentAmount.Text = remainingUSD.ToString("F2", CultureInfo.InvariantCulture);
+            TxtAmountLabel.Text = "Monto en Dólares (USD $) *";
+            TxtPaymentHelper.Text = $"• Equivalente en moneda base: $ {remainingUSD:N2} USD";
+        }
+        else
+        {
+            decimal remainingVES = decimal.Round(remainingUSD * _bcvRate, 2);
+            TxtPaymentAmount.Text = remainingVES.ToString("F2", CultureInfo.InvariantCulture);
+            TxtAmountLabel.Text = "Monto en Bolívares (VES Bs.) *";
+            TxtPaymentHelper.Text = $"• Equivalente en moneda base: $ {remainingUSD:N2} USD (Tasa BCV: {_bcvRate:N4})";
+        }
+    }
+
+    private void CmbPaymentMethod_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsLoaded) return;
+        SuggestPaymentAmount();
+        TxtPaymentAmount.Focus();
+        TxtPaymentAmount.SelectAll();
+    }
+
+    private void BtnAddPayment_Click(object sender, RoutedEventArgs e)
+    {
+        AddCurrentPayment();
+    }
+
+    private void TxtPaymentAmount_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            AddCurrentPayment();
+        }
+    }
+
+    private void TxtReferenceNumber_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            AddCurrentPayment();
+        }
+    }
+
+    private void AddCurrentPayment()
+    {
+        if (!decimal.TryParse(TxtPaymentAmount.Text.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out var amount) || amount <= 0)
+        {
+            MessageBox.Show("Ingrese un monto válido y mayor a cero.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+            TxtPaymentAmount.Focus();
+            return;
+        }
+
+        var selectedTag = (CmbPaymentMethod.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "EfectivoUSD";
+        var method = Enum.Parse<PaymentMethodType>(selectedTag);
+
+        string currencyCode = "VES";
+        decimal rate = _bcvRate;
+        decimal equivUSD;
+
+        if (method == PaymentMethodType.EfectivoUSD || method == PaymentMethodType.Zelle || method == PaymentMethodType.Credito)
+        {
+            currencyCode = "USD";
+            rate = 1.0000m;
+            equivUSD = amount;
+        }
+        else
+        {
+            equivUSD = _bcvRate > 0 ? decimal.Round(amount / _bcvRate, 2) : 0m;
+        }
+
+        var payment = new SalePayment
+        {
+            Method = method,
+            CurrencyCode = currencyCode,
+            AmountOriginal = amount,
+            ExchangeRateApplied = rate,
+            AmountEquivalentUSD = equivUSD,
+            ReferenceNumber = TxtReferenceNumber.Text.Trim()
+        };
+
+        ConfirmedPayments.Add(payment);
+        _displayedPayments.Add(new SplitPaymentDisplayItem { Source = payment });
+
+        TxtReferenceNumber.Text = string.Empty;
+        RecalculateTotals();
+    }
+
+    private void BtnRemovePayment_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.DataContext is SplitPaymentDisplayItem item)
+        {
+            ConfirmedPayments.Remove(item.Source);
+            _displayedPayments.Remove(item);
+            RecalculateTotals();
+        }
+    }
+
+    private void BtnCancel_Click(object sender, RoutedEventArgs e)
+    {
+        DialogResult = false;
+        Close();
+    }
+
+    private void BtnConfirmSale_Click(object sender, RoutedEventArgs e)
+    {
+        if (ConfirmedPayments.Count == 0)
+        {
+            MessageBox.Show("Debe ingresar al menos un pago.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        DialogResult = true;
+        Close();
+    }
+}

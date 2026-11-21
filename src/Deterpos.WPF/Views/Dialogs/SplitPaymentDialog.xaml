@@ -1,0 +1,299 @@
+﻿<Window x:Class="Deterpos.WPF.Views.Dialogs.SplitPaymentDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+        Title="Pasarela de Cobro Fraccionado" 
+        Height="720" Width="840"
+        WindowStyle="None" 
+        AllowsTransparency="True" 
+        Background="Transparent"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
+
+    <!-- Sombra Perimetral Moderna -->
+    <Border Margin="15" Background="White" CornerRadius="12" BorderBrush="#D0D7DE" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28" Direction="270" ShadowDepth="4" Opacity="0.22" Color="#000000" />
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Encabezado Modal -->
+            <Border Grid.Row="0" Background="#F6F8FA" CornerRadius="12,12,0,0" Padding="22,16" BorderBrush="#E1E4E8" BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <fluentIcons:SymbolIcon Grid.Column="0" Symbol="Payment" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Pasarela de Cobro Fraccionado (Multimoneda)" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock x:Name="TxtClientInfoSubtitle" Text="Cliente: V-00000000 • Tasa Oficial BCV: 55.4000 Bs." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="2" Click="BtnCancel_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6" VerticalAlignment="Center">
+                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Contenido Principal -->
+            <Grid Grid.Row="1" Margin="22,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- FILA 0: TARJETAS DE TOTALES Y RESTANTE -->
+                <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Total Factura (USD) -->
+                    <Border Grid.Column="0" Background="#F8FAFD" BorderBrush="#D0DFEE" BorderThickness="1" CornerRadius="6" Padding="12">
+                        <StackPanel>
+                            <TextBlock Text="TOTAL FACTURA (USD)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                            <TextBlock x:Name="TxtTotalSaleUSD" Text="$ 0.00" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Total Factura (VES) -->
+                    <Border Grid.Column="2" Background="#F8FAFD" BorderBrush="#D0DFEE" BorderThickness="1" CornerRadius="6" Padding="12">
+                        <StackPanel>
+                            <TextBlock Text="TOTAL FACTURA (VES)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                            <TextBlock x:Name="TxtTotalSaleVES" Text="0.00 Bs." FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- IGTF 3% Percibido -->
+                    <Border Grid.Column="4" Background="#FFF9F5" BorderBrush="#F8D7C2" BorderThickness="1" CornerRadius="6" Padding="12">
+                        <StackPanel>
+                            <TextBlock Text="IGTF 3% (DIVISAS)" FontSize="10" FontWeight="Bold" Foreground="#D83B01" />
+                            <TextBlock x:Name="TxtIgtfAmountUSD" Text="$ 0.00" FontSize="18" FontWeight="Bold" Foreground="#D83B01" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Restante o Vuelto -->
+                    <Border x:Name="CardBalance" Grid.Column="6" Background="#FDF3F2" BorderBrush="#F8C6C2" BorderThickness="1" CornerRadius="6" Padding="12">
+                        <StackPanel>
+                            <TextBlock x:Name="TxtBalanceTitle" Text="POR COBRAR (RESTANTE)" FontSize="10" FontWeight="Bold" Foreground="#DC3545" />
+                            <TextBlock x:Name="TxtRemainingUSD" Text="$ 0.00" FontSize="18" FontWeight="Bold" Foreground="#DC3545" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- FILA 1: FORMULARIO DE AGREGAR FORMA DE PAGO -->
+                <Border Grid.Row="1" Background="#F6F8FA" BorderBrush="#E1E4E8" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="220" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="160" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Método -->
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Forma de Pago *" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                                <ComboBox x:Name="CmbPaymentMethod" SelectedIndex="0" SelectionChanged="CmbPaymentMethod_SelectionChanged">
+                                    <ComboBoxItem Content="Efectivo USD ($)" Tag="EfectivoUSD" />
+                                    <ComboBoxItem Content="Pago Móvil (VES Bs.)" Tag="PagoMovil" />
+                                    <ComboBoxItem Content="Punto de Débito (VES Bs.)" Tag="PuntoDeVenta" />
+                                    <ComboBoxItem Content="Efectivo Bolívares (Bs.)" Tag="EfectivoVES" />
+                                    <ComboBoxItem Content="Zelle ($ USD)" Tag="Zelle" />
+                                    <ComboBoxItem Content="Transferencia (VES Bs.)" Tag="TransferenciaBancaria" />
+                                    <ComboBoxItem Content="Crédito Comercial ($)" Tag="Credito" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- Monto en Moneda Original -->
+                            <StackPanel Grid.Column="2">
+                                <TextBlock x:Name="TxtAmountLabel" Text="Monto a Cobrar *" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                                <TextBox x:Name="TxtPaymentAmount" Text="0.00" FontWeight="Bold" FontSize="14" VerticalContentAlignment="Center" KeyDown="TxtPaymentAmount_KeyDown" />
+                            </StackPanel>
+
+                            <!-- Referencia -->
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="Referencia / Últimos 4 dígitos" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                                <TextBox x:Name="TxtReferenceNumber" Text="" VerticalContentAlignment="Center" KeyDown="TxtReferenceNumber_KeyDown" />
+                            </StackPanel>
+
+                            <!-- Botón Agregar -->
+                            <StackPanel Grid.Column="6" VerticalAlignment="Bottom">
+                                <Button Click="BtnAddPayment_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0" Padding="18,8" Cursor="Hand" FontWeight="SemiBold">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="6" />
+                                        </Style>
+                                    </Button.Resources>
+                                    <StackPanel Orientation="Horizontal">
+                                        <fluentIcons:SymbolIcon Symbol="Add" FontSize="16" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="Agregar Pago" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock x:Name="TxtPaymentHelper" Grid.Row="1" Text="• Equivalente en moneda base: $ 0.00 USD" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0" />
+                    </Grid>
+                </Border>
+
+                <!-- FILA 2: TABLA DE PAGOS AGREGADOS -->
+                <Border Grid.Row="2" Background="White" BorderBrush="#E1E4E8" BorderThickness="1" CornerRadius="8" Padding="10">
+                    <DataGrid x:Name="DgPayments" AutoGenerateColumns="False" IsReadOnly="True"
+                              CanUserAddRows="False" CanUserDeleteRows="False"
+                              GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E1E4E8"
+                              Background="White" RowHeight="38" ColumnHeaderHeight="32"
+                              BorderThickness="0" HeadersVisibility="Column" SelectionMode="Single">
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#F6F8FA" />
+                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                                <Setter Property="FontSize" Value="11" />
+                                <Setter Property="Padding" Value="10,0" />
+                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                <Setter Property="BorderBrush" Value="#D0D7DE" />
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
+                        <DataGrid.Columns>
+                            <!-- Método -->
+                            <DataGridTemplateColumn Header="MÉTODO" Width="180">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding MethodDisplay}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="10,0" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Monto Original -->
+                            <DataGridTemplateColumn Header="MONTO PAGADO" Width="140">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding OriginalAmountDisplay}" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Tasa Aplicada -->
+                            <DataGridTemplateColumn Header="TASA APLICADA" Width="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding RateDisplay}" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Equivalente USD -->
+                            <DataGridTemplateColumn Header="EQUIV. USD" Width="130">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding UsdEquivalentDisplay}" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Referencia -->
+                            <DataGridTemplateColumn Header="REFERENCIA" Width="*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding ReferenceNumber}" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="10,0" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <!-- Botón Quitar -->
+                            <DataGridTemplateColumn Header="ACCIÓN" Width="70">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Click="BtnRemovePayment_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="4" HorizontalAlignment="Center">
+                                            <fluentIcons:SymbolIcon Symbol="Delete" FontSize="14" Foreground="#DC3545" />
+                                        </Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <!-- FILA 3: PANEL DE VUELTO / CAMBIO -->
+                <Border x:Name="PanelChange" Grid.Row="3" Background="#E6F4EA" BorderBrush="#34A853" BorderThickness="1" CornerRadius="6" Padding="14,10" Margin="0,12,0,0" Visibility="Collapsed">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="VUELTO / CAMBIO A ENTREGAR AL CLIENTE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
+                            <TextBlock x:Name="TxtChangeUSD" Text="$ 0.00" FontSize="18" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                        <TextBlock x:Name="TxtChangeVES" Grid.Column="1" Text="Equiv: 0.00 Bs." FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+            </Grid>
+
+            <!-- Barra Inferior de Acciones -->
+            <Border Grid.Row="2" Background="#F6F8FA" CornerRadius="0,0,12,12" Padding="22,14" BorderBrush="#E1E4E8" BorderThickness="0,1,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="1" Click="BtnCancel_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                            Padding="18,8" Cursor="Hand" FontWeight="SemiBold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <TextBlock Text="Cancelar" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+
+                    <Button x:Name="BtnConfirmSale" Grid.Column="3" Click="BtnConfirmSale_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                            Padding="24,9" Cursor="Hand" FontWeight="Bold" IsEnabled="False">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="ReceiptMoney" FontSize="18" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Confirmar y Facturar [F12]" FontSize="13" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

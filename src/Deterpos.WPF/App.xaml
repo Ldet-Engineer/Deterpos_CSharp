@@ -1,0 +1,65 @@
+﻿<Application x:Class="Deterpos.WPF.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:Fluent="urn:fluent-ribbon"
+             xmlns:conv="clr-namespace:Deterpos.WPF.Converters"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Fluent;component/Themes/Generic.xaml" />
+                <ResourceDictionary Source="Styles/ModernControls.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Conversores de Visibilidad -->
+            <conv:BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
+            <conv:InverseBooleanToVisibilityConverter x:Key="InvBoolToVisConverter" />
+
+            <!-- Paleta de Colores de Deterpos inspirada en Office (Azul Ejecutivo) -->
+            <SolidColorBrush x:Key="PrimaryBrandBrush" Color="#0067B8" />
+            <SolidColorBrush x:Key="PrimaryBrandLightBrush" Color="#E5F1FB" />
+            <SolidColorBrush x:Key="AccentGreenBrush" Color="#107C41" />
+            <SolidColorBrush x:Key="AccentGoldBrush" Color="#C19C00" />
+            <SolidColorBrush x:Key="SurfaceBackgroundBrush" Color="#F4F6F9" />
+            <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="CardBorderBrush" Color="#E0E4E8" />
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1F2328" />
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#656D76" />
+
+            <!-- Ajustes Globales de Nitidez Tipográfica y Pixel-Snapping (Display Mode) -->
+            <Style TargetType="TextBlock">
+                <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+                <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+                <Setter Property="UseLayoutRounding" Value="True" />
+                <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Variable Text, Arial" />
+            </Style>
+
+            <Style TargetType="Control">
+                <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+                <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+                <Setter Property="UseLayoutRounding" Value="True" />
+                <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Variable Text, Arial" />
+            </Style>
+
+            <!-- Estilo de Tarjeta Dashboard -->
+            <Style x:Key="DashboardCardStyle" TargetType="Border">
+                <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="Padding" Value="18" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+                <Setter Property="UseLayoutRounding" Value="True" />
+                <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+                <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect BlurRadius="10" Direction="270" ShadowDepth="2" Opacity="0.06" Color="#000000" />
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

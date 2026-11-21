@@ -1,0 +1,566 @@
+﻿<UserControl x:Class="Deterpos.WPF.Views.CustomersSuppliersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+             FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
+
+    <Grid Margin="30,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ============================================== -->
+        <!--  FILA 0: ENCABEZADO Y SELECTOR DE PESTAÑA      -->
+        <!-- ============================================== -->
+        <Grid Grid.Row="0" Margin="0,0,0,18">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock x:Name="TxtMainTitle" Text="Directorio de Clientes y Proveedores" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                <TextBlock x:Name="TxtMainSubtitle" Text="Gestión de contactos comerciales, RIF/Cédula fiscal SENIAT, límites de crédito y cuentas pendientes" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+            </StackPanel>
+
+            <!-- Conmutador Moderno de Pestaña Clientes / Proveedores -->
+            <Border Grid.Column="1" Background="#EBF3FB" CornerRadius="8" Padding="4" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal">
+                    <RadioButton x:Name="RbCustomersTab" Content="Clientes (Cuentas por Cobrar)" IsChecked="True"
+                                 Checked="TabSelector_Changed" Cursor="Hand" Padding="14,6" FontWeight="SemiBold" FontSize="13">
+                        <RadioButton.Style>
+                            <Style TargetType="RadioButton">
+                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="RadioButton">
+                                            <Border x:Name="b" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <fluentIcons:SymbolIcon Symbol="People" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                    <ContentPresenter VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter TargetName="b" Property="Background" Value="White" />
+                                                    <Setter Property="Foreground" Value="{StaticResource PrimaryBrandBrush}" />
+                                                    <Setter TargetName="b" Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect BlurRadius="6" Direction="270" ShadowDepth="1" Opacity="0.12" Color="#000000" />
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </RadioButton.Style>
+                    </RadioButton>
+
+                    <RadioButton x:Name="RbSuppliersTab" Content="Proveedores (Cuentas por Pagar)"
+                                 Checked="TabSelector_Changed" Cursor="Hand" Padding="14,6" FontWeight="SemiBold" FontSize="13">
+                        <RadioButton.Style>
+                            <Style TargetType="RadioButton">
+                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="RadioButton">
+                                            <Border x:Name="b" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <fluentIcons:SymbolIcon Symbol="Building" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                    <ContentPresenter VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter TargetName="b" Property="Background" Value="White" />
+                                                    <Setter Property="Foreground" Value="{StaticResource PrimaryBrandBrush}" />
+                                                    <Setter TargetName="b" Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect BlurRadius="6" Direction="270" ShadowDepth="1" Opacity="0.12" Color="#000000" />
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </RadioButton.Style>
+                    </RadioButton>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ============================================== -->
+        <!--  FILA 1: TARJETAS KPI RESUMEN                  -->
+        <!-- ============================================== -->
+        <!-- Sección KPI para Clientes -->
+        <Grid x:Name="GridCustomerKpis" Grid.Row="1" Margin="0,0,0,18">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- KPI 1: Clientes Registrados -->
+            <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="TOTAL CLIENTES" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <fluentIcons:SymbolIcon Symbol="People" FontSize="20" HorizontalAlignment="Right" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    </Grid>
+                    <TextBlock x:Name="TxtTotalCustomersCount" Text="0" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,8,0,2" />
+                    <TextBlock Text="Clientes fiscales activos" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <!-- KPI 2: Saldo Pendiente USD -->
+            <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="POR COBRAR (USD)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <fluentIcons:SymbolIcon Symbol="Money" FontSize="20" HorizontalAlignment="Right" Foreground="{StaticResource AccentGreenBrush}" />
+                    </Grid>
+                    <TextBlock x:Name="TxtCustomerBalanceUSD" Text="$ 0.00" FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" Margin="0,8,0,2" />
+                    <TextBlock Text="Cuentas por cobrar en divisas" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <!-- KPI 3: Saldo Pendiente VES -->
+            <Border Grid.Column="4" Style="{StaticResource DashboardCardStyle}">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="POR COBRAR (VES)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <fluentIcons:SymbolIcon Symbol="Receipt" FontSize="20" HorizontalAlignment="Right" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    </Grid>
+                    <TextBlock x:Name="TxtCustomerBalanceVES" Text="0.00 Bs." FontSize="24" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,8,0,2" />
+                    <TextBlock Text="Equivalente a tasa oficial BCV" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <!-- KPI 4: Crédito Total Asignado -->
+            <Border Grid.Column="6" Style="{StaticResource DashboardCardStyle}">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="LÍMITE TOTAL CRÉDITO" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <fluentIcons:SymbolIcon Symbol="ShieldCheckmark" FontSize="20" HorizontalAlignment="Right" Foreground="{StaticResource AccentGoldBrush}" />
+                    </Grid>
+                    <TextBlock x:Name="TxtTotalCreditLimitUSD" Text="$ 0.00" FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentGoldBrush}" Margin="0,8,0,2" />
+                    <TextBlock Text="Línea de crédito autorizada" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Sección KPI para Proveedores -->
+        <Grid x:Name="GridSupplierKpis" Grid.Row="1" Margin="0,0,0,18" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- KPI 1: Proveedores Registrados -->
+            <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="TOTAL PROVEEDORES" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <fluentIcons:SymbolIcon Symbol="Building" FontSize="20" HorizontalAlignment="Right" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    </Grid>
+                    <TextBlock x:Name="TxtTotalSuppliersCount" Text="0" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,8,0,2" />
+                    <TextBlock Text="Empresas y distribuidores" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <!-- KPI 2: Deuda Total USD -->
+            <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="POR PAGAR (USD)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <fluentIcons:SymbolIcon Symbol="MoneyHand" FontSize="20" HorizontalAlignment="Right" Foreground="#D83B01" />
+                    </Grid>
+                    <TextBlock x:Name="TxtSupplierDebtUSD" Text="$ 0.00" FontSize="24" FontWeight="Bold" Foreground="#D83B01" Margin="0,8,0,2" />
+                    <TextBlock Text="Cuentas por pagar a crédito" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <!-- KPI 3: Deuda Total VES -->
+            <Border Grid.Column="4" Style="{StaticResource DashboardCardStyle}">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="POR PAGAR (VES)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <fluentIcons:SymbolIcon Symbol="Receipt" FontSize="20" HorizontalAlignment="Right" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    </Grid>
+                    <TextBlock x:Name="TxtSupplierDebtVES" Text="0.00 Bs." FontSize="24" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,8,0,2" />
+                    <TextBlock Text="Equivalente a tasa oficial BCV" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+
+            <!-- KPI 4: Proveedores con Deuda -->
+            <Border Grid.Column="6" Style="{StaticResource DashboardCardStyle}">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="CON SALDO PENDIENTE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <fluentIcons:SymbolIcon Symbol="AlertUrgent" FontSize="20" HorizontalAlignment="Right" Foreground="#D83B01" />
+                    </Grid>
+                    <TextBlock x:Name="TxtSuppliersWithDebtCount" Text="0" FontSize="24" FontWeight="Bold" Foreground="#D83B01" Margin="0,8,0,2" />
+                    <TextBlock Text="Proveedores con facturas pendientes" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ============================================== -->
+        <!--  FILA 2: BARRA DE BÚSQUEDA Y TABLAS DATAGRID   -->
+        <!-- ============================================== -->
+        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="18">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Barra de Acciones y Filtros -->
+                <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="340" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Caja de Búsqueda -->
+                    <Grid Grid.Column="0">
+                        <TextBox x:Name="TxtSearch" TextChanged="TxtSearch_TextChanged" VerticalContentAlignment="Center" Padding="32,7,10,7" />
+                        <fluentIcons:SymbolIcon Symbol="Search" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                    </Grid>
+
+                    <!-- Botón Refrescar -->
+                    <Button Grid.Column="2" Click="BtnRefresh_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                            Padding="12,7" Cursor="Hand" ToolTip="Recargar datos desde PostgreSQL">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <fluentIcons:SymbolIcon Symbol="ArrowClockwise" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+
+                    <!-- Botones de Acción (Clientes) -->
+                    <StackPanel x:Name="PanelCustomerActions" Grid.Column="4" Orientation="Horizontal">
+                        <Button Click="BtnEditCustomer_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                                Padding="14,7" Margin="0,0,8,0" Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6" />
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <fluentIcons:SymbolIcon Symbol="Edit" FontSize="16" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Editar" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Click="BtnDeleteCustomer_Click" Background="White" BorderBrush="#F8D7DA" BorderThickness="1"
+                                Padding="14,7" Margin="0,0,10,0" Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6" />
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <fluentIcons:SymbolIcon Symbol="Delete" FontSize="16" Foreground="#DC3545" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Dar de Baja" FontWeight="SemiBold" FontSize="13" Foreground="#DC3545" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Click="BtnNewCustomer_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                                Padding="18,7" Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6" />
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <fluentIcons:SymbolIcon Symbol="PersonAdd" FontSize="16" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Nuevo Cliente" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Botones de Acción (Proveedores) -->
+                    <StackPanel x:Name="PanelSupplierActions" Grid.Column="4" Orientation="Horizontal" Visibility="Collapsed">
+                        <Button Click="BtnEditSupplier_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                                Padding="14,7" Margin="0,0,8,0" Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6" />
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <fluentIcons:SymbolIcon Symbol="Edit" FontSize="16" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Editar" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Click="BtnDeleteSupplier_Click" Background="White" BorderBrush="#F8D7DA" BorderThickness="1"
+                                Padding="14,7" Margin="0,0,10,0" Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6" />
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <fluentIcons:SymbolIcon Symbol="Delete" FontSize="16" Foreground="#DC3545" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Dar de Baja" FontWeight="SemiBold" FontSize="13" Foreground="#DC3545" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Click="BtnNewSupplier_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                                Padding="18,7" Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6" />
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <fluentIcons:SymbolIcon Symbol="Add" FontSize="16" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Nuevo Proveedor" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- TABLA 1: DATAGRID DE CLIENTES -->
+                <DataGrid x:Name="DgCustomers" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
+                          CanUserAddRows="False" CanUserDeleteRows="False"
+                          GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E1E4E8"
+                          Background="White" RowHeight="42" ColumnHeaderHeight="36"
+                          BorderThickness="1" BorderBrush="#E1E4E8" HeadersVisibility="Column"
+                          SelectionMode="Single" MouseDoubleClick="DgCustomers_MouseDoubleClick">
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#F6F8FA" />
+                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                            <Setter Property="FontSize" Value="12" />
+                            <Setter Property="Padding" Value="12,0" />
+                            <Setter Property="BorderThickness" Value="0,0,0,1" />
+                            <Setter Property="BorderBrush" Value="#D0D7DE" />
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="FontSize" Value="13" />
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F0F6FC" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#E5F1FB" />
+                                    <Setter Property="Foreground" Value="{StaticResource PrimaryBrandBrush}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <!-- RIF / Cédula -->
+                        <DataGridTemplateColumn Header="RIF / CÉDULA" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DocumentNumber}" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Nombre o Razón Social -->
+                        <DataGridTemplateColumn Header="NOMBRE / RAZÓN SOCIAL" Width="2*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Teléfono -->
+                        <DataGridTemplateColumn Header="TELÉFONO" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Phone}" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Correo Electrónico -->
+                        <DataGridTemplateColumn Header="CORREO ELECTRÓNICO" Width="1.5*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Email}" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Límite de Crédito USD -->
+                        <DataGridTemplateColumn Header="LÍMITE CRÉDITO" Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding CreditLimitDisplay}" Foreground="{StaticResource AccentGoldBrush}" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Saldo Pendiente USD -->
+                        <DataGridTemplateColumn Header="SALDO (USD)" Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding BalanceUSDDisplay}" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Saldo Pendiente VES -->
+                        <DataGridTemplateColumn Header="SALDO (VES)" Width="140">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding BalanceVESDisplay}" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Estado -->
+                        <DataGridTemplateColumn Header="ESTADO" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="#E6F4EA" CornerRadius="4" Padding="8,3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="Activo" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- TABLA 2: DATAGRID DE PROVEEDORES -->
+                <DataGrid x:Name="DgSuppliers" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
+                          CanUserAddRows="False" CanUserDeleteRows="False"
+                          GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E1E4E8"
+                          Background="White" RowHeight="42" ColumnHeaderHeight="36"
+                          BorderThickness="1" BorderBrush="#E1E4E8" HeadersVisibility="Column"
+                          SelectionMode="Single" Visibility="Collapsed" MouseDoubleClick="DgSuppliers_MouseDoubleClick">
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#F6F8FA" />
+                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                            <Setter Property="FontSize" Value="12" />
+                            <Setter Property="Padding" Value="12,0" />
+                            <Setter Property="BorderThickness" Value="0,0,0,1" />
+                            <Setter Property="BorderBrush" Value="#D0D7DE" />
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="FontSize" Value="13" />
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F0F6FC" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#E5F1FB" />
+                                    <Setter Property="Foreground" Value="{StaticResource PrimaryBrandBrush}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <!-- RIF Fiscal -->
+                        <DataGridTemplateColumn Header="RIF FISCAL" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DocumentNumber}" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Razón Social / Empresa -->
+                        <DataGridTemplateColumn Header="EMPRESA / PROVEEDOR" Width="2*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding CompanyName}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Persona de Contacto -->
+                        <DataGridTemplateColumn Header="CONTACTO" Width="1.5*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ContactName}" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Teléfono -->
+                        <DataGridTemplateColumn Header="TELÉFONO" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Phone}" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Correo Electrónico -->
+                        <DataGridTemplateColumn Header="CORREO" Width="1.5*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Email}" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Deuda Pendiente USD -->
+                        <DataGridTemplateColumn Header="POR PAGAR (USD)" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DebtUSDDisplay}" FontWeight="Bold" Foreground="#D83B01" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Deuda Pendiente VES -->
+                        <DataGridTemplateColumn Header="POR PAGAR (VES)" Width="140">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DebtVESDisplay}" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Estado -->
+                        <DataGridTemplateColumn Header="ESTADO" Width="90">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="#E6F4EA" CornerRadius="4" Padding="8,3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="Activo" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

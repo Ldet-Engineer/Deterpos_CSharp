@@ -1,0 +1,546 @@
+﻿<UserControl x:Class="Deterpos.WPF.Views.FiscalReportsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+             FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
+
+    <Grid Margin="30,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ============================================== -->
+        <!--  FILA 0: ENCABEZADO Y SELECTOR DE PERÍODO      -->
+        <!-- ============================================== -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Título y Subtítulo Fiscal -->
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <TextBlock Text="Libros Oficiales SENIAT y Reportes Ejecutivos" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,12,0" />
+                    <Border Background="#EBF3FC" CornerRadius="6" Padding="10,3" VerticalAlignment="Center">
+                        <TextBlock Text="ART. 56 LEY DE IVA • PROVIDENCIA 00071" FontSize="11" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    </Border>
+                </StackPanel>
+                <TextBlock Text="Generación reglamentaria de Libro de Ventas, Libro de Compras, cálculo de Débito/Crédito Fiscal y balance de rentabilidad." FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
+            </StackPanel>
+
+            <!-- Selector de Período y Exportador -->
+            <Border Grid.Column="1" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,8">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Período:" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0" />
+
+                    <!-- Combo Mes -->
+                    <ComboBox x:Name="CmbMonth" Width="120" Height="32" Margin="0,0,6,0">
+                        <ComboBoxItem Content="Enero" Tag="1" />
+                        <ComboBoxItem Content="Febrero" Tag="2" />
+                        <ComboBoxItem Content="Marzo" Tag="3" />
+                        <ComboBoxItem Content="Abril" Tag="4" />
+                        <ComboBoxItem Content="Mayo" Tag="5" />
+                        <ComboBoxItem Content="Junio" Tag="6" />
+                        <ComboBoxItem Content="Julio" Tag="7" />
+                        <ComboBoxItem Content="Agosto" Tag="8" />
+                        <ComboBoxItem Content="Septiembre" Tag="9" />
+                        <ComboBoxItem Content="Octubre" Tag="10" />
+                        <ComboBoxItem Content="Noviembre" Tag="11" IsSelected="True" />
+                        <ComboBoxItem Content="Diciembre" Tag="12" />
+                    </ComboBox>
+
+                    <!-- Combo Año -->
+                    <ComboBox x:Name="CmbYear" Width="85" Height="32" Margin="0,0,10,0">
+                        <ComboBoxItem Content="2024" />
+                        <ComboBoxItem Content="2025" />
+                        <ComboBoxItem Content="2026" IsSelected="True" />
+                        <ComboBoxItem Content="2027" />
+                    </ComboBox>
+
+                    <!-- Botón Cargar -->
+                    <Button Click="BtnLoadPeriod_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                            Padding="12,6" Height="32" Cursor="Hand" Margin="0,0,8,0" FontWeight="SemiBold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="ArrowSync" FontSize="14" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Generar" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Botón Exportar a Excel -->
+                    <Button Click="BtnExportExcel_Click" Background="White" BorderBrush="{StaticResource AccentGreenBrush}" BorderThickness="1"
+                            Padding="12,6" Height="32" Cursor="Hand" FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="DocumentTableCheckmark" FontSize="16" Foreground="{StaticResource AccentGreenBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Exportar Excel" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ============================================== -->
+        <!--  FILA 1: SELECTOR DE PESTAÑAS Y BUSCADOR       -->
+        <!-- ============================================== -->
+        <Border Grid.Row="1" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="260" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Segment Tabs Modernos -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <RadioButton x:Name="RbTabSalesBook" Content="Libro de Ventas Fiscal" GroupName="FiscalReportsTab" IsChecked="True" Checked="ReportTab_Checked"
+                                 Style="{StaticResource SegmentedTabRadioStyle}" Margin="0,0,8,0" />
+                    <RadioButton x:Name="RbTabPurchasesBook" Content="Libro de Compras Fiscal" GroupName="FiscalReportsTab" Checked="ReportTab_Checked"
+                                 Style="{StaticResource SegmentedTabRadioStyle}" Margin="0,0,8,0" />
+                    <RadioButton x:Name="RbTabTaxSummary" Content="Resumen Tributario (Forma 30)" GroupName="FiscalReportsTab" Checked="ReportTab_Checked"
+                                 Style="{StaticResource SegmentedTabRadioStyle}" Margin="0,0,8,0" />
+                    <RadioButton x:Name="RbTabProfitability" Content="Rentabilidad y Top Productos" GroupName="FiscalReportsTab" Checked="ReportTab_Checked"
+                                 Style="{StaticResource SegmentedTabRadioStyle}" />
+                </StackPanel>
+
+                <!-- Buscador por texto para las tablas de libros -->
+                <Grid Grid.Column="2" x:Name="PanelSearch">
+                    <TextBox x:Name="TxtSearch" Padding="28,6,8,6" TextChanged="TxtSearch_TextChanged" VerticalAlignment="Center" Height="32">
+                        <TextBox.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </TextBox.Resources>
+                    </TextBox>
+                    <fluentIcons:SymbolIcon Symbol="Search" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" 
+                                            HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" IsHitTestVisible="False" />
+                    <TextBlock x:Name="TxtSearchPlaceholder" Text="Buscar en libro fiscal..." FontSize="12" Foreground="#999999"
+                               VerticalAlignment="Center" Margin="28,0,0,0" IsHitTestVisible="False" />
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- ============================================== -->
+        <!--  FILA 2: CONTENEDOR DE PESTAÑAS               -->
+        <!-- ============================================== -->
+        <Grid Grid.Row="2">
+
+            <!-- ============================================== -->
+            <!-- VISTA 1: LIBRO DE VENTAS FISCAL                -->
+            <!-- ============================================== -->
+            <Grid x:Name="ViewSalesBook" Visibility="Visible">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Tarjetas KPI Ventas -->
+                <Grid Grid.Row="0" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                        <StackPanel>
+                            <TextBlock Text="TOTAL VENTAS FACTURADAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                            <TextBlock x:Name="TxtSalesTotalVES" Text="0.00 Bs." FontSize="15" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,2,0,0" />
+                            <TextBlock x:Name="TxtSalesTotalUSD" Text="$ 0.00" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                        <StackPanel>
+                            <TextBlock Text="DÉBITO FISCAL IVA (16%)" FontSize="10" FontWeight="Bold" Foreground="#D83B01" />
+                            <TextBlock x:Name="TxtSalesVatVES" Text="0.00 Bs." FontSize="15" FontWeight="Bold" Foreground="#D83B01" Margin="0,2,0,0" />
+                            <TextBlock Text="IVA trasladado a clientes" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="4" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                        <StackPanel>
+                            <TextBlock Text="PERCEPCIÓN IGTF (3%)" FontSize="10" FontWeight="Bold" Foreground="#8E562E" />
+                            <TextBlock x:Name="TxtSalesIgtfVES" Text="0.00 Bs." FontSize="15" FontWeight="Bold" Foreground="#8E562E" Margin="0,2,0,0" />
+                            <TextBlock Text="Pagos percibidos en divisas" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="6" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                        <StackPanel>
+                            <TextBlock Text="VENTAS EXENTAS (0%)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
+                            <TextBlock x:Name="TxtSalesExemptVES" Text="0.00 Bs." FontSize="15" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" Margin="0,2,0,0" />
+                            <TextBlock Text="Canasta básica / Exonerados" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- DataGrid Libro de Ventas -->
+                <Border Grid.Row="1" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8">
+                    <DataGrid x:Name="GridSalesBook" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                              BorderThickness="0" Background="Transparent" HeadersVisibility="Column"
+                              RowHeight="36" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE"
+                              SelectionMode="Single" SelectionUnit="FullRow">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="OP #" Binding="{Binding OperationNumber}" Width="50" FontWeight="SemiBold" />
+                            <DataGridTextColumn Header="FECHA" Binding="{Binding InvoiceDate, StringFormat={}{0:dd/MM/yyyy}}" Width="85" />
+                            <DataGridTextColumn Header="RIF / C.I." Binding="{Binding CustomerRifOrId}" Width="100" FontWeight="SemiBold" />
+                            <DataGridTextColumn Header="RAZÓN SOCIAL" Binding="{Binding CustomerName}" Width="1.5*" />
+                            <DataGridTextColumn Header="FACTURA #" Binding="{Binding InvoiceNumber}" Width="105" FontWeight="Bold" />
+                            <DataGridTextColumn Header="CONTROL #" Binding="{Binding ControlNumber}" Width="95" />
+                            <DataGridTextColumn Header="NOTA CRÉDITO" Binding="{Binding CreditNoteNumber}" Width="105" Foreground="#D83B01" />
+                            <DataGridTextColumn Header="FAC. AFECTADA" Binding="{Binding AffectedInvoiceNumber}" Width="105" />
+                            <DataGridTextColumn Header="TIPO" Binding="{Binding TransactionType}" Width="70" />
+                            <DataGridTextColumn Header="TOTAL CON IVA (Bs.)" Binding="{Binding TotalSalesVES, StringFormat={}{0:N2}}" Width="130" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                            <DataGridTextColumn Header="EXENTO (Bs.)" Binding="{Binding ExemptSalesVES, StringFormat={}{0:N2}}" Width="105" />
+                            <DataGridTextColumn Header="BASE 16% (Bs.)" Binding="{Binding TaxableBaseGeneralVES, StringFormat={}{0:N2}}" Width="115" />
+                            <DataGridTextColumn Header="IVA 16% (Bs.)" Binding="{Binding VatAmountGeneralVES, StringFormat={}{0:N2}}" Width="110" FontWeight="SemiBold" Foreground="#D83B01" />
+                            <DataGridTextColumn Header="IGTF 3% (Bs.)" Binding="{Binding IgtfAmountVES, StringFormat={}{0:N2}}" Width="100" Foreground="#8E562E" />
+                            <DataGridTextColumn Header="TOTAL ($)" Binding="{Binding TotalSalesUSD, StringFormat={}{0:C2}}" Width="95" />
+                            <DataGridTextColumn Header="TASA BCV" Binding="{Binding AppliedRateVES, StringFormat={}{0:N4}}" Width="85" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+            </Grid>
+
+            <!-- ============================================== -->
+            <!-- VISTA 2: LIBRO DE COMPRAS FISCAL               -->
+            <!-- ============================================== -->
+            <Grid x:Name="ViewPurchasesBook" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Tarjetas KPI Compras -->
+                <Grid Grid.Row="0" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                        <StackPanel>
+                            <TextBlock Text="TOTAL COMPRAS FACTURADAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                            <TextBlock x:Name="TxtPurchasesTotalVES" Text="0.00 Bs." FontSize="15" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,2,0,0" />
+                            <TextBlock x:Name="TxtPurchasesTotalUSD" Text="$ 0.00" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                        <StackPanel>
+                            <TextBlock Text="CRÉDITO FISCAL IVA (16%)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
+                            <TextBlock x:Name="TxtPurchasesVatVES" Text="0.00 Bs." FontSize="15" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" Margin="0,2,0,0" />
+                            <TextBlock Text="IVA deducible soportado" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="4" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                        <StackPanel>
+                            <TextBlock Text="COMPRAS EXENTAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock x:Name="TxtPurchasesExemptVES" Text="0.00 Bs." FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                            <TextBlock Text="Sin impuesto soportado" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="6" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                        <StackPanel>
+                            <TextBlock Text="RETENCIONES PRACTICADAS" FontSize="10" FontWeight="Bold" Foreground="#8E562E" />
+                            <TextBlock x:Name="TxtPurchasesWithheldVES" Text="0.00 Bs." FontSize="15" FontWeight="Bold" Foreground="#8E562E" Margin="0,2,0,0" />
+                            <TextBlock Text="Retención 75% Contribuyente Especial" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- DataGrid Libro de Compras -->
+                <Border Grid.Row="1" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8">
+                    <DataGrid x:Name="GridPurchasesBook" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                              BorderThickness="0" Background="Transparent" HeadersVisibility="Column"
+                              RowHeight="36" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE"
+                              SelectionMode="Single" SelectionUnit="FullRow">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="OP #" Binding="{Binding OperationNumber}" Width="50" FontWeight="SemiBold" />
+                            <DataGridTextColumn Header="FECHA" Binding="{Binding InvoiceDate, StringFormat={}{0:dd/MM/yyyy}}" Width="85" />
+                            <DataGridTextColumn Header="RIF PROVEEDOR" Binding="{Binding SupplierRif}" Width="105" FontWeight="SemiBold" />
+                            <DataGridTextColumn Header="RAZÓN SOCIAL PROVEEDOR" Binding="{Binding SupplierName}" Width="1.8*" />
+                            <DataGridTextColumn Header="FACTURA #" Binding="{Binding InvoiceNumber}" Width="110" FontWeight="Bold" />
+                            <DataGridTextColumn Header="CONTROL #" Binding="{Binding ControlNumber}" Width="100" />
+                            <DataGridTextColumn Header="TIPO" Binding="{Binding TransactionType}" Width="70" />
+                            <DataGridTextColumn Header="TOTAL CON IVA (Bs.)" Binding="{Binding TotalPurchasesVES, StringFormat={}{0:N2}}" Width="135" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                            <DataGridTextColumn Header="EXENTO (Bs.)" Binding="{Binding ExemptPurchasesVES, StringFormat={}{0:N2}}" Width="110" />
+                            <DataGridTextColumn Header="BASE 16% (Bs.)" Binding="{Binding TaxableBaseGeneralVES, StringFormat={}{0:N2}}" Width="120" />
+                            <DataGridTextColumn Header="CRÉDITO 16% (Bs.)" Binding="{Binding VatAmountGeneralVES, StringFormat={}{0:N2}}" Width="115" FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}" />
+                            <DataGridTextColumn Header="TOTAL ($)" Binding="{Binding TotalPurchasesUSD, StringFormat={}{0:C2}}" Width="95" />
+                            <DataGridTextColumn Header="TASA BCV" Binding="{Binding AppliedRateVES, StringFormat={}{0:N4}}" Width="85" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+            </Grid>
+
+            <!-- ============================================== -->
+            <!-- VISTA 3: RESUMEN TRIBUTARIO (FORMA 30 SENIAT)  -->
+            <!-- ============================================== -->
+            <Grid x:Name="ViewTaxSummary" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- Tarjeta Principal de Posición Neta de IVA -->
+                <Border Grid.Row="0" x:Name="BorderVatStatus" Background="#EFF6FC" BorderBrush="{StaticResource PrimaryBrandBrush}" BorderThickness="1.5" CornerRadius="8" Padding="20,16" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock x:Name="TxtVatStatusBadge" Text="LIQUIDACIÓN MENSUAL DE IVA" FontSize="11" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,0,4" />
+                            <TextBlock x:Name="TxtVatStatusTitle" Text="Cálculo de Débito y Crédito Fiscal del Período" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBlock x:Name="TxtVatStatusSubtitle" Text="Comparativa oficial según el Artículo 56 de la Ley del IVA." FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtVatBalanceLabel" Text="IVA NETO A DECLARAR:" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
+                            <TextBlock x:Name="TxtVatBalanceAmountVES" Text="0.00 Bs." FontSize="24" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Right" />
+                            <TextBlock x:Name="TxtVatBalanceAmountUSD" Text="Ref. $ 0.00" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Cuadros Comparativos Forma 30 SENIAT -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Columna Izquierda: Débitos Fiscales (Ventas) -->
+                    <Border Grid.Column="0" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                        <StackPanel>
+                            <Border Background="#FDE7E9" CornerRadius="6" Padding="10,4" HorizontalAlignment="Left" Margin="0,0,0,12">
+                                <TextBlock Text="DÉBITOS FISCALES (VENTAS Y FACTURACIÓN)" FontWeight="Bold" FontSize="11" Foreground="#D83B01" />
+                            </Border>
+
+                            <Grid Margin="0,6">
+                                <TextBlock Text="Total Ventas Brutas Facturadas:" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="TxtSumSalesGross" Text="0.00 Bs." FontWeight="SemiBold" HorizontalAlignment="Right" />
+                            </Grid>
+                            <Separator Margin="0,6" Background="#EEEEEE" />
+
+                            <Grid Margin="0,6">
+                                <TextBlock Text="Ventas Exentas o Exoneradas:" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="TxtSumSalesExempt" Text="0.00 Bs." FontWeight="SemiBold" HorizontalAlignment="Right" />
+                            </Grid>
+                            <Separator Margin="0,6" Background="#EEEEEE" />
+
+                            <Grid Margin="0,6">
+                                <TextBlock Text="Base Imponible General (16%):" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="TxtSumSalesBase" Text="0.00 Bs." FontWeight="SemiBold" HorizontalAlignment="Right" />
+                            </Grid>
+                            <Separator Margin="0,6" Background="#EEEEEE" />
+
+                            <Grid Margin="0,6">
+                                <TextBlock Text="Débito Fiscal Generado (16%):" FontWeight="Bold" Foreground="#D83B01" />
+                                <TextBlock x:Name="TxtSumSalesDebit" Text="0.00 Bs." FontWeight="Bold" Foreground="#D83B01" HorizontalAlignment="Right" />
+                            </Grid>
+                            <Separator Margin="0,6" Background="#EEEEEE" />
+
+                            <Grid Margin="0,6">
+                                <TextBlock Text="Percepción IGTF 3% Divisas:" FontWeight="SemiBold" Foreground="#8E562E" />
+                                <TextBlock x:Name="TxtSumSalesIgtf" Text="0.00 Bs." FontWeight="Bold" Foreground="#8E562E" HorizontalAlignment="Right" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Columna Derecha: Créditos Fiscales (Compras) -->
+                    <Border Grid.Column="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16">
+                        <StackPanel>
+                            <Border Background="#E6F4EA" CornerRadius="6" Padding="10,4" HorizontalAlignment="Left" Margin="0,0,0,12">
+                                <TextBlock Text="CRÉDITOS FISCALES (COMPRAS Y RECEPCIONES)" FontWeight="Bold" FontSize="11" Foreground="{StaticResource AccentGreenBrush}" />
+                            </Border>
+
+                            <Grid Margin="0,6">
+                                <TextBlock Text="Total Compras Brutas Recibidas:" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="TxtSumPurchasesGross" Text="0.00 Bs." FontWeight="SemiBold" HorizontalAlignment="Right" />
+                            </Grid>
+                            <Separator Margin="0,6" Background="#EEEEEE" />
+
+                            <Grid Margin="0,6">
+                                <TextBlock Text="Compras Exentas o No Sujetas:" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="TxtSumPurchasesExempt" Text="0.00 Bs." FontWeight="SemiBold" HorizontalAlignment="Right" />
+                            </Grid>
+                            <Separator Margin="0,6" Background="#EEEEEE" />
+
+                            <Grid Margin="0,6">
+                                <TextBlock Text="Base Imponible General (16%):" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="TxtSumPurchasesBase" Text="0.00 Bs." FontWeight="SemiBold" HorizontalAlignment="Right" />
+                            </Grid>
+                            <Separator Margin="0,6" Background="#EEEEEE" />
+
+                            <Grid Margin="0,6">
+                                <TextBlock Text="Crédito Fiscal Deducible (16%):" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
+                                <TextBlock x:Name="TxtSumPurchasesCredit" Text="0.00 Bs." FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" HorizontalAlignment="Right" />
+                            </Grid>
+                            <Separator Margin="0,6" Background="#EEEEEE" />
+
+                            <Grid Margin="0,6">
+                                <TextBlock Text="Retenciones de IVA Practicadas:" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="TxtSumPurchasesWithheld" Text="0.00 Bs." FontWeight="SemiBold" HorizontalAlignment="Right" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                </Grid>
+            </Grid>
+
+            <!-- ============================================== -->
+            <!-- VISTA 4: RENTABILIDAD Y TOP PRODUCTOS          -->
+            <!-- ============================================== -->
+            <Grid x:Name="ViewProfitability" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- KPI Margen y Utilidad Real -->
+                <Grid Grid.Row="0" Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                        <StackPanel>
+                            <TextBlock Text="INGRESOS POR VENTAS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                            <TextBlock x:Name="TxtProfitRevenueUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,2,0,0" />
+                            <TextBlock x:Name="TxtProfitRevenueVES" Text="0.00 Bs." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                        <StackPanel>
+                            <TextBlock Text="COSTO DE MERCANCÍA VENDIDA" FontSize="10" FontWeight="Bold" Foreground="#D83B01" />
+                            <TextBlock x:Name="TxtProfitCostUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="#D83B01" Margin="0,2,0,0" />
+                            <TextBlock Text="Valuación a Costo Promedio Ponderado" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="4" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                        <StackPanel>
+                            <TextBlock Text="GANANCIA BRUTA REAL" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
+                            <TextBlock x:Name="TxtProfitGrossUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" Margin="0,2,0,0" />
+                            <TextBlock x:Name="TxtProfitGrossVES" Text="0.00 Bs." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="6" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                        <StackPanel>
+                            <TextBlock Text="MARGEN DE RENTABILIDAD" FontSize="10" FontWeight="Bold" Foreground="#8E562E" />
+                            <TextBlock x:Name="TxtProfitMarginPct" Text="0.00 %" FontSize="16" FontWeight="Bold" Foreground="#8E562E" Margin="0,2,0,0" />
+                            <TextBlock x:Name="TxtProfitAvgTicket" Text="Ticket Prom: $ 0.00" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Grillas: Top Productos (Izq) y Métodos de Pago (Der) -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.4*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Top Productos Más Vendidos -->
+                    <Border Grid.Column="0" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Row="0" Background="#F8F9FA" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="0,0,0,1" Padding="14,10">
+                                <StackPanel Orientation="Horizontal">
+                                    <fluentIcons:SymbolIcon Symbol="TopSpeed" FontSize="16" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="Top Productos Más Vendidos y Ganancia Unitaria" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+
+                            <DataGrid Grid.Row="1" x:Name="GridTopProducts" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                                      BorderThickness="0" Background="Transparent" HeadersVisibility="Column"
+                                      RowHeight="36" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="CÓDIGO" Binding="{Binding ProductCode}" Width="80" FontWeight="SemiBold" />
+                                    <DataGridTextColumn Header="DESCRIPCIÓN" Binding="{Binding ProductName}" Width="*" />
+                                    <DataGridTextColumn Header="CANT." Binding="{Binding QuantitySold, StringFormat={}{0:N0}}" Width="55" FontWeight="Bold" />
+                                    <DataGridTextColumn Header="INGRESO ($)" Binding="{Binding TotalRevenueUSD, StringFormat={}{0:C2}}" Width="90" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                    <DataGridTextColumn Header="COSTO ($)" Binding="{Binding TotalCostUSD, StringFormat={}{0:C2}}" Width="80" Foreground="#D83B01" />
+                                    <DataGridTextColumn Header="UTILIDAD ($)" Binding="{Binding TotalProfitUSD, StringFormat={}{0:C2}}" Width="90" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
+                                    <DataGridTextColumn Header="MARGEN" Binding="{Binding ProfitMarginPct, StringFormat={}{0:N1}%}" Width="65" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+
+                    <!-- Desglose por Método de Pago -->
+                    <Border Grid.Column="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Row="0" Background="#F8F9FA" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="0,0,0,1" Padding="14,10">
+                                <StackPanel Orientation="Horizontal">
+                                    <fluentIcons:SymbolIcon Symbol="Payment" FontSize="16" Foreground="{StaticResource AccentGreenBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="Distribución por Medios de Pago" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+
+                            <DataGrid Grid.Row="1" x:Name="GridPaymentMethods" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                                      BorderThickness="0" Background="Transparent" HeadersVisibility="Column"
+                                      RowHeight="36" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="MÉTODO DE PAGO" Binding="{Binding MethodName}" Width="*" FontWeight="SemiBold" />
+                                    <DataGridTextColumn Header="TOTAL ($)" Binding="{Binding AmountUSD, StringFormat={}{0:C2}}" Width="95" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
+                                    <DataGridTextColumn Header="TOTAL (Bs.)" Binding="{Binding AmountVES, StringFormat={}{0:N2}}" Width="110" />
+                                    <DataGridTextColumn Header="%" Binding="{Binding Percentage, StringFormat={}{0:N1}%}" Width="55" FontWeight="SemiBold" />
+                                    <DataGridTextColumn Header="TRANS." Binding="{Binding TransactionsCount}" Width="55" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+
+                </Grid>
+            </Grid>
+
+        </Grid>
+    </Grid>
+</UserControl>
+

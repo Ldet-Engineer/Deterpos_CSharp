@@ -1,0 +1,160 @@
+﻿<Window x:Class="Deterpos.WPF.Views.Dialogs.UpdateExchangeRateDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+        Title="Actualizar Tasas de Cambio" 
+        Height="610" Width="510"
+        WindowStyle="None" 
+        AllowsTransparency="True" 
+        Background="Transparent"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        FontFamily="Segoe UI, Segoe UI Variable Text, Arial"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True">
+
+    <!-- Sombra Perimetral Moderna -->
+    <Border Margin="15" Background="White" CornerRadius="12" BorderBrush="#D0D7DE" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="25" Direction="270" ShadowDepth="4" Opacity="0.22" Color="#000000" />
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Encabezado Modal -->
+            <Border Grid.Row="0" Background="#F6F8FA" CornerRadius="12,12,0,0" Padding="20,16" BorderBrush="#E1E4E8" BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#EBF3FB" CornerRadius="8" Padding="8" Margin="0,0,12,0" VerticalAlignment="Center">
+                        <fluentIcons:SymbolIcon Symbol="MoneyHand" FontSize="22" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    </Border>
+                    
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Actualizar Tasa del Día" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Paridades cambiarias oficiales frente a la moneda base ($ USD)" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <!-- Botón Cerrar (X) -->
+                    <Button Grid.Column="2" Click="BtnCancel_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6" VerticalAlignment="Center">
+                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Cuerpo del Formulario -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,16">
+                <StackPanel>
+
+                    <!-- BOTÓN DE SINCRONIZACIÓN EN LÍNEA BCV -->
+                    <Border Background="#F8FAFD" BorderBrush="#D0DFEE" BorderThickness="1" CornerRadius="8" Padding="14,12" Margin="0,0,0,16">
+                        <StackPanel>
+                            <Button x:Name="BtnFetchOnline" Click="BtnFetchOnline_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White"
+                                    BorderThickness="0" Padding="14,8" Cursor="Hand" FontWeight="SemiBold" HorizontalAlignment="Stretch">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6" />
+                                    </Style>
+                                </Button.Resources>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <fluentIcons:SymbolIcon x:Name="IconFetchSync" Symbol="ArrowSync" FontSize="16" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="Sincronizar Tasa Oficial BCV en Línea" FontSize="13" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <TextBlock x:Name="TxtSyncStatus" Text="Consulta en vivo al Banco Central de Venezuela y paridades internacionales"
+                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,6,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Moneda Base Fija -->
+                    <TextBlock Text="Moneda Base del Sistema" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                    <Border Background="#F9FAFB" BorderBrush="#E1E4E8" BorderThickness="1" CornerRadius="6" Padding="12,8" Margin="0,0,0,14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="$" FontWeight="Bold" FontSize="16" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                            <TextBlock Grid.Column="1" Text="Dólar Estadounidense (USD)" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="1.0000 (Base)" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Tasa Bolívar Digital (VES) -->
+                    <TextBlock Text="Tasa Bolívar Digital (Bs. VES) *" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="140" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="TxtVesRate" Grid.Column="0" Text="55.4000" FontSize="16" FontWeight="Bold" Padding="10,8" VerticalContentAlignment="Center" BorderBrush="#0067B8" BorderThickness="1.5" />
+                        <ComboBox x:Name="CmbVesSource" Grid.Column="1" Margin="8,0,0,0" SelectedIndex="0" Padding="8,6" VerticalContentAlignment="Center">
+                            <ComboBoxItem Content="Oficial BCV" />
+                            <ComboBoxItem Content="Mercado" />
+                            <ComboBoxItem Content="Manual" />
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Tasa Euro (EUR) -->
+                    <TextBlock Text="Tasa Euro (€ EUR) frente a 1 USD" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                    <TextBox x:Name="TxtEurRate" Text="1.0800" FontSize="14" FontWeight="SemiBold" Padding="10,8" Margin="0,0,0,14" />
+
+                    <!-- Tasa Peso Colombiano (COP) -->
+                    <TextBlock Text="Tasa Peso Colombiano (Col$ COP) frente a 1 USD" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                    <TextBox x:Name="TxtCopRate" Text="4250.0000" FontSize="14" FontWeight="SemiBold" Padding="10,8" Margin="0,0,0,16" />
+
+                    <!-- Alerta Informativa Legal -->
+                    <Border Background="#EBF3FB" BorderBrush="#CCE4F7" BorderThickness="1" CornerRadius="6" Padding="12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <fluentIcons:SymbolIcon Symbol="Info" FontSize="18" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Top" Margin="0,2,8,0" />
+                            <TextBlock Grid.Column="1" Text="El precio en Bolívares de todo el inventario se actualizará en tiempo real. Esta operación queda registrada en el histórico de auditoría inmutable de PostgreSQL." 
+                                       FontSize="11" Foreground="#004E8C" TextWrapping="Wrap" LineHeight="16" />
+                        </Grid>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Barra de Acciones Inferior -->
+            <Border Grid.Row="2" Background="#F6F8FA" CornerRadius="0,0,12,12" Padding="20,14" BorderBrush="#E1E4E8" BorderThickness="0,1,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Click="BtnCancel_Click" Content="Cancelar" Background="Transparent" BorderBrush="#D0D7DE" BorderThickness="1"
+                            Padding="16,8" Margin="0,0,10,0" FontWeight="SemiBold" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+
+                    <Button Click="BtnSave_Click" Content="Guardar y Aplicar Tasas" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                            Padding="20,8" FontWeight="SemiBold" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+        </Grid>
+    </Border>
+</Window>

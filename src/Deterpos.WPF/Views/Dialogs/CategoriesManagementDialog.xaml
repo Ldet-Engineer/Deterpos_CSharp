@@ -1,0 +1,176 @@
+<Window x:Class="Deterpos.WPF.Views.Dialogs.CategoriesManagementDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+        Title="Gestión de Categorías y Marcas" 
+        Height="580" Width="680"
+        WindowStyle="None" 
+        AllowsTransparency="True" 
+        Background="Transparent"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        FontFamily="Segoe UI, Segoe UI Variable Text, Arial"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True">
+
+    <!-- Sombra Perimetral Moderna -->
+    <Border Margin="14" Background="White" CornerRadius="12" BorderBrush="#D0D7DE" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28" Direction="270" ShadowDepth="4" Opacity="0.22" Color="#000000" />
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Encabezado Modal -->
+            <Border Grid.Row="0" Background="#F6F8FA" CornerRadius="12,12,0,0" Padding="20,16" BorderBrush="#E1E4E8" BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#EBF3FB" CornerRadius="8" Padding="8" Margin="0,0,12,0" VerticalAlignment="Center">
+                        <fluentIcons:SymbolIcon Symbol="Tag" FontSize="22" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Gestión de Categorías y Marcas" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Cree, renombre y organice las líneas de productos activas en el catálogo." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="2" Click="BtnClose_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6" VerticalAlignment="Center">
+                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Formulario Superior de Creación Rápida -->
+            <Border Grid.Row="1" Background="#F8FAFD" BorderBrush="#D0DFEE" BorderThickness="0,0,0,1" Padding="20,14">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Nombre de Categoría *" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                    <TextBox x:Name="TxtNewCategoryName" Grid.Row="1" Grid.Column="0" Height="34" VerticalContentAlignment="Center" Padding="8,0"
+                             BorderBrush="#D0D7DE" KeyDown="TxtNewCategoryName_KeyDown" />
+
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Descripción o Línea (Opcional)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                    <TextBox x:Name="TxtNewCategoryDesc" Grid.Row="1" Grid.Column="2" Height="34" VerticalContentAlignment="Center" Padding="8,0"
+                             BorderBrush="#D0D7DE" KeyDown="TxtNewCategoryName_KeyDown" />
+
+                    <Button Grid.Row="1" Grid.Column="4" Click="BtnAddCategory_Click" Height="34" Background="{StaticResource PrimaryBrandBrush}" Foreground="White"
+                            BorderThickness="0" Padding="14,0" Cursor="Hand" FontWeight="SemiBold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="AddCircle" FontSize="16" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Agregar" FontSize="12" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Grilla de Categorías Existentes -->
+            <Border Grid.Row="2" Padding="20,14">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Categorías Registradas en PostgreSQL" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8" />
+
+                    <DataGrid x:Name="DgCategories" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F0F2F5"
+                              BorderThickness="1" BorderBrush="{StaticResource CardBorderBrush}" Background="White" RowHeight="38">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="NOMBRE CATEGORÍA" Binding="{Binding Name}" Width="180" FontWeight="SemiBold" />
+                            <DataGridTextColumn Header="DESCRIPCIÓN" Binding="{Binding Description}" Width="*" />
+                            <DataGridTemplateColumn Header="ESTADO" Width="90">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                Background="{Binding IsActive, Converter={x:Null}}">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#E6F4EA" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                            <Setter Property="Background" Value="#FDE7E9" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="{Binding IsActive, Converter={x:Null}}" FontSize="10" FontWeight="Bold">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="ACTIVA" />
+                                                        <Setter Property="Foreground" Value="#107C41" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                                <Setter Property="Text" Value="INACTIVA" />
+                                                                <Setter Property="Foreground" Value="#D83B01" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="ACCIONES" Width="90">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Click="BtnDeleteCategory_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="4"
+                                                ToolTip="Eliminar / Desactivar Categoría" HorizontalAlignment="Center">
+                                            <fluentIcons:SymbolIcon Symbol="Delete" FontSize="16" Foreground="#D83B01" />
+                                        </Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <!-- Barra Inferior de Acciones -->
+            <Border Grid.Row="3" Background="#F6F8FA" CornerRadius="0,0,12,12" Padding="20,12" BorderBrush="#E1E4E8" BorderThickness="0,1,0,0">
+                <Grid>
+                    <TextBlock x:Name="TxtStatusInfo" Text="Cargando categorías..." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+
+                    <Button Click="BtnClose_Click" HorizontalAlignment="Right" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                            Padding="20,7" Cursor="Hand" FontWeight="SemiBold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <TextBlock Text="Cerrar y Actualizar Catálogo" FontSize="12" />
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

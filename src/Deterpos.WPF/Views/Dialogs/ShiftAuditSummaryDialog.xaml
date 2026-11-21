@@ -1,0 +1,265 @@
+﻿<Window x:Class="Deterpos.WPF.Views.Dialogs.ShiftAuditSummaryDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+        Title="Acta de Conciliación de Turno" 
+        Height="690" Width="780"
+        WindowStyle="None" 
+        AllowsTransparency="True" 
+        Background="Transparent"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        FontFamily="Segoe UI, Segoe UI Variable Text, Arial"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True">
+
+    <!-- Sombra Perimetral Moderna -->
+    <Border Margin="14" Background="White" CornerRadius="12" BorderBrush="#D0D7DE" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28" Direction="270" ShadowDepth="4" Opacity="0.22" Color="#000000" />
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Encabezado Modal -->
+            <Border Grid.Row="0" Background="#F6F8FA" CornerRadius="12,12,0,0" Padding="22,16" BorderBrush="#E1E4E8" BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#EBF3FB" CornerRadius="8" Padding="8" Margin="0,0,14,0" VerticalAlignment="Center">
+                        <fluentIcons:SymbolIcon Symbol="DocumentCheckmark" FontSize="24" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtModalTitle" Text="Acta de Conciliación y Cierre de Turno" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock x:Name="TxtShiftInfoSubtitle" Text="Turno #1 • Cajero: Administrador • Cierre Exitoso" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="2" Click="BtnClose_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6" VerticalAlignment="Center">
+                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Contenido de la Conciliación -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,18">
+                <StackPanel>
+
+                    <!-- TARJETAS SUPERIORES DE RESUMEN (USD, VES Y LOTES ELECTRÓNICOS) -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Panel USD Efectivo -->
+                        <Border Grid.Column="0" Background="#F8FCF9" BorderBrush="#D2ECD8" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="EFECTIVO USD ($)" FontSize="11" FontWeight="Bold" Foreground="#107C41" Margin="0,0,0,6" />
+                                <Grid Margin="0,0,0,2">
+                                    <TextBlock Text="Teórico:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock x:Name="TxtExpectedUSD" Text="$ 0.00" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                </Grid>
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="Declarado:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock x:Name="TxtDeclaredUSD" Text="$ 0.00" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                </Grid>
+                                <Separator Background="#D2ECD8" Margin="0,2,0,4" />
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="Diferencia:" FontSize="11" FontWeight="Bold" />
+                                    <TextBlock x:Name="TxtDiffUSD" Text="$ 0.00" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right" />
+                                </Grid>
+                                <Border x:Name="BadgeUsdStatus" Background="#E6F4EA" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="TxtBadgeUsd" Text="CUADRADO" FontSize="10" FontWeight="Bold" Foreground="#107C41" />
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Panel VES Efectivo -->
+                        <Border Grid.Column="2" Background="#F8FAFD" BorderBrush="#D0DFEE" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="EFECTIVO VES (Bs.)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,0,6" />
+                                <Grid Margin="0,0,0,2">
+                                    <TextBlock Text="Teórico:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock x:Name="TxtExpectedVES" Text="0.00 Bs." FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                </Grid>
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="Declarado:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock x:Name="TxtDeclaredVES" Text="0.00 Bs." FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                </Grid>
+                                <Separator Background="#D0DFEE" Margin="0,2,0,4" />
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="Diferencia:" FontSize="11" FontWeight="Bold" />
+                                    <TextBlock x:Name="TxtDiffVES" Text="0.00 Bs." FontSize="12" FontWeight="Bold" HorizontalAlignment="Right" />
+                                </Grid>
+                                <Border x:Name="BadgeVesStatus" Background="#EBF3FB" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="TxtBadgeVes" Text="CUADRADO" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Panel Medios Electrónicos VES -->
+                        <Border Grid.Column="4" Background="#FDF8F0" BorderBrush="#F6E0B8" BorderThickness="1" CornerRadius="8" Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="LOTES ELECTRÓNICOS (Bs.)" FontSize="11" FontWeight="Bold" Foreground="#B06500" Margin="0,0,0,6" />
+                                <Grid Margin="0,0,0,2">
+                                    <TextBlock Text="Teórico:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock x:Name="TxtExpectedElectronicVES" Text="0.00 Bs." FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                </Grid>
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="Declarado:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock x:Name="TxtDeclaredElectronicVES" Text="0.00 Bs." FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                                </Grid>
+                                <Separator Background="#F6E0B8" Margin="0,2,0,4" />
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="Diferencia:" FontSize="11" FontWeight="Bold" />
+                                    <TextBlock x:Name="TxtDiffElectronicVES" Text="0.00 Bs." FontSize="12" FontWeight="Bold" HorizontalAlignment="Right" />
+                                </Grid>
+                                <Border x:Name="BadgeElectronicStatus" Background="#FFF4E5" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center">
+                                    <TextBlock x:Name="TxtBadgeElectronic" Text="CUADRADO" FontSize="10" FontWeight="Bold" Foreground="#B06500" />
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- TABLA DETALLADA DE CONCILIACIÓN POR MÉTODO DE PAGO -->
+                    <TextBlock Text="Conciliación Detallada por Método de Pago" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8" />
+                    
+                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="0" Margin="0,0,0,16">
+                        <DataGrid x:Name="DgAuditItems" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F0F2F5"
+                                  BorderThickness="0" Background="Transparent" RowHeight="36">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="MÉTODO DE PAGO" Binding="{Binding MethodName}" Width="*" FontWeight="SemiBold" />
+                                <DataGridTextColumn Header="MONEDA" Binding="{Binding CurrencyCode}" Width="70" />
+                                <DataGridTextColumn Header="TEÓRICO SISTEMA" Binding="{Binding ExpectedAmount, StringFormat={}{0:N2}}" Width="120">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="HorizontalAlignment" Value="Right" />
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="DECLARADO" Binding="{Binding DeclaredAmount, StringFormat={}{0:N2}}" Width="120">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="HorizontalAlignment" Value="Right" />
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                            <Setter Property="FontWeight" Value="SemiBold" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="DIFERENCIA" Binding="{Binding Difference, StringFormat={}{0:N2}}" Width="100">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="HorizontalAlignment" Value="Right" />
+                                            <Setter Property="VerticalAlignment" Value="Center" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
+                                <DataGridTemplateColumn Header="ESTADO" Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Status}" Value="CUADRADO">
+                                                                <Setter Property="Background" Value="#E6F4EA" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="FALTANTE">
+                                                                <Setter Property="Background" Value="#FDE7E9" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="SOBRANTE">
+                                                                <Setter Property="Background" Value="#EBF3FB" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock Text="{Binding Status}" FontSize="10" FontWeight="Bold">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Status}" Value="CUADRADO">
+                                                                    <Setter Property="Foreground" Value="#107C41" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Status}" Value="FALTANTE">
+                                                                    <Setter Property="Foreground" Value="#D83B01" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Status}" Value="SOBRANTE">
+                                                                    <Setter Property="Foreground" Value="#0067B8" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+
+                    <!-- TEXTO COMPLETO DEL ACTA INMUTABLE -->
+                    <Expander Header="Ver Acta de Arqueo y Auditoría Registrada" IsExpanded="False" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12">
+                        <Border Background="#F6F8FA" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,6,0,0">
+                            <TextBlock x:Name="TxtAuditBreakdown" Text="Detalles del arqueo..." FontSize="11" FontFamily="Consolas, Segoe UI" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" />
+                        </Border>
+                    </Expander>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Barra Inferior de Acciones -->
+            <Border Grid.Row="2" Background="#F6F8FA" CornerRadius="0,0,12,12" Padding="22,14" BorderBrush="#E1E4E8" BorderThickness="0,1,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="1" Click="BtnPrint_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                            Padding="16,8" Cursor="Hand" FontWeight="SemiBold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="Print" FontSize="16" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Imprimir Ticket Arqueo" FontSize="13" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Grid.Column="3" Click="BtnClose_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                            Padding="22,8" Cursor="Hand" FontWeight="SemiBold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <TextBlock Text="Aceptar y Salir" FontSize="13" />
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

@@ -1,0 +1,291 @@
+﻿<UserControl x:Class="Deterpos.WPF.Views.SalesInvoicesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+             FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
+
+    <Grid Margin="30,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ============================================== -->
+        <!--  FILA 0: ENCABEZADO Y TARJETAS DE RESUMEN FISCAL -->
+        <!-- ============================================== -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Título y Subtítulo -->
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <TextBlock Text="Documentos Fiscales y Devoluciones" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,12,0" />
+                    <Border Background="#E6F4EA" CornerRadius="6" Padding="10,3" VerticalAlignment="Center">
+                        <TextBlock Text="PROVIDENCIA SENIAT 00071" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
+                    </Border>
+                </StackPanel>
+                <TextBlock Text="Historial inmutable de facturas fiscales, notas de crédito, reversión de IVA / IGTF y reingreso a stock." FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
+            </StackPanel>
+
+            <!-- Métricas Resumen del Día -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+
+                <!-- Tarjeta 1: Total Facturado -->
+                <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,10" Margin="0,0,10,0" MinWidth="160">
+                    <StackPanel>
+                        <TextBlock Text="TOTAL FACTURADO (HOY)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock x:Name="TxtMetricsInvoicesUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" Margin="0,2,0,0" />
+                        <TextBlock x:Name="TxtMetricsInvoicesVES" Text="0.00 Bs." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Tarjeta 2: Total Notas de Crédito -->
+                <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,10" Margin="0,0,10,0" MinWidth="160">
+                    <StackPanel>
+                        <TextBlock Text="NOTAS DE CRÉDITO (HOY)" FontSize="10" FontWeight="Bold" Foreground="#D83B01" />
+                        <TextBlock x:Name="TxtMetricsCreditNotesUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="#D83B01" Margin="0,2,0,0" />
+                        <TextBlock x:Name="TxtMetricsCreditNotesVES" Text="0.00 Bs." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Tarjeta 3: Venta Neta Fiscal -->
+                <Border Background="#F0F7FF" BorderBrush="#CCE4F7" BorderThickness="1" CornerRadius="8" Padding="16,10" MinWidth="160">
+                    <StackPanel>
+                        <TextBlock Text="VENTA NETA FISCAL" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        <TextBlock x:Name="TxtMetricsNetUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,2,0,0" />
+                        <TextBlock x:Name="TxtMetricsNetVES" Text="0.00 Bs." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </Grid>
+
+        <!-- ============================================== -->
+        <!--  FILA 1: BARRA DE FILTROS Y ACCIONES           -->
+        <!-- ============================================== -->
+        <Border Grid.Row="1" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="280" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="170" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="150" />
+                    <ColumnDefinition Width="14" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Buscador por texto -->
+                <Grid Grid.Column="0">
+                    <TextBox x:Name="TxtSearch" Padding="28,6,8,6" TextChanged="TxtSearch_TextChanged" VerticalAlignment="Center">
+                        <TextBox.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </TextBox.Resources>
+                    </TextBox>
+                    <fluentIcons:SymbolIcon Symbol="Search" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" 
+                                            HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" IsHitTestVisible="False" />
+                    <TextBlock x:Name="TxtSearchPlaceholder" Text="Buscar N° Factura, Control, Cliente..." FontSize="12" Foreground="#999999"
+                               VerticalAlignment="Center" Margin="28,0,0,0" IsHitTestVisible="False" />
+                </Grid>
+
+                <!-- Filtro Tipo de Documento -->
+                <ComboBox Grid.Column="2" x:Name="CmbDocType" SelectedIndex="0" SelectionChanged="CmbFilter_SelectionChanged" VerticalAlignment="Center">
+                    <ComboBoxItem Content="Todos los Documentos" />
+                    <ComboBoxItem Content="Solo Facturas (FAC)" />
+                    <ComboBoxItem Content="Solo Notas de Crédito (NC)" />
+                </ComboBox>
+
+                <!-- Filtro Estado -->
+                <ComboBox Grid.Column="4" x:Name="CmbStatus" SelectedIndex="0" SelectionChanged="CmbFilter_SelectionChanged" VerticalAlignment="Center">
+                    <ComboBoxItem Content="Todos los Estados" />
+                    <ComboBoxItem Content="Completadas" />
+                    <ComboBoxItem Content="Devueltas (Con NC)" />
+                    <ComboBoxItem Content="Anuladas" />
+                </ComboBox>
+
+                <!-- Filtros de Fecha Rápidos -->
+                <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center">
+                    <RadioButton x:Name="RbDateToday" Content="Hoy" GroupName="DateFilters" IsChecked="True" Checked="DateFilter_Checked" Margin="0,0,8,0" VerticalAlignment="Center" FontWeight="SemiBold" />
+                    <RadioButton x:Name="RbDateWeek" Content="7 Días" GroupName="DateFilters" Checked="DateFilter_Checked" Margin="0,0,8,0" VerticalAlignment="Center" />
+                    <RadioButton x:Name="RbDateMonth" Content="Este Mes" GroupName="DateFilters" Checked="DateFilter_Checked" Margin="0,0,8,0" VerticalAlignment="Center" />
+                    <RadioButton x:Name="RbDateAll" Content="Histórico" GroupName="DateFilters" Checked="DateFilter_Checked" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Botones de Acción a la derecha -->
+                <StackPanel Grid.Column="8" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Click="BtnRefresh_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                            Padding="10,6" Margin="0,0,8,0" Cursor="Hand" ToolTip="Actualizar Historial">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <fluentIcons:SymbolIcon Symbol="ArrowSync" FontSize="15" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+
+                    <Button Click="BtnNewCreditNote_Click" Background="#D83B01" Foreground="White" BorderThickness="0"
+                            Padding="14,6" Cursor="Hand" FontWeight="SemiBold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="ArrowUndo" FontSize="15" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Emitir Nota de Crédito" FontSize="12" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ============================================== -->
+        <!--  FILA 2: GRILLA DE DOCUMENTOS FISCALES         -->
+        <!-- ============================================== -->
+        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="0">
+            <DataGrid x:Name="DgInvoices" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE"
+                      BorderThickness="0" Background="White" RowHeight="42" SelectionMode="Single"
+                      MouseDoubleClick="DgInvoices_MouseDoubleClick">
+                <DataGrid.Columns>
+
+                    <!-- Tipo Documento (Badge) -->
+                    <DataGridTemplateColumn Header="TIPO" Width="105">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding DocTypeBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding DocTypeDisplay}" FontSize="11" FontWeight="Bold" Foreground="{Binding DocTypeForeground}" />
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- N° de Documento -->
+                    <DataGridTemplateColumn Header="N° DOCUMENTO" Width="130">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding InvoiceNumber}" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0" Foreground="{StaticResource TextPrimaryBrush}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- N° de Control SENIAT -->
+                    <DataGridTemplateColumn Header="N° CONTROL" Width="110">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ControlNumber}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Factura Afectada (si es Nota de Crédito) -->
+                    <DataGridTemplateColumn Header="DOC. AFECTADO" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding AffectedInvoiceDisplay}" FontSize="11" FontWeight="SemiBold" Foreground="#D83B01" VerticalAlignment="Center" Margin="6,0" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Fecha y Hora -->
+                    <DataGridTemplateColumn Header="FECHA" Width="125">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding CreatedAtDisplay}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="6,0" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Cliente -->
+                    <DataGridTemplateColumn Header="CLIENTE / RECEPTOR" Width="2*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel VerticalAlignment="Center" Margin="8,0">
+                                    <TextBlock Text="{Binding CustomerName}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding CustomerDocument}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Total en USD -->
+                    <DataGridTemplateColumn Header="TOTAL ($)" Width="105">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding TotalUSDDisplay}" FontWeight="Bold" Foreground="{Binding AmountForeground}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Total en Bolívares -->
+                    <DataGridTemplateColumn Header="TOTAL (Bs.)" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding TotalVESDisplay}" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Estado -->
+                    <DataGridTemplateColumn Header="ESTADO" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding StatusBackground}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding StatusDisplay}" FontSize="10" FontWeight="Bold" Foreground="{Binding StatusForeground}" />
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Acciones Rápidas -->
+                    <DataGridTemplateColumn Header="ACCIONES" Width="150">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                                    <!-- Ver Comprobante Fiscal -->
+                                    <Button Click="BtnViewReceipt_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                                            Padding="6,3" Margin="0,0,6,0" Cursor="Hand" ToolTip="Ver Comprobante Fiscal Impreso">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="4" />
+                                            </Style>
+                                        </Button.Resources>
+                                        <fluentIcons:SymbolIcon Symbol="Receipt" FontSize="13" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                    </Button>
+
+                                    <!-- Emitir Nota de Crédito sobre esta Factura -->
+                                    <Button Click="BtnRowCreditNote_Click" Background="#FFF0EB" BorderBrush="#F8D7DA" BorderThickness="1"
+                                            Padding="8,3" Cursor="Hand" ToolTip="Emitir Nota de Crédito sobre esta Factura"
+                                            IsEnabled="{Binding CanEmitCreditNote}">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="4" />
+                                            </Style>
+                                        </Button.Resources>
+                                        <StackPanel Orientation="Horizontal">
+                                            <fluentIcons:SymbolIcon Symbol="ArrowUndo" FontSize="12" Foreground="#D83B01" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                            <TextBlock Text="N. Crédito" FontSize="10" FontWeight="Bold" Foreground="#D83B01" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+    </Grid>
+</UserControl>
+

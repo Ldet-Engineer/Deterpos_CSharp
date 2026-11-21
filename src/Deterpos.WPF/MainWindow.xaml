@@ -1,0 +1,1214 @@
+﻿<Fluent:RibbonWindow x:Class="Deterpos.WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:Fluent="urn:fluent-ribbon"
+        xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+        xmlns:vm="clr-namespace:Deterpos.WPF.ViewModels"
+        xmlns:views="clr-namespace:Deterpos.WPF.Views"
+        Title="Deterpos ERP - [Sucursal Principal]" 
+        Height="820" Width="1300"
+        MinHeight="650" MinWidth="1050"
+        WindowStartupLocation="CenterScreen"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
+
+    <Fluent:RibbonWindow.DataContext>
+        <vm:MainViewModel />
+    </Fluent:RibbonWindow.DataContext>
+
+    <Grid Background="{StaticResource SurfaceBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ========================================== -->
+        <!--  RIBBON PRINCIPAL ESTILO MICROSOFT OFFICE  -->
+        <!-- ========================================== -->
+        <Fluent:Ribbon Grid.Row="0">
+
+            <!-- Barra de Acceso Rápido (QAT) -->
+            <Fluent:Ribbon.QuickAccessItems>
+                <Fluent:QuickAccessMenuItem Target="{Binding ElementName=BtnQatPos}" />
+                <Fluent:QuickAccessMenuItem Target="{Binding ElementName=BtnQatTasa}" />
+                <Fluent:QuickAccessMenuItem Target="{Binding ElementName=BtnQatArqueo}" />
+                <Fluent:QuickAccessMenuItem Target="{Binding ElementName=BtnQatReporteZ}" />
+            </Fluent:Ribbon.QuickAccessItems>
+
+            <!-- Menú de la Aplicación: ARCHIVO (Backstage estilo Office) -->
+            <Fluent:Ribbon.Menu>
+                <Fluent:Backstage Header="Archivo" Background="#005A9E">
+                    <Fluent:BackstageTabControl>
+
+                        <!-- Pestaña Backstage: Información y Estado -->
+                        <Fluent:BackstageTabItem Header="Información de Empresa">
+                            <ScrollViewer Margin="30,20">
+                                <StackPanel MaxWidth="700" HorizontalAlignment="Left">
+                                    <TextBlock Text="Deterpos ERP" FontSize="26" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                    <TextBlock Text="Sistema de Gestión y Punto de Venta Multimoneda Homologado SENIAT" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,25" />
+
+                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="140" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Razón Social:" FontWeight="SemiBold" Margin="0,5" />
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="Deterpos C.A." Margin="0,5" />
+
+                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="RIF Fiscal:" FontWeight="SemiBold" Margin="0,5" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="J-40918273-0 (Venezuela)" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,5" />
+
+                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Sucursal:" FontWeight="SemiBold" Margin="0,5" />
+                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CurrentBranch}" Margin="0,5" />
+
+                                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Base de Datos:" FontWeight="SemiBold" Margin="0,5" />
+                                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding DbStatusText}" Foreground="{StaticResource AccentGreenBrush}" FontWeight="SemiBold" Margin="0,5" />
+
+                                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Moneda Base:" FontWeight="SemiBold" Margin="0,5" />
+                                            <TextBlock Grid.Row="4" Grid.Column="1" Text="Dólar ($ USD) | Referencia Legal Obligatoria: Bolívar Digital (Bs. VES)" Margin="0,5" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Fluent:BackstageTabItem>
+
+                        <!-- Pestaña Backstage: Configuración Fiscal SENIAT -->
+                        <Fluent:BackstageTabItem Header="Cumplimiento Fiscal SENIAT">
+                            <ScrollViewer Margin="30,20">
+                                <StackPanel MaxWidth="800" HorizontalAlignment="Left">
+                                    <TextBlock Text="Normativa Tributaria y Homologación SENIAT" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <TextBlock Text="Parámetros de facturación fiscal, percepción de IGTF y control de impresoras homologadas." 
+                                               FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,20" TextWrapping="Wrap" />
+
+                                    <!-- Tarjeta: Condición de Contribuyente e IGTF -->
+                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="20" Margin="0,0,0,16">
+                                        <StackPanel>
+                                            <TextBlock Text="Condición del Sujeto Pasivo" FontWeight="Bold" FontSize="15" Margin="0,0,0,10" />
+                                            <CheckBox Content="Empresa designada como Sujeto Pasivo Especial (Contribuyente Especial SENIAT)"
+                                                      IsChecked="{Binding IsSpecialTaxpayer}" FontWeight="SemiBold" Margin="0,0,0,8" />
+                                            <TextBlock Text="• Aplica automáticamente la percepción del 3% de IGTF sobre pagos recibidos en divisas extranjeras (USD, EUR, Zelle, etc.) según Providencia 000013."
+                                                       FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="20,0,0,10" TextWrapping="Wrap" />
+
+                                            <Grid Margin="20,5,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Porcentaje de IGTF:" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                <TextBox Grid.Column="1" Text="3.00 %" IsReadOnly="True" Width="100" HorizontalAlignment="Left" Padding="6,4" Background="#F0F0F0" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Tarjeta: Dispositivo de Emisión Fiscal -->
+                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+                                        <StackPanel>
+                                            <TextBlock Text="Dispositivo de Facturación Fiscal (Providencia 0141)" FontWeight="Bold" FontSize="15" Margin="0,0,0,10" />
+
+                                            <Grid Margin="0,0,0,12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Marca de Impresora Fiscal:" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                <ComboBox Grid.Column="1" SelectedIndex="0" Padding="8,5">
+                                                    <ComboBoxItem Content="The Factory HKA (Bixolon SRP-350 / HKA-80)" />
+                                                    <ComboBoxItem Content="Dascom Tally (DT-230)" />
+                                                    <ComboBoxItem Content="Bematech (MP-4000 TH FI)" />
+                                                    <ComboBoxItem Content="Custom (Kube II)" />
+                                                    <ComboBoxItem Content="Forma Libre Computarizada (N° de Control SENIAT)" />
+                                                    <ComboBoxItem Content="Facturación Electrónica Digital" />
+                                                </ComboBox>
+                                            </Grid>
+
+                                            <Grid Margin="0,0,0,12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Puerto de Comunicación:" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                <TextBox Grid.Column="1" Text="{Binding FiscalPort}" Padding="8,5" Width="200" HorizontalAlignment="Left" />
+                                            </Grid>
+
+                                            <Grid Margin="0,0,0,12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Serial de Máquina Fiscal:" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                <TextBox Grid.Column="1" Text="{Binding FiscalSerial}" IsReadOnly="True" Padding="8,5" Width="200" HorizontalAlignment="Left" Background="#F9F9F9" FontWeight="Bold" />
+                                            </Grid>
+
+                                            <Border Background="#E6F4EA" BorderBrush="#34A853" BorderThickness="1" CornerRadius="4" Padding="12" Margin="0,10,0,0">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <fluentIcons:SymbolIcon Symbol="CheckmarkCircle" FontSize="18" Foreground="{StaticResource AccentGreenBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding FiscalDeviceStatus}" Foreground="{StaticResource AccentGreenBrush}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Fluent:BackstageTabItem>
+
+                        <!-- Pestaña Backstage: Configuración Multimoneda -->
+                        <Fluent:BackstageTabItem Header="Configuración Multimoneda">
+                            <ScrollViewer Margin="30,20">
+                                <StackPanel MaxWidth="800" HorizontalAlignment="Left">
+                                    <TextBlock Text="Gestión y Activación de Monedas" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <TextBlock Text="El Dólar ($) es la moneda base inmutable y el Bolívar (Bs.) es la moneda primaria local. Puedes activar o desactivar Euros y Pesos." 
+                                               FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,20" TextWrapping="Wrap" />
+
+                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="15">
+                                        <ItemsControl ItemsSource="{Binding Currencies}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="0,0,0,1" Padding="12,10">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="60" />
+                                                                <ColumnDefinition Width="180" />
+                                                                <ColumnDefinition Width="160" />
+                                                                <ColumnDefinition Width="140" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+
+                                                            <TextBlock Grid.Column="0" Text="{Binding Symbol}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" />
+                                                                <TextBlock Text="{Binding Code}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                            </StackPanel>
+
+                                                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                                                <TextBlock Text="Paridad a 1 USD:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                                <TextBlock Text="{Binding RateToUSD, StringFormat={}{0:N4}}" FontWeight="Bold" FontSize="14" />
+                                                            </StackPanel>
+
+                                                            <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                                                                <TextBlock Text="Tipo de Moneda:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                                <TextBlock>
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding IsFixed}" Value="True">
+                                                                                    <Setter Property="Text" Value="Principal (Fija)" />
+                                                                                    <Setter Property="Foreground" Value="{StaticResource PrimaryBrandBrush}" />
+                                                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                                                </DataTrigger>
+                                                                                <DataTrigger Binding="{Binding IsFixed}" Value="False">
+                                                                                    <Setter Property="Text" Value="Opcional" />
+                                                                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
+                                                            </StackPanel>
+
+                                                            <CheckBox Grid.Column="4" Content="Habilitada en Sistema" 
+                                                                      IsChecked="{Binding IsActive, Mode=TwoWay}"
+                                                                      VerticalAlignment="Center" HorizontalAlignment="Right"
+                                                                      FontWeight="SemiBold" />
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Fluent:BackstageTabItem>
+
+                        <!-- Pestaña Backstage: Conexión PostgreSQL -->
+                        <Fluent:BackstageTabItem Header="Base de Datos PostgreSQL">
+                            <ScrollViewer Margin="30,20">
+                                <StackPanel MaxWidth="600" HorizontalAlignment="Left">
+                                    <TextBlock Text="Conexión PostgreSQL" FontSize="22" FontWeight="SemiBold" />
+                                    <TextBlock Text="Parámetros de conexión con la arquitectura en capas hacia PostgreSQL." 
+                                               FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,20" />
+
+                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+                                        <StackPanel>
+                                            <TextBlock Text="Host / Servidor:" FontWeight="SemiBold" Margin="0,0,0,4" />
+                                            <TextBox Text="localhost" Padding="8,5" Margin="0,0,0,12" />
+
+                                            <TextBlock Text="Puerto:" FontWeight="SemiBold" Margin="0,0,0,4" />
+                                            <TextBox Text="5432" Padding="8,5" Margin="0,0,0,12" />
+
+                                            <TextBlock Text="Base de Datos:" FontWeight="SemiBold" Margin="0,0,0,4" />
+                                            <TextBox Text="deterpos_db" Padding="8,5" Margin="0,0,0,12" />
+
+                                            <TextBlock Text="Usuario:" FontWeight="SemiBold" Margin="0,0,0,4" />
+                                            <TextBox Text="postgres" Padding="8,5" Margin="0,0,0,12" />
+
+                                            <Button Content="Probar Conexión PostgreSQL" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" 
+                                                    Padding="12,8" Margin="0,10,0,0" FontWeight="SemiBold" Cursor="Hand" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Fluent:BackstageTabItem>
+
+                    </Fluent:BackstageTabControl>
+                </Fluent:Backstage>
+            </Fluent:Ribbon.Menu>
+
+            <!-- ============================================== -->
+            <!-- PESTAÑA 1: INICIO (Dashboard, Caja y SENIAT)   -->
+            <!-- ============================================== -->
+            <Fluent:RibbonTabItem Header="Inicio">
+                <Fluent:RibbonGroupBox Header="Vistas">
+                    <Fluent:Button Header="Dashboard" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Panel Principal (Dashboard)">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="Home" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+
+                <Fluent:RibbonGroupBox Header="Control de Caja">
+                    <Fluent:Button Header="Apertura Caja" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Apertura de Caja">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="LockOpen" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:SplitButton Header="Movimientos" Size="Large">
+                        <Fluent:SplitButton.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="ArrowSwap" FontSize="26" Foreground="#D83B01" />
+                        </Fluent:SplitButton.LargeIcon>
+                        <Fluent:MenuItem Header="Entrada de Efectivo" 
+                                         Command="{Binding NavigateCommand}" CommandParameter="Entrada de Efectivo" />
+                        <Fluent:MenuItem Header="Salida de Caja Chica" 
+                                         Command="{Binding NavigateCommand}" CommandParameter="Salidas de Caja Chica" />
+                    </Fluent:SplitButton>
+
+                    <Fluent:Button x:Name="BtnQatArqueo" Header="Cierre / Arqueo" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Cierre y Arqueo de Caja">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="ClipboardCheckmark" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+
+                <!-- Grupo Fiscal SENIAT Obligatorio -->
+                <Fluent:RibbonGroupBox Header="Fiscal SENIAT">
+                    <Fluent:Button Header="Reporte X&#x0a;(Lectura)" Size="Large"
+                                   Command="{Binding PrintReportXCommand}">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="DocumentSearch" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button x:Name="BtnQatReporteZ" Header="Reporte Z&#x0a;(Cierre Fiscal)" Size="Large"
+                                   Command="{Binding PrintReportZCommand}">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="DocumentLock" FontSize="26" Foreground="#D83B01" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+
+                <Fluent:RibbonGroupBox Header="Multimoneda y Tasas">
+                    <Fluent:Button x:Name="BtnQatTasa" Header="Tasa del Día" Size="Large"
+                                   Command="{Binding OpenUpdateRateCommand}">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="Money" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Calculadora Divisas" Size="Middle"
+                                   Command="{Binding OpenCalculatorCommand}">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="Calculator" FontSize="18" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Histórico Tasas" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Histórico de Tasas">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="History" FontSize="18" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+            </Fluent:RibbonTabItem>
+
+            <!-- ============================================== -->
+            <!-- PESTAÑA 2: VENTAS Y POS                        -->
+            <!-- ============================================== -->
+            <Fluent:RibbonTabItem Header="Ventas y POS">
+                <Fluent:RibbonGroupBox Header="Terminal POS">
+                    <Fluent:Button x:Name="BtnQatPos" Header="Punto de Venta&#x0a;(POS F1)" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Punto de Venta (POS)">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="Cart" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Tickets en Espera" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Tickets en Espera">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="Clock" FontSize="18" Foreground="#E3008C" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+
+                <Fluent:RibbonGroupBox Header="Documentos">
+                    <Fluent:Button Header="Facturas y Tickets" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Historial de Facturas">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="DocumentTable" FontSize="26" Foreground="#498205" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Cotizaciones" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Cotizaciones">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="DocumentBulletList" FontSize="18" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+
+                <Fluent:RibbonGroupBox Header="Devoluciones SENIAT">
+                    <Fluent:Button Header="Nota de Crédito&#x0a;Fiscal" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Notas de Crédito Fiscales">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="ArrowUndo" FontSize="26" Foreground="#D83B01" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Historial Devoluciones" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Devoluciones">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="ArrowCounterclockwise" FontSize="18" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+            </Fluent:RibbonTabItem>
+
+            <!-- ============================================== -->
+            <!-- PESTAÑA 3: INVENTARIO Y CATÁLOGO               -->
+            <!-- ============================================== -->
+            <Fluent:RibbonTabItem Header="Inventario y Catálogo">
+                <Fluent:RibbonGroupBox Header="Catálogo de Productos">
+                    <Fluent:Button Header="Productos y Servicios" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Gestión de Inventario y Catálogo">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="Box" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Categorías y Marcas" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Categorías y Marcas">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="Tag" FontSize="18" Foreground="{StaticResource AccentGoldBrush}" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Listas de Precios" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Listas de Precios">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="ReceiptMoney" FontSize="18" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+
+                <Fluent:RibbonGroupBox Header="Existencias y Stock">
+                    <Fluent:Button Header="Ajuste de Stock" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Ajuste de Stock">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="ArrowTrendingLines" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Alertas de Stock Bajo" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Alertas de Stock">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="Warning" FontSize="18" Foreground="#D83B01" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Impresión Etiquetas" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Impresión de Etiquetas">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="BarcodeScanner" FontSize="18" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+            </Fluent:RibbonTabItem>
+
+            <!-- ============================================== -->
+            <!-- PESTAÑA 4: COMPRAS Y PROVEEDORES               -->
+            <!-- ============================================== -->
+            <Fluent:RibbonTabItem Header="Compras y Proveedores">
+                <Fluent:RibbonGroupBox Header="Proveedores">
+                    <Fluent:Button Header="Directorio Proveedores" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Directorio de Proveedores">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="VehicleTruck" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+
+                <Fluent:RibbonGroupBox Header="Recepción y Facturas">
+                    <Fluent:Button Header="Registrar Compra" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Registrar Compra">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="AddSquare" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Historial Compras" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Historial de Compras y Recepción">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="DocumentTable" FontSize="18" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Órdenes de Compra" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Órdenes de Compra">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="DocumentBulletList" FontSize="18" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+            </Fluent:RibbonTabItem>
+
+            <!-- ============================================== -->
+            <!-- PESTAÑA 5: CLIENTES Y CRÉDITOS                 -->
+            <!-- ============================================== -->
+            <Fluent:RibbonTabItem Header="Clientes y Créditos">
+                <Fluent:RibbonGroupBox Header="Clientes">
+                    <Fluent:Button Header="Directorio Clientes" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Gestión de Clientes">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="People" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+
+                <Fluent:RibbonGroupBox Header="Cuentas por Cobrar (CxC)">
+                    <Fluent:Button Header="Abonos y Cobros" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Cuentas por Cobrar">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="MoneyHand" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Estado de Cuenta" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Estado de Cuenta Clientes">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="DocumentPdf" FontSize="18" Foreground="#D83B01" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+
+                <Fluent:RibbonGroupBox Header="Cuentas por Pagar (CxP)">
+                    <Fluent:Button Header="Pagos a Proveedor" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Cuentas por Pagar">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="Payment" FontSize="26" Foreground="#8E562E" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+            </Fluent:RibbonTabItem>
+
+            <!-- ============================================== -->
+            <!-- PESTAÑA 6: FINANZAS Y GASTOS                   -->
+            <!-- ============================================== -->
+            <Fluent:RibbonTabItem Header="Finanzas y Gastos">
+                <Fluent:RibbonGroupBox Header="Gastos Operativos">
+                    <Fluent:Button Header="Registrar Gasto" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Registrar Gasto">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="Receipt" FontSize="26" Foreground="#D83B01" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Salidas Caja Chica" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Salidas de Caja Chica">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="ArrowTrendingDown" FontSize="18" Foreground="#D83B01" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+
+                <Fluent:RibbonGroupBox Header="Monedas">
+                    <Fluent:Button Header="Tasas de Cambio" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Tasas de Cambio y Multimoneda">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="CurrencyDollarEuro" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+            </Fluent:RibbonTabItem>
+
+            <!-- ============================================== -->
+            <!-- PESTAÑA 7: REPORTES Y LIBROS SENIAT            -->
+            <!-- ============================================== -->
+            <Fluent:RibbonTabItem Header="Reportes y Libros SENIAT">
+                <Fluent:RibbonGroupBox Header="Libros Fiscales SENIAT (IVA)">
+                    <Fluent:Button Header="Libro de Ventas&#x0a;Fiscal" Size="Large"
+                                   Command="{Binding OpenSalesBookCommand}">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="DocumentTable" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Libro de Compras&#x0a;Fiscal" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Libro de Compras Fiscal">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="DocumentTableCheckmark" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+
+                <Fluent:RibbonGroupBox Header="Ventas y Rendimiento">
+                    <Fluent:Button Header="Reporte de Ventas" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Reporte de Ventas">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="DataPie" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Métodos de Pago" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Reporte Métodos de Pago">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="CreditCardPerson" FontSize="18" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Exportar a Excel" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Exportación Excel">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="DocumentTableCheckmark" FontSize="18" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+
+                <Fluent:RibbonGroupBox Header="Inventario y Balances">
+                    <Fluent:Button Header="Valoración Stock" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Valoración Inventario">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="Table" FontSize="26" Foreground="#498205" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Ganancias y Pérdidas" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Ganancias y Pérdidas">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="ArrowTrendingLines" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+            </Fluent:RibbonTabItem>
+
+            <!-- ============================================== -->
+            <!-- PESTAÑA 8: SEGURIDAD, USUARIOS Y ROLES (FASE 11)-->
+            <!-- ============================================== -->
+            <Fluent:RibbonTabItem Header="Seguridad y Usuarios">
+                <Fluent:RibbonGroupBox Header="Control de Accesos">
+                    <Fluent:Button Header="Gestión de&#x0a;Usuarios" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Usuarios y Roles">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="PeopleSettings" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Pistas de&#x0a;Auditoría" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Pistas de Auditoría">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="ShieldCheckmark" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
+            </Fluent:RibbonTabItem>
+
+        </Fluent:Ribbon>
+
+        <!-- ============================================== -->
+        <!--  ÁREA DE TRABAJO PRINCIPAL (CONMUTADOR DE VISTAS) -->
+        <!-- ============================================== -->
+        <Grid Grid.Row="1">
+
+            <!-- VISTA 1: DASHBOARD GENERAL -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                          Visibility="{Binding IsDashboardViewActive, Converter={StaticResource BoolToVisConverter}}">
+                <StackPanel Margin="30,24" MaxWidth="1350" HorizontalAlignment="Stretch">
+
+                    <!-- Encabezado del Módulo Activo -->
+                    <Grid Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding ActiveViewTitle}" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBlock Text="Operación comercial, auditoría fiscal SENIAT, flujos de caja y balance multimoneda" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+
+                        <!-- Botones de Acción Rápida -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Command="{Binding RefreshDashboardCommand}" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                                    Padding="12,10" Margin="0,0,10,0" Cursor="Hand" ToolTip="Actualizar Indicadores">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6" />
+                                    </Style>
+                                </Button.Resources>
+                                <StackPanel Orientation="Horizontal">
+                                    <fluentIcons:SymbolIcon Symbol="ArrowSync" FontSize="16" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                    <TextBlock Text="Refrescar" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding OpenCalculatorCommand}" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                                    Padding="14,10" Margin="0,0,10,0" Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6" />
+                                    </Style>
+                                </Button.Resources>
+                                <StackPanel Orientation="Horizontal">
+                                    <fluentIcons:SymbolIcon Symbol="Calculator" FontSize="18" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                    <TextBlock Text="Calculadora" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding NavigateCommand}" CommandParameter="Punto de Venta (POS)"
+                                    Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                                    Padding="20,10" Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6" />
+                                    </Style>
+                                </Button.Resources>
+                                <StackPanel Orientation="Horizontal">
+                                    <fluentIcons:SymbolIcon Symbol="Cart" FontSize="18" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                    <TextBlock Text="Abrir Terminal POS (F1)" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Tarjetas KPI Principales Multimoneda y Fiscales -->
+                    <Grid Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Tarjeta 1: Ventas en Dólares (Base) -->
+                        <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}">
+                            <StackPanel>
+                                <Grid>
+                                    <TextBlock Text="VENTAS DEL DÍA (USD)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <fluentIcons:SymbolIcon Symbol="Money" FontSize="20" HorizontalAlignment="Right" Foreground="{StaticResource AccentGreenBrush}" />
+                                </Grid>
+                                <TextBlock Text="{Binding TodaySalesUSD, StringFormat={}{0:C2}}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,10,0,2" />
+                                <TextBlock Text="Moneda Base ($)" FontSize="12" Foreground="{StaticResource AccentGreenBrush}" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Tarjeta 2: Ventas en Bolívares (VES Legal) -->
+                        <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}">
+                            <StackPanel>
+                                <Grid>
+                                    <TextBlock Text="MONTO FISCAL LEGAL (VES)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <fluentIcons:SymbolIcon Symbol="Receipt" FontSize="20" HorizontalAlignment="Right" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                </Grid>
+                                <TextBlock Text="{Binding TodaySalesVES, StringFormat=Bs. {0:N2}}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,10,0,2" />
+                                <TextBlock Text="Tasa BCV del Día (Obligatoria)" FontSize="12" Foreground="{StaticResource PrimaryBrandBrush}" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Tarjeta 3: Tasa de Cambio Activa -->
+                        <Border Grid.Column="4" Style="{StaticResource DashboardCardStyle}">
+                            <StackPanel>
+                                <Grid>
+                                    <TextBlock Text="TASA OFICIAL BCV" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <fluentIcons:SymbolIcon Symbol="ArrowTrendingLines" FontSize="20" HorizontalAlignment="Right" Foreground="{StaticResource AccentGoldBrush}" />
+                                </Grid>
+                                <StackPanel Orientation="Horizontal" Margin="0,10,0,2">
+                                    <TextBlock Text="1 USD = " FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Bottom" Margin="0,0,0,3" />
+                                    <TextBlock Text="{Binding BcvRate, StringFormat={}{0:N4} Bs.}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                </StackPanel>
+                                <TextBlock Text="Banco Central de Venezuela" FontSize="12" Foreground="{StaticResource AccentGoldBrush}" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Tarjeta 4: Estado Fiscal de la Caja -->
+                        <Border Grid.Column="6" Style="{StaticResource DashboardCardStyle}">
+                            <StackPanel>
+                                <Grid>
+                                    <TextBlock Text="ESTADO FISCAL SENIAT" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <fluentIcons:SymbolIcon Symbol="ShieldCheckmark" FontSize="20" HorizontalAlignment="Right" Foreground="{StaticResource AccentGreenBrush}" />
+                                </Grid>
+                                <StackPanel Orientation="Horizontal" Margin="0,10,0,2">
+                                    <TextBlock Text="Z-Report: #" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Bottom" Margin="0,0,0,2" />
+                                    <TextBlock Text="{Binding LastZReport}" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                </StackPanel>
+                                <TextBlock Text="Impresora Fiscal En Línea" FontSize="12" Foreground="{StaticResource AccentGreenBrush}" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Fila 2: Indicadores Secundarios de Flujo y Cartera (4 Píldoras Ejecutivas) -->
+                    <Grid Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="14" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="14" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="14" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Píldora 1: Comprobantes Hoy -->
+                        <Border Grid.Column="0" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="#EFF6FF" Width="36" Height="36" CornerRadius="8" Margin="0,0,10,0">
+                                    <fluentIcons:SymbolIcon Symbol="Receipt" FontSize="18" Foreground="#2563EB" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="COMPROBANTES HOY" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                        <TextBlock Text="{Binding TodayInvoicesCount}" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                        <TextBlock Text=" facturas" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Bottom" Margin="3,0,0,1" />
+                                        <TextBlock Text=" • " FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Bottom" Margin="2,0,2,1" />
+                                        <TextBlock Text="{Binding TodayCreditNotesCount}" FontSize="13" FontWeight="SemiBold" Foreground="#DC2626" VerticalAlignment="Bottom" Margin="0,0,0,1" />
+                                        <TextBlock Text=" N/C" FontSize="11" Foreground="#DC2626" VerticalAlignment="Bottom" Margin="2,0,0,1" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Píldora 2: CxC Cartera Activa -->
+                        <Border Grid.Column="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="#ECFDF5" Width="36" Height="36" CornerRadius="8" Margin="0,0,10,0">
+                                    <fluentIcons:SymbolIcon Symbol="PersonMoney" FontSize="18" Foreground="#059669" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="CUENTAS POR COBRAR (CxC)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                        <TextBlock Text="{Binding TotalReceivableUSD, StringFormat={}${0:N2}}" FontSize="16" FontWeight="Bold" Foreground="#059669" />
+                                        <TextBlock Text="{Binding TotalReceivableVES, StringFormat= (Bs. {0:N0})}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Bottom" Margin="4,0,0,2" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Píldora 3: CxP Compromisos Proveedores -->
+                        <Border Grid.Column="4" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="#FEF2F2" Width="36" Height="36" CornerRadius="8" Margin="0,0,10,0">
+                                    <fluentIcons:SymbolIcon Symbol="Payment" FontSize="18" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="CUENTAS POR PAGAR (CxP)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                        <TextBlock Text="{Binding TotalPayableUSD, StringFormat={}${0:N2}}" FontSize="16" FontWeight="Bold" Foreground="#DC2626" />
+                                        <TextBlock Text="{Binding TotalPayableVES, StringFormat= (Bs. {0:N0})}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Bottom" Margin="4,0,0,2" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Píldora 4: Gastos del Mes -->
+                        <Border Grid.Column="6" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="#FFFBEB" Width="36" Height="36" CornerRadius="8" Margin="0,0,10,0">
+                                    <fluentIcons:SymbolIcon Symbol="ShoppingBag" FontSize="18" Foreground="#D97706" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="GASTOS DEL MES" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                        <TextBlock Text="{Binding MonthExpensesUSD, StringFormat={}${0:N2}}" FontSize="16" FontWeight="Bold" Foreground="#D97706" />
+                                        <TextBlock Text="{Binding MonthExpensesVES, StringFormat= (Bs. {0:N0})}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Bottom" Margin="4,0,0,2" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- Fila 3: Tendencia Semanal de Ventas y Multimoneda / Fiscal -->
+                    <Grid Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.7*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Tarjeta Gráfico de Ventas Semanal -->
+                        <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}">
+                            <DockPanel LastChildFill="True">
+                                <Grid DockPanel.Dock="Top" Margin="0,0,0,18">
+                                    <StackPanel>
+                                        <TextBlock Text="Tendencia Semanal de Facturación" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                        <TextBlock Text="Ventas diarias en Moneda Base USD durante los últimos 7 días" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                    <Border HorizontalAlignment="Right" Background="#F1F5F9" CornerRadius="6" Padding="8,4">
+                                        <TextBlock Text="Últimos 7 Días" FontSize="11" FontWeight="SemiBold" Foreground="#475569" />
+                                    </Border>
+                                </Grid>
+
+                                <!-- Barras de Gráfico Semanal -->
+                                <ItemsControl ItemsSource="{Binding DashboardWeeklySales}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Rows="1" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="6,0" VerticalAlignment="Bottom">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="130" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <!-- Monto USD -->
+                                                <TextBlock Grid.Row="0" Text="{Binding TotalUSD, StringFormat={}${0:N0}}" FontSize="10" FontWeight="Bold" Foreground="#0067B8" HorizontalAlignment="Center" Margin="0,0,0,4" />
+                                                <!-- Track y Barra -->
+                                                <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Width="32" ClipToBounds="True">
+                                                    <ProgressBar Orientation="Vertical" Value="{Binding HeightPercentage}" Minimum="0" Maximum="100" Width="32" Background="Transparent" BorderThickness="0">
+                                                        <ProgressBar.Template>
+                                                            <ControlTemplate TargetType="ProgressBar">
+                                                                <Grid>
+                                                                    <Border Name="PART_Track" Background="Transparent" />
+                                                                    <Border Name="PART_Indicator" Background="#0067B8" CornerRadius="4" VerticalAlignment="Bottom" />
+                                                                </Grid>
+                                                            </ControlTemplate>
+                                                        </ProgressBar.Template>
+                                                    </ProgressBar>
+                                                </Border>
+                                                <!-- Día de la semana -->
+                                                <TextBlock Grid.Row="2" Text="{Binding DayName}" FontSize="11" FontWeight="SemiBold" Foreground="#334155" HorizontalAlignment="Center" Margin="0,6,0,0" />
+                                                <!-- Fecha corta -->
+                                                <TextBlock Grid.Row="3" Text="{Binding Date, StringFormat={}{0:dd/MM}}" FontSize="9" Foreground="#64748B" HorizontalAlignment="Center" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Tarjeta Lateral: Multimoneda y Resumen Fiscal -->
+                        <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}">
+                            <DockPanel LastChildFill="True">
+                                <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+                                    <TextBlock Text="Divisas y Estado Fiscal" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <Button Command="{Binding OpenUpdateRateCommand}" HorizontalAlignment="Right" Background="Transparent" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="8,4" Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="6" />
+                                            </Style>
+                                        </Button.Resources>
+                                        <StackPanel Orientation="Horizontal">
+                                            <fluentIcons:SymbolIcon Symbol="Edit" FontSize="12" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                            <TextBlock Text="Tasas" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+
+                                <StackPanel>
+                                    <!-- Items de Divisas -->
+                                    <ItemsControl ItemsSource="{Binding Currencies}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="#F1F5F9" BorderThickness="0,0,0,1" Padding="2,6">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="30" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" Text="{Binding Symbol}" FontSize="13" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" />
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Name}" FontSize="11" FontWeight="SemiBold" />
+                                                            <TextBlock Text="{Binding Code}" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                        </StackPanel>
+                                                        <TextBlock Grid.Column="2" Text="{Binding RateToUSD, StringFormat={}{0:N4}}" FontSize="12" FontWeight="Bold" Foreground="#334155" VerticalAlignment="Center" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!-- Pill Perfil Fiscal SENIAT -->
+                                    <Border Background="#F8FAFC" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10,8" Margin="0,12,0,0">
+                                        <StackPanel>
+                                            <TextBlock Text="SENIAT Providencia 0141 / DTD" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                            <TextBlock Text="Sujeto Pasivo Especial • IGTF 3% Divisas" FontSize="10" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2,0,0" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding FiscalPrinterBrand}" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,1,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Fila 4: Alertas de Inventario Crítico y Últimos Comprobantes -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Tabla 1: Alertas de Stock Bajo -->
+                        <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}">
+                            <DockPanel LastChildFill="True">
+                                <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="Alertas de Stock Mínimo" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                        <Border Background="#FEE2E2" CornerRadius="10" Padding="8,2" Margin="10,0,0,0">
+                                            <TextBlock Text="{Binding LowStockCount, StringFormat={}{0} Críticos}" FontSize="11" FontWeight="Bold" Foreground="#DC2626" />
+                                        </Border>
+                                    </StackPanel>
+                                    <Button Command="{Binding NavigateCommand}" CommandParameter="Inventario y Catálogo" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Cursor="Hand">
+                                        <TextBlock Text="Ver Catálogo →" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                    </Button>
+                                </Grid>
+
+                                <DataGrid ItemsSource="{Binding DashboardLowStock}"
+                                          AutoGenerateColumns="False"
+                                          IsReadOnly="True"
+                                          CanUserAddRows="False"
+                                          GridLinesVisibility="Horizontal"
+                                          HorizontalGridLinesBrush="#F1F5F9"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          RowHeight="36"
+                                          MaxHeight="260">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="CÓDIGO" Binding="{Binding Code}" Width="90" FontWeight="SemiBold" />
+                                        <DataGridTextColumn Header="PRODUCTO" Binding="{Binding Name}" Width="*" />
+                                        <DataGridTextColumn Header="ACTUAL" Binding="{Binding CurrentStock, StringFormat={}{0:N0}}" Width="65" />
+                                        <DataGridTextColumn Header="MÍNIMO" Binding="{Binding MinimumStock, StringFormat={}{0:N0}}" Width="65" />
+                                        <DataGridTemplateColumn Header="ESTADO" Width="85">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border CornerRadius="4" Padding="6,2" HorizontalAlignment="Center">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding UrgencyLevel}" Value="Agotado">
+                                                                        <Setter Property="Background" Value="#FEE2E2" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding UrgencyLevel}" Value="Crítico">
+                                                                        <Setter Property="Background" Value="#FEF3C7" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <TextBlock Text="{Binding UrgencyLevel}" FontSize="10" FontWeight="Bold">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding UrgencyLevel}" Value="Agotado">
+                                                                            <Setter Property="Foreground" Value="#DC2626" />
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding UrgencyLevel}" Value="Crítico">
+                                                                            <Setter Property="Foreground" Value="#D97706" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Tabla 2: Últimos Comprobantes Emitidos en Vivo -->
+                        <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}">
+                            <DockPanel LastChildFill="True">
+                                <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="Comprobantes Recientes" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                        <Border Background="#DCFCE7" CornerRadius="10" Padding="8,2" Margin="10,0,0,0">
+                                            <TextBlock Text="En Vivo" FontSize="11" FontWeight="Bold" Foreground="#15803D" />
+                                        </Border>
+                                    </StackPanel>
+                                    <Button Command="{Binding NavigateCommand}" CommandParameter="Documentos Fiscales" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Cursor="Hand">
+                                        <TextBlock Text="Ver Todos →" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                    </Button>
+                                </Grid>
+
+                                <DataGrid ItemsSource="{Binding DashboardRecentSales}"
+                                          AutoGenerateColumns="False"
+                                          IsReadOnly="True"
+                                          CanUserAddRows="False"
+                                          GridLinesVisibility="Horizontal"
+                                          HorizontalGridLinesBrush="#F1F5F9"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          RowHeight="36"
+                                          MaxHeight="260">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="DOCUMENTO" Binding="{Binding InvoiceNumber}" Width="110" FontWeight="SemiBold" />
+                                        <DataGridTextColumn Header="CLIENTE" Binding="{Binding CustomerName}" Width="*" />
+                                        <DataGridTextColumn Header="HORA" Binding="{Binding CreatedAt, StringFormat={}{0:hh:mm tt}}" Width="70" />
+                                        <DataGridTextColumn Header="TOTAL ($)" Binding="{Binding TotalUSD, StringFormat={}${0:N2}}" Width="80" FontWeight="SemiBold" Foreground="#059669" />
+                                        <DataGridTemplateColumn Header="TIPO" Width="75">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border CornerRadius="4" Padding="6,2" HorizontalAlignment="Center">
+                                                        <Border.Style>
+                                                            <Style TargetType="Border">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsCreditNote}" Value="True">
+                                                                        <Setter Property="Background" Value="#FEE2E2" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding IsCreditNote}" Value="False">
+                                                                        <Setter Property="Background" Value="#EFF6FF" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <TextBlock FontSize="10" FontWeight="Bold">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsCreditNote}" Value="True">
+                                                                            <Setter Property="Text" Value="N/C" />
+                                                                            <Setter Property="Foreground" Value="#DC2626" />
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding IsCreditNote}" Value="False">
+                                                                            <Setter Property="Text" Value="Factura" />
+                                                                            <Setter Property="Foreground" Value="#2563EB" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DockPanel>
+                        </Border>
+                    </Grid>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- VISTA 2: GESTIÓN MULTIMONEDA Y TASAS DE CAMBIO (FASE 1) -->
+            <views:CurrencyManagementView Visibility="{Binding IsCurrencyViewActive, Converter={StaticResource BoolToVisConverter}}" />
+
+            <!-- VISTA 3: GESTIÓN DE INVENTARIO Y CATÁLOGO (FASE 2) -->
+            <views:InventoryCatalogView x:Name="ViewInventoryCatalog" Visibility="{Binding IsInventoryViewActive, Converter={StaticResource BoolToVisConverter}}" />
+
+            <!-- VISTA 4: DIRECTORIO DE CLIENTES Y PROVEEDORES (FASE 3) -->
+            <views:CustomersSuppliersView x:Name="ViewCustomersSuppliers" Visibility="{Binding IsCustomersViewActive, Converter={StaticResource BoolToVisConverter}}" />
+
+            <!-- VISTA 5: CONTROL DE CAJA, TURNOS Y ARQUEO CIEGO (FASE 4) -->
+            <views:CashControlView x:Name="ViewCashControl" Visibility="{Binding IsCashViewActive, Converter={StaticResource BoolToVisConverter}}" />
+
+            <!-- VISTA 6: TERMINAL PUNTO DE VENTA POS F1 (FASE 5) -->
+            <views:PosView x:Name="ViewPos" Visibility="{Binding IsPosViewActive, Converter={StaticResource BoolToVisConverter}}" />
+
+            <!-- VISTA 7: DOCUMENTOS FISCALES Y NOTAS DE CRÉDITO SENIAT (FASE 6) -->
+            <views:SalesInvoicesView x:Name="ViewSalesInvoices" Visibility="{Binding IsSalesInvoicesViewActive, Converter={StaticResource BoolToVisConverter}}" />
+
+            <!-- VISTA 8: COMPRAS, RECEPCIÓN Y COSTEO PROMEDIO USD (FASE 7) -->
+            <views:PurchasesView x:Name="ViewPurchases" Visibility="{Binding IsPurchasesViewActive, Converter={StaticResource BoolToVisConverter}}" />
+
+            <!-- VISTA 9: CUENTAS POR COBRAR (CxC) Y CUENTAS POR PAGAR (CxP) (FASE 8) -->
+            <views:CreditManagementView x:Name="ViewCreditManagement" Visibility="{Binding IsCreditViewActive, Converter={StaticResource BoolToVisConverter}}" />
+
+            <!-- VISTA 10: GASTOS OPERATIVOS Y CAJA CHICA (FASE 9) -->
+            <views:OperatingExpensesView x:Name="ViewOperatingExpenses" Visibility="{Binding IsExpensesViewActive, Converter={StaticResource BoolToVisConverter}}" />
+
+            <!-- VISTA 11: LIBROS OFICIALES SENIAT Y REPORTES EJECUTIVOS (FASE 10) -->
+            <views:FiscalReportsView x:Name="ViewFiscalReports" Visibility="{Binding IsFiscalReportsViewActive, Converter={StaticResource BoolToVisConverter}}" />
+
+            <!-- VISTA 12: USUARIOS, ROLES Y SEGURIDAD (FASE 11) -->
+            <views:UsersManagementView x:Name="ViewUsersManagement" Visibility="{Binding IsUsersViewActive, Converter={StaticResource BoolToVisConverter}}" />
+
+        </Grid>
+
+        <!-- ============================================== -->
+        <!--  BARRA DE ESTADO INFERIOR (STATUS BAR OFFICE)  -->
+        <!-- ============================================== -->
+        <Border Grid.Row="2" Background="#0078D4" Height="28" Padding="15,0">
+            <Grid VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,20,0">
+                    <Ellipse Width="8" Height="8" Fill="#6CCB5F" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <TextBlock Text="{Binding DbStatusText}" Foreground="White" FontSize="11" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,20,0">
+                    <TextBlock Text="Tasa BCV: 1 $ = " Foreground="#D0E7FB" FontSize="11" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding BcvRate, StringFormat={}{0:N4} Bs.}" Foreground="White" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,20,0">
+                    <TextBlock Text="Caja: " Foreground="#D0E7FB" FontSize="11" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding CashRegisterStatus}" Foreground="White" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="4" Orientation="Horizontal">
+                    <TextBlock Text="Fiscal: Impresora En Línea (Z101)" Foreground="#D0E7FB" FontSize="11" VerticalAlignment="Center" Margin="0,0,15,0" />
+                    <TextBlock Text="Usuario: " Foreground="#D0E7FB" FontSize="11" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding CurrentUserName}" Foreground="White" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center" Margin="0,0,15,0" />
+                    <TextBlock Text="Moneda Base: USD ($)" Foreground="#FFF5C2" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+    </Grid>
+</Fluent:RibbonWindow>

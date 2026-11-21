@@ -1,0 +1,263 @@
+<Window x:Class="Deterpos.WPF.Views.Dialogs.BarcodeLabelPrintDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+        Title="Impresión de Etiquetas de Góndola" 
+        Height="630" Width="850"
+        WindowStyle="None" 
+        AllowsTransparency="True" 
+        Background="Transparent"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        FontFamily="Segoe UI, Segoe UI Variable Text, Arial"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        SnapsToDevicePixels="True"
+        UseLayoutRounding="True">
+
+    <!-- Sombra Perimetral Moderna -->
+    <Border Margin="14" Background="White" CornerRadius="12" BorderBrush="#D0D7DE" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28" Direction="270" ShadowDepth="4" Opacity="0.22" Color="#000000" />
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Encabezado Modal -->
+            <Border Grid.Row="0" Background="#F6F8FA" CornerRadius="12,12,0,0" Padding="20,16" BorderBrush="#E1E4E8" BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#EBF3FB" CornerRadius="8" Padding="8" Margin="0,0,12,0" VerticalAlignment="Center">
+                        <fluentIcons:SymbolIcon Symbol="BarcodeScanner" FontSize="22" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Impresión de Etiquetas de Código de Barras y Góndola" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Previsualice en vivo y envíe a la impresora térmica etiquetas de estante y producto." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="2" Click="BtnClose_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6" VerticalAlignment="Center">
+                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Contenido Principal: Dos Columnas (Configuración y Previsualización) -->
+            <Grid Grid.Row="1" Margin="22,18">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="360" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- COLUMNA IZQUIERDA: CONFIGURACIÓN -->
+                <Border Grid.Column="0" Background="#FAFBFC" BorderBrush="#E1E4E8" BorderThickness="1" CornerRadius="8" Padding="16">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="Configuración de la Etiqueta" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,12" />
+
+                            <!-- Selector de Producto -->
+                            <TextBlock Text="Producto a Etiquetar *" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                            <ComboBox x:Name="CmbProducts" Height="34" SelectionChanged="CmbProducts_SelectionChanged" Margin="0,0,0,12" />
+
+                            <!-- Formato de Etiqueta -->
+                            <TextBlock Text="Formato / Dimensiones de Etiqueta" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                            <ComboBox x:Name="CmbLabelFormat" Height="34" SelectionChanged="CmbLabelFormat_SelectionChanged" Margin="0,0,0,12">
+                                <ComboBoxItem Content="Góndola Retail Estándar (50 x 30 mm)" IsSelected="True" />
+                                <ComboBoxItem Content="Etiqueta Compacta de Producto (30 x 20 mm)" />
+                                <ComboBoxItem Content="Tira de Estante Térmica (80 mm)" />
+                            </ComboBox>
+
+                            <!-- Cantidad de Copias -->
+                            <TextBlock Text="Cantidad de Etiquetas a Imprimir" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="90" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="TxtCopiesCount" Grid.Column="0" Text="1" Height="32" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                                         FontSize="14" FontWeight="SemiBold" BorderBrush="#D0D7DE" TextChanged="TxtCopiesCount_TextChanged" />
+                                <Button Grid.Column="2" Click="BtnCopyCurrentStock_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                                        Padding="8,0" Height="32" Cursor="Hand">
+                                    <TextBlock x:Name="TxtBtnStockText" Text="Usar Stock Actual (0)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                </Button>
+                            </Grid>
+
+                            <Separator Background="#E1E4E8" Margin="0,4,0,12" />
+
+                            <!-- Opciones Visuales -->
+                            <TextBlock Text="Elementos Visibles en Etiqueta" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8" />
+
+                            <CheckBox x:Name="ChkShowBarcode" Content="Mostrar Código de Barras Gráfico" IsChecked="True" Checked="Option_Changed" Unchecked="Option_Changed" Margin="0,0,0,6" />
+                            <CheckBox x:Name="ChkShowPriceVES" Content="Mostrar Precio Legal en Bs. (Tasa BCV)" IsChecked="True" Checked="Option_Changed" Unchecked="Option_Changed" Margin="0,0,0,6" />
+                            <CheckBox x:Name="ChkShowCompany" Content="Mostrar Encabezado Comercial" IsChecked="True" Checked="Option_Changed" Unchecked="Option_Changed" Margin="0,0,0,6" />
+                            <CheckBox x:Name="ChkShowInternalCode" Content="Mostrar Código Interno (PROD-00X)" IsChecked="True" Checked="Option_Changed" Unchecked="Option_Changed" Margin="0,0,0,6" />
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- COLUMNA DERECHA: VISTA PREVIA EN VIVO (WYSIWYG) -->
+                <Border Grid.Column="2" Background="#F0F4F8" BorderBrush="#D0DFEE" BorderThickness="1" CornerRadius="8" Padding="20">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Header Vista Previa -->
+                        <Grid Grid.Row="0" Margin="0,0,0,14">
+                            <StackPanel Orientation="Horizontal">
+                                <fluentIcons:SymbolIcon Symbol="Eye" FontSize="16" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Vista Previa de Impresión Térmica" FontSize="12" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock x:Name="TxtFormatBadge" Text="50 x 30 mm" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        </Grid>
+
+                        <!-- MARCO VISUAL DE LA ETIQUETA ADHESIVA -->
+                        <Border Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                Width="340" MinHeight="210" Background="White" CornerRadius="6"
+                                BorderBrush="#B0B8C4" BorderThickness="1" Padding="14">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="14" Direction="270" ShadowDepth="2" Opacity="0.14" Color="#000000" />
+                            </Border.Effect>
+
+                            <StackPanel VerticalAlignment="Center">
+                                <!-- Encabezado Empresa -->
+                                <TextBlock x:Name="LblPreviewCompany" Text="DETERPOS COMERCIAL" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}"
+                                           HorizontalAlignment="Center" Margin="0,0,0,4" />
+
+                                <!-- Nombre del Producto -->
+                                <TextBlock x:Name="LblPreviewProductName" Text="Aceite Vegetal Comestible 1L" FontSize="14" FontWeight="Bold"
+                                           Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,8" />
+
+                                <!-- Código de Barras Vectorial Simulado -->
+                                <StackPanel x:Name="PanelPreviewBarcode" HorizontalAlignment="Center" Margin="0,0,0,8">
+                                    <Border Background="Black" Height="36" Width="220" CornerRadius="1">
+                                        <!-- Barras simuladas con patrón de líneas -->
+                                        <Canvas Width="216" Height="34" Background="White" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <!-- Fondo de barras con líneas vectoriales de muestra -->
+                                            <Rectangle Fill="Black" Canvas.Left="4" Canvas.Top="0" Width="3" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="10" Canvas.Top="0" Width="2" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="15" Canvas.Top="0" Width="4" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="22" Canvas.Top="0" Width="2" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="27" Canvas.Top="0" Width="5" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="35" Canvas.Top="0" Width="2" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="40" Canvas.Top="0" Width="4" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="47" Canvas.Top="0" Width="2" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="52" Canvas.Top="0" Width="6" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="61" Canvas.Top="0" Width="3" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="67" Canvas.Top="0" Width="2" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="72" Canvas.Top="0" Width="4" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="79" Canvas.Top="0" Width="3" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="85" Canvas.Top="0" Width="5" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="93" Canvas.Top="0" Width="2" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="98" Canvas.Top="0" Width="4" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="105" Canvas.Top="0" Width="3" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="111" Canvas.Top="0" Width="6" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="120" Canvas.Top="0" Width="2" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="125" Canvas.Top="0" Width="4" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="132" Canvas.Top="0" Width="3" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="138" Canvas.Top="0" Width="5" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="146" Canvas.Top="0" Width="2" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="151" Canvas.Top="0" Width="4" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="158" Canvas.Top="0" Width="3" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="164" Canvas.Top="0" Width="5" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="172" Canvas.Top="0" Width="2" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="177" Canvas.Top="0" Width="4" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="184" Canvas.Top="0" Width="3" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="190" Canvas.Top="0" Width="5" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="198" Canvas.Top="0" Width="3" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="204" Canvas.Top="0" Width="4" Height="34" />
+                                            <Rectangle Fill="Black" Canvas.Left="211" Canvas.Top="0" Width="2" Height="34" />
+                                        </Canvas>
+                                    </Border>
+                                    <TextBlock x:Name="LblPreviewBarcodeNumber" Text="7591005005057" FontSize="11" FontFamily="Consolas, Segoe UI"
+                                               FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                </StackPanel>
+
+                                <!-- Precios Destacados -->
+                                <Border Background="#F8FCF9" BorderBrush="#D2ECD8" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,2,0,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Precio USD -->
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <TextBlock Text="PRECIO DIVISAS" FontSize="9" FontWeight="Bold" Foreground="#107C41" />
+                                            <TextBlock x:Name="LblPreviewPriceUSD" Text="$ 2.60" FontSize="20" FontWeight="Bold" Foreground="#107C41" />
+                                        </StackPanel>
+
+                                        <!-- Precio Legal VES -->
+                                        <StackPanel x:Name="PanelPreviewVES" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <TextBlock Text="PRECIO OFICIAL BCV" FontSize="9" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Right" />
+                                            <TextBlock x:Name="LblPreviewPriceVES" Text="144.04 Bs." FontSize="14" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Right" />
+                                            <TextBlock x:Name="LblPreviewRateSub" Text="Tasa: 55.4000 Bs." FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Código Interno de Artículo -->
+                                <TextBlock x:Name="LblPreviewCode" Text="CÓDIGO: PROD-005" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}"
+                                           HorizontalAlignment="Center" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Mensaje de Estado / Impresora -->
+                        <TextBlock Grid.Row="2" Text="Salida lista para impresoras térmicas Zebra, Xprinter, TSC y de ticket 80mm."
+                                   FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,12,0,0" />
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Barra Inferior de Acciones -->
+            <Border Grid.Row="2" Background="#F6F8FA" CornerRadius="0,0,12,12" Padding="20,12" BorderBrush="#E1E4E8" BorderThickness="0,1,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="1" Click="BtnClose_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                            Padding="18,7" Cursor="Hand" FontWeight="SemiBold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <TextBlock Text="Cancelar" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+
+                    <Button Grid.Column="3" Click="BtnPrintLabels_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                            Padding="22,7" Cursor="Hand" FontWeight="SemiBold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="Print" FontSize="16" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock x:Name="TxtBtnPrintLabels" Text="Imprimir 1 Etiqueta" FontSize="12" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
