@@ -574,6 +574,13 @@
                             <fluentIcons:SymbolIcon Symbol="DocumentTableCheckmark" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" />
                         </Fluent:Button.LargeIcon>
                     </Fluent:Button>
+
+                    <Fluent:Button Header="Resumen IVA&#x0a;(Forma 30)" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Resumen Tributario">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="ReceiptMoney" FontSize="26" Foreground="#8E562E" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                 </Fluent:RibbonGroupBox>
 
                 <Fluent:RibbonGroupBox Header="Ventas y Rendimiento">

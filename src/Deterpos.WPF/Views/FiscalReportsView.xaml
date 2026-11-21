@@ -92,30 +92,26 @@
         </Grid>
 
         <!-- ============================================== -->
-        <!--  FILA 1: SELECTOR DE PESTAÑAS Y BUSCADOR       -->
+        <!--  FILA 1: ENCABEZADO DE REPORTE Y BUSCADOR      -->
         <!-- ============================================== -->
         <Border Grid.Row="1" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,14">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="260" />
+                    <ColumnDefinition Width="280" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Segment Tabs Modernos -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <RadioButton x:Name="RbTabSalesBook" Content="Libro de Ventas Fiscal" GroupName="FiscalReportsTab" IsChecked="True" Checked="ReportTab_Checked"
-                                 Style="{StaticResource SegmentedTabRadioStyle}" Margin="0,0,8,0" />
-                    <RadioButton x:Name="RbTabPurchasesBook" Content="Libro de Compras Fiscal" GroupName="FiscalReportsTab" Checked="ReportTab_Checked"
-                                 Style="{StaticResource SegmentedTabRadioStyle}" Margin="0,0,8,0" />
-                    <RadioButton x:Name="RbTabTaxSummary" Content="Resumen Tributario (Forma 30)" GroupName="FiscalReportsTab" Checked="ReportTab_Checked"
-                                 Style="{StaticResource SegmentedTabRadioStyle}" Margin="0,0,8,0" />
-                    <RadioButton x:Name="RbTabProfitability" Content="Rentabilidad y Top Productos" GroupName="FiscalReportsTab" Checked="ReportTab_Checked"
-                                 Style="{StaticResource SegmentedTabRadioStyle}" />
+                <!-- Identificador del Reporte Seleccionado en el Ribbon -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <fluentIcons:SymbolIcon x:Name="IconReportActive" Symbol="DocumentTable" FontSize="20" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
+                    <TextBlock x:Name="TxtReportActiveTitle" Text="Libro de Ventas Fiscal" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                    <Border x:Name="BorderReportActiveBadge" Background="#EBF3FC" CornerRadius="6" Padding="8,3" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtReportActiveBadge" Text="ART. 56 LEY DE IVA • DÉBITO FISCAL" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    </Border>
                 </StackPanel>
 
                 <!-- Buscador por texto para las tablas de libros -->
-                <Grid Grid.Column="2" x:Name="PanelSearch">
+                <Grid Grid.Column="1" x:Name="PanelSearch">
                     <TextBox x:Name="TxtSearch" Padding="28,6,8,6" TextChanged="TxtSearch_TextChanged" VerticalAlignment="Center" Height="32">
                         <TextBox.Resources>
                             <Style TargetType="Border">

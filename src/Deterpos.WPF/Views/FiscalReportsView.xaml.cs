@@ -42,7 +42,16 @@ public partial class FiscalReportsView : UserControl
         GridPurchasesBook.ItemsSource = _displayedPurchasesRows;
 
         Loaded += FiscalReportsView_Loaded;
+        IsVisibleChanged += async (s, e) =>
+        {
+            if (IsVisible)
+            {
+                await LoadPeriodDataAsync();
+            }
+        };
     }
+
+    private int _currentTabIndex = 0;
 
     private async void FiscalReportsView_Loaded(object sender, RoutedEventArgs e)
     {
@@ -52,26 +61,61 @@ public partial class FiscalReportsView : UserControl
             CmbMonth.SelectedIndex = currentMonth - 1;
         }
 
+        SelectTab(_currentTabIndex);
         await LoadPeriodDataAsync();
     }
 
     public void SelectTab(int tabIndex)
     {
+        _currentTabIndex = tabIndex;
+
+        ViewSalesBook.Visibility = tabIndex == 0 ? Visibility.Visible : Visibility.Collapsed;
+        ViewPurchasesBook.Visibility = tabIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
+        ViewTaxSummary.Visibility = tabIndex == 2 ? Visibility.Visible : Visibility.Collapsed;
+        ViewProfitability.Visibility = tabIndex == 3 ? Visibility.Visible : Visibility.Collapsed;
+
+        // Ocultar buscador si estamos en resúmenes
+        PanelSearch.Visibility = (tabIndex == 0 || tabIndex == 1) ? Visibility.Visible : Visibility.Collapsed;
+
         switch (tabIndex)
         {
             case 0:
-                RbTabSalesBook.IsChecked = true;
+                TxtReportActiveTitle.Text = "Libro de Ventas Fiscal";
+                IconReportActive.Symbol = FluentIcons.Common.Symbol.DocumentTable;
+                IconReportActive.Foreground = (Brush)FindResource("PrimaryBrandBrush");
+                TxtReportActiveBadge.Text = "ART. 56 LEY DE IVA • DÉBITO FISCAL";
+                TxtReportActiveBadge.Foreground = (Brush)FindResource("PrimaryBrandBrush");
+                BorderReportActiveBadge.Background = (Brush)new BrushConverter().ConvertFromString("#EBF3FC")!;
+                TxtSearchPlaceholder.Text = "Buscar por cliente, RIF o factura...";
                 break;
             case 1:
-                RbTabPurchasesBook.IsChecked = true;
+                TxtReportActiveTitle.Text = "Libro de Compras Fiscal";
+                IconReportActive.Symbol = FluentIcons.Common.Symbol.DocumentTableCheckmark;
+                IconReportActive.Foreground = (Brush)FindResource("AccentGreenBrush");
+                TxtReportActiveBadge.Text = "CRÉDITO FISCAL • RETENCIONES SENIAT";
+                TxtReportActiveBadge.Foreground = (Brush)FindResource("AccentGreenBrush");
+                BorderReportActiveBadge.Background = (Brush)new BrushConverter().ConvertFromString("#E6F4EA")!;
+                TxtSearchPlaceholder.Text = "Buscar por proveedor, RIF o factura...";
                 break;
             case 2:
-                RbTabTaxSummary.IsChecked = true;
+                TxtReportActiveTitle.Text = "Resumen Tributario (Forma 30 SENIAT)";
+                IconReportActive.Symbol = FluentIcons.Common.Symbol.ReceiptMoney;
+                IconReportActive.Foreground = (Brush)new BrushConverter().ConvertFromString("#8E562E")!;
+                TxtReportActiveBadge.Text = "DÉBITO VS CRÉDITO • IGTF DIVISAS";
+                TxtReportActiveBadge.Foreground = (Brush)new BrushConverter().ConvertFromString("#795E00")!;
+                BorderReportActiveBadge.Background = (Brush)new BrushConverter().ConvertFromString("#FFF4CE")!;
                 break;
             case 3:
-                RbTabProfitability.IsChecked = true;
+                TxtReportActiveTitle.Text = "Rentabilidad y Top Productos";
+                IconReportActive.Symbol = FluentIcons.Common.Symbol.ArrowTrendingLines;
+                IconReportActive.Foreground = (Brush)new BrushConverter().ConvertFromString("#7C3AED")!;
+                TxtReportActiveBadge.Text = "MARGEN BRUTO • ANÁLISIS DE VENTAS";
+                TxtReportActiveBadge.Foreground = (Brush)new BrushConverter().ConvertFromString("#7C3AED")!;
+                BorderReportActiveBadge.Background = (Brush)new BrushConverter().ConvertFromString("#F3E8FF")!;
                 break;
         }
+
+        TxtSearch.Text = string.Empty;
     }
 
     public async Task LoadPeriodDataAsync()
@@ -250,19 +294,6 @@ public partial class FiscalReportsView : UserControl
         GridPaymentMethods.ItemsSource = _currentAnalytics.PaymentMethods;
     }
 
-    private void ReportTab_Checked(object sender, RoutedEventArgs e)
-    {
-        if (!IsLoaded) return;
-
-        ViewSalesBook.Visibility = RbTabSalesBook.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
-        ViewPurchasesBook.Visibility = RbTabPurchasesBook.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
-        ViewTaxSummary.Visibility = RbTabTaxSummary.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
-        ViewProfitability.Visibility = RbTabProfitability.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
-
-        // Ocultar buscador si estamos en resúmenes
-        PanelSearch.Visibility = (RbTabSalesBook.IsChecked == true || RbTabPurchasesBook.IsChecked == true) ? Visibility.Visible : Visibility.Collapsed;
-    }
-
     private async void BtnLoadPeriod_Click(object sender, RoutedEventArgs e)
     {
         await LoadPeriodDataAsync();
@@ -271,11 +302,11 @@ public partial class FiscalReportsView : UserControl
     private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
     {
         TxtSearchPlaceholder.Visibility = string.IsNullOrEmpty(TxtSearch.Text) ? Visibility.Visible : Visibility.Collapsed;
-        if (RbTabSalesBook.IsChecked == true)
+        if (_currentTabIndex == 0)
         {
             ApplySalesFilter();
         }
-        else if (RbTabPurchasesBook.IsChecked == true)
+        else if (_currentTabIndex == 1)
         {
             ApplyPurchasesFilter();
         }
@@ -295,7 +326,7 @@ public partial class FiscalReportsView : UserControl
             year = y;
         }
 
-        bool isSales = RbTabSalesBook.IsChecked == true || RbTabTaxSummary.IsChecked == true || RbTabProfitability.IsChecked == true;
+        bool isSales = _currentTabIndex == 0 || _currentTabIndex == 2 || _currentTabIndex == 3;
         string defaultName = isSales
             ? $"Libro_Ventas_Fiscal_SENIAT_{month:D2}_{year}.csv"
             : $"Libro_Compras_Fiscal_SENIAT_{month:D2}_{year}.csv";

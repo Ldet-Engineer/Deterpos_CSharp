@@ -194,7 +194,11 @@ public class MainViewModel : ViewModelBase
     public int FiscalReportTabRequested
     {
         get => _fiscalReportTabRequested;
-        set => SetProperty(ref _fiscalReportTabRequested, value);
+        set
+        {
+            _fiscalReportTabRequested = value;
+            OnPropertyChanged();
+        }
     }
 
     private string _cashActionRequested = string.Empty;
@@ -587,8 +591,16 @@ public class MainViewModel : ViewModelBase
                         FiscalReportTabRequested = 0;
                         break;
                     case "Libro de Compras Fiscal":
+                    case "Libro de Compras":
                         CurrentModule = ActiveViewModule.FiscalReports;
                         FiscalReportTabRequested = 1;
+                        break;
+                    case "Resumen Tributario":
+                    case "Resumen IVA":
+                    case "Forma 30":
+                    case "Declaración Forma 30":
+                        CurrentModule = ActiveViewModule.FiscalReports;
+                        FiscalReportTabRequested = 2;
                         break;
                     case "Reporte de Ventas":
                         CurrentModule = ActiveViewModule.FiscalReports;
