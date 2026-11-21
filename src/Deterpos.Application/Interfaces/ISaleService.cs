@@ -16,4 +16,6 @@ public interface ISaleService
     Task<Sale?> GetSaleByIdAsync(int saleId);
     Task<Sale?> GetSaleByInvoiceNumberAsync(string invoiceNumber);
     Task<bool> CancelSaleAsync(int saleId, string reason);
+    Task<FiscalReportZResultDto> ExecuteFiscalZReportAsync(int zNumber, decimal bcvRate);
+    Task<int> GetMaxFiscalZReportNumberAsync();
 }

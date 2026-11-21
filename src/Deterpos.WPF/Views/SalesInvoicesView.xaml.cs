@@ -59,6 +59,11 @@ public class InvoiceRowDisplay
         _ => "#137333"
     })!;
 
+    public bool HasFiscalZReport => Source.FiscalZReportNumber.HasValue;
+    public string ZReportDisplay => Source.FiscalZReportNumber.HasValue ? $"Z #{Source.FiscalZReportNumber.Value}" : "Pendiente Z";
+    public Brush ZReportBackground => (Brush)new BrushConverter().ConvertFromString(Source.FiscalZReportNumber.HasValue ? "#F0F4F8" : "#FEF3C7")!;
+    public Brush ZReportForeground => (Brush)new BrushConverter().ConvertFromString(Source.FiscalZReportNumber.HasValue ? "#334155" : "#B45309")!;
+
     public bool CanEmitCreditNote => Source.DocumentType == FiscalDocumentType.Factura && Source.Status != SaleStatus.Anulada;
 }
 
@@ -165,11 +170,19 @@ public partial class SalesInvoicesView : UserControl
         {
             filtered = filtered.Where(s => s.Status == SaleStatus.Completada);
         }
-        else if (CmbStatus.SelectedIndex == 2) // Devueltas
+        else if (CmbStatus.SelectedIndex == 2) // Pendientes de Z
+        {
+            filtered = filtered.Where(s => !s.FiscalZReportNumber.HasValue && s.Status != SaleStatus.Anulada);
+        }
+        else if (CmbStatus.SelectedIndex == 3) // Cerradas en Z
+        {
+            filtered = filtered.Where(s => s.FiscalZReportNumber.HasValue);
+        }
+        else if (CmbStatus.SelectedIndex == 4) // Devueltas
         {
             filtered = filtered.Where(s => s.Status == SaleStatus.Devuelta);
         }
-        else if (CmbStatus.SelectedIndex == 3) // Anuladas
+        else if (CmbStatus.SelectedIndex == 5) // Anuladas
         {
             filtered = filtered.Where(s => s.Status == SaleStatus.Anulada);
         }

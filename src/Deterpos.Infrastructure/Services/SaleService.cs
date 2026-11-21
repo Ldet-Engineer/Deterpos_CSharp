@@ -524,4 +524,56 @@ public class SaleService : ISaleService
         await context.SaveChangesAsync();
         return true;
     }
+
+    public async Task<int> GetMaxFiscalZReportNumberAsync()
+    {
+        await using var context = GetContext();
+        var maxZ = await context.Sales.MaxAsync(s => (int?)s.FiscalZReportNumber);
+        return maxZ ?? 101;
+    }
+
+    public async Task<FiscalReportZResultDto> ExecuteFiscalZReportAsync(int zNumber, decimal bcvRate)
+    {
+        await using var context = GetContext();
+        var pendingSales = await context.Sales
+            .Where(s => s.FiscalZReportNumber == null && s.Status != SaleStatus.Anulada)
+            .OrderBy(s => s.Id)
+            .ToListAsync();
+
+        decimal rate = bcvRate > 0 ? bcvRate : 55.4000m;
+
+        var result = new FiscalReportZResultDto
+        {
+            ZReportNumber = zNumber,
+            ClosedAt = DateTime.UtcNow,
+            AppliedRateVES = rate,
+            ClosedInvoicesCount = pendingSales.Count(s => s.DocumentType == FiscalDocumentType.Factura),
+            ClosedCreditNotesCount = pendingSales.Count(s => s.DocumentType == FiscalDocumentType.NotaDeCredito)
+        };
+
+        if (pendingSales.Count > 0)
+        {
+            result.FirstInvoiceNumber = pendingSales.First().InvoiceNumber;
+            result.LastInvoiceNumber = pendingSales.Last().InvoiceNumber;
+
+            foreach (var s in pendingSales)
+            {
+                decimal factor = s.DocumentType == FiscalDocumentType.NotaDeCredito ? -1m : 1m;
+                result.BaseGeneralUSD += s.BaseGeneralUSD * factor;
+                result.IvaGeneralUSD += s.IvaGeneralUSD * factor;
+                result.BaseReducidaUSD += s.BaseReducidaUSD * factor;
+                result.IvaReducidaUSD += s.IvaReducidaUSD * factor;
+                result.MontoExentoUSD += s.MontoExentoUSD * factor;
+                result.IgtfAmountUSD += s.IgtfAmountUSD * factor;
+                result.TotalUSD += s.TotalUSD * factor;
+
+                s.FiscalZReportNumber = zNumber;
+            }
+
+            result.TotalVES = decimal.Round(result.TotalUSD * rate, 2);
+            await context.SaveChangesAsync();
+        }
+
+        return result;
+    }
 }

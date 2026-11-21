@@ -80,6 +80,7 @@ public class MainViewModel : ViewModelBase
     private readonly DatabaseConfigurationService _dbConfigService = new();
     private readonly CurrencyService _currencyService;
     private readonly DashboardService _dashboardService;
+    private readonly ISaleService _saleService;
 
     private string _activeViewTitle = "Panel Principal (Dashboard)";
     private string _currentUserName = "Administrador";
@@ -429,6 +430,7 @@ public class MainViewModel : ViewModelBase
         var factory = new DeterposDbContextFactory(_dbConfigService);
         _currencyService = new CurrencyService(factory);
         _dashboardService = new DashboardService(factory);
+        _saleService = new SaleService(factory);
 
         RefreshDashboardCommand = new RelayCommand(async _ => await LoadDashboardLiveMetricsAsync());
 
@@ -681,30 +683,58 @@ public class MainViewModel : ViewModelBase
 
         PrintReportZCommand = new RelayCommand(async _ =>
         {
+            var nextZ = LastZReport + 1;
             var confirm = MessageBox.Show(
-                $"¿Está seguro de emitir el REPORTE Z (Cierre Diario de Caja Fiscal)?\n\n" +
-                $"Esta operación:\n" +
-                $"• Cerrará el ciclo diario de ventas en la memoria fiscal.\n" +
-                $"• Transmitirá los acumulados al SENIAT según Providencia 0141.\n" +
-                $"• Incrementará el correlativo oficial del Z-Report.\n\n" +
-                $"Último Z actual: #{LastZReport} ➔ Nuevo Z: #{LastZReport + 1}",
+                $"¿Está seguro de emitir el REPORTE Z #{nextZ} (Cierre Fiscal Diario)?\n\n" +
+                $"Esta operación conforme a Providencia SENIAT 00071 / 0141:\n" +
+                $"• Consolidará todos los tickets y facturas emitidos pendientes de cierre.\n" +
+                $"• Asignará y sellará el N° de Reporte Z #{nextZ} en la base de datos PostgreSQL.\n" +
+                $"• Transmitirá los acumulados de IVA e IGTF al servidor fiscal.\n" +
+                $"• Reiniciará el acumulador de ventas a cero para el nuevo ciclo fiscal.",
                 "Confirmación de Cierre Fiscal SENIAT (Reporte Z)",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
             if (confirm == MessageBoxResult.Yes)
             {
-                LastZReport++;
-                await _dashboardService.GetDashboardMetricsAsync(BcvRate);
-                MessageBox.Show(
-                    $"REPORTE Z #{LastZReport} EMITIDO Y TRANSMITIDO CON ÉXITO\n\n" +
-                    $"• Dispositivo Fiscal: {FiscalPrinterBrand}\n" +
-                    $"• Transmisión DTD al Servidor SENIAT: Aceptada\n" +
-                    $"• Fecha de Cierre: {DateTime.Now:dd/MM/yyyy hh:mm tt}\n" +
-                    $"• Total Fiscal Declarado: {TodaySalesVES:N2} Bs. (${TodaySalesUSD:N2})",
-                    "Cierre Fiscal SENIAT Completado",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                try
+                {
+                    var zSummary = await _saleService.ExecuteFiscalZReportAsync(nextZ, BcvRate);
+                    LastZReport = nextZ;
+                    TodaySalesUSD = 0;
+                    TodayInvoicesCount = 0;
+                    TodayCreditNotesCount = 0;
+
+                    string rangeMsg = zSummary.ClosedInvoicesCount > 0
+                        ? $"• Facturas Consolidadas: {zSummary.ClosedInvoicesCount} ({zSummary.FirstInvoiceNumber} ➔ {zSummary.LastInvoiceNumber})\n"
+                        : "• Facturas Consolidadas: 0 (No hubo ventas en este ciclo fiscal)\n";
+
+                    if (zSummary.ClosedCreditNotesCount > 0)
+                    {
+                        rangeMsg += $"• Notas de Crédito: {zSummary.ClosedCreditNotesCount}\n";
+                    }
+
+                    MessageBox.Show(
+                        $"REPORTE Z #{zSummary.ZReportNumber} EMITIDO Y TRANSMITIDO CON ÉXITO\n" +
+                        $"═════════════════════════════════════════════════\n" +
+                        $"• Dispositivo Fiscal: {FiscalPrinterBrand} (COM1)\n" +
+                        $"• Fecha / Hora de Cierre: {zSummary.ClosedAt.ToLocalTime():dd/MM/yyyy hh:mm tt}\n" +
+                        rangeMsg +
+                        $"• Base Imponible General (16%): ${zSummary.BaseGeneralUSD:N2}\n" +
+                        $"• Débito Fiscal IVA (16%): ${zSummary.IvaGeneralUSD:N2}\n" +
+                        $"• Percepción IGTF Divisas (3%): ${zSummary.IgtfAmountUSD:N2}\n" +
+                        $"• Total Fiscal Declarado: {zSummary.TotalVES:N2} Bs. (${zSummary.TotalUSD:N2})\n" +
+                        $"• Estatus Transmisión SENIAT: REGISTRO ACEPTADO (OK)\n" +
+                        $"═════════════════════════════════════════════════\n\n" +
+                        $"Los tickets han sido sellados fiscalmente en PostgreSQL y el acumulador fue reiniciado.",
+                        "Cierre Fiscal SENIAT Completado",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error ejecutando el Reporte Z en PostgreSQL:\n{ex.Message}", "Error Fiscal", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         });
 
@@ -750,6 +780,9 @@ public class MainViewModel : ViewModelBase
 
                 // Cargar métricas ejecutivas en vivo del Dashboard (Fase 12)
                 await LoadDashboardLiveMetricsAsync();
+
+                // Sincronizar último número de Reporte Z desde PostgreSQL
+                LastZReport = await _saleService.GetMaxFiscalZReportNumberAsync();
             }
             else
             {
