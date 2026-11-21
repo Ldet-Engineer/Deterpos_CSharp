@@ -264,17 +264,31 @@
                             <TextBlock x:Name="TxtItemsCountSubtitle" Text="0 artículos en el carrito" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
                         </StackPanel>
 
-                        <Button Grid.Column="1" Click="BtnClearCart_Click" Background="White" BorderBrush="#F8D7DA" BorderThickness="1" Padding="10,5" Cursor="Hand" ToolTip="Vaciar Carrito">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="4" />
-                                </Style>
-                            </Button.Resources>
-                            <StackPanel Orientation="Horizontal">
-                                <fluentIcons:SymbolIcon Symbol="Delete" FontSize="14" Foreground="#DC3545" Margin="0,0,4,0" VerticalAlignment="Center" />
-                                <TextBlock Text="Limpiar" FontSize="11" Foreground="#DC3545" FontWeight="SemiBold" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button x:Name="BtnViewHoldTickets" Click="BtnViewHoldTickets_Click" Background="#FDF2F8" BorderBrush="#F472B6" BorderThickness="1" Padding="8,5" Cursor="Hand" ToolTip="Ver y recuperar ventas pausadas" Margin="0,0,6,0">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="4" />
+                                    </Style>
+                                </Button.Resources>
+                                <StackPanel Orientation="Horizontal">
+                                    <fluentIcons:SymbolIcon Symbol="Clock" FontSize="14" Foreground="#DB2777" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                    <TextBlock x:Name="TxtHoldTicketsBadge" Text="En Espera (0)" FontSize="11" Foreground="#DB2777" FontWeight="Bold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button Click="BtnClearCart_Click" Background="White" BorderBrush="#F8D7DA" BorderThickness="1" Padding="8,5" Cursor="Hand" ToolTip="Vaciar Carrito">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="4" />
+                                    </Style>
+                                </Button.Resources>
+                                <StackPanel Orientation="Horizontal">
+                                    <fluentIcons:SymbolIcon Symbol="Delete" FontSize="14" Foreground="#DC3545" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="Limpiar" FontSize="11" Foreground="#DC3545" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
                     </Grid>
 
                     <!-- EN LA PARTE SUPERIOR: LISTA DE LOS ARTÍCULOS A FACTURAR -->
@@ -392,26 +406,48 @@
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="6" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="6" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="6" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <Button Click="BtnClearCart_Click" Background="White" BorderBrush="#F8D7DA" BorderThickness="1" Padding="8,7" Cursor="Hand">
+                            <Button Click="BtnClearCart_Click" Background="White" BorderBrush="#F8D7DA" BorderThickness="1" Padding="4,7" Cursor="Hand" ToolTip="Vaciar carrito [F4]">
                                 <Button.Resources>
                                     <Style TargetType="Border">
                                         <Setter Property="CornerRadius" Value="6" />
                                     </Style>
                                 </Button.Resources>
-                                <TextBlock Text="[F4] Cancelar" FontWeight="SemiBold" Foreground="#DC3545" FontSize="12" HorizontalAlignment="Center" />
+                                <TextBlock Text="[F4] Cancelar" FontWeight="SemiBold" Foreground="#DC3545" FontSize="11" HorizontalAlignment="Center" />
                             </Button>
 
-                            <Button Grid.Column="2" Click="BtnRecentSales_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="8,7" Cursor="Hand">
+                            <Button Grid.Column="2" Click="BtnCreateQuotationFromCart_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="4,7" Cursor="Hand" ToolTip="Guardar cotización [F6]">
                                 <Button.Resources>
                                     <Style TargetType="Border">
                                         <Setter Property="CornerRadius" Value="6" />
                                     </Style>
                                 </Button.Resources>
-                                <TextBlock Text="[F8] Recientes" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" FontSize="12" HorizontalAlignment="Center" />
+                                <TextBlock Text="[F6] Cotizar" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" FontSize="11" HorizontalAlignment="Center" />
+                            </Button>
+
+                            <Button Grid.Column="4" Click="BtnHoldCurrentCart_Click" Background="White" BorderBrush="#FBCFE8" BorderThickness="1" Padding="4,7" Cursor="Hand" ToolTip="Pausar venta [F7]">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6" />
+                                    </Style>
+                                </Button.Resources>
+                                <TextBlock Text="[F7] Espera" FontWeight="Bold" Foreground="#DB2777" FontSize="11" HorizontalAlignment="Center" />
+                            </Button>
+
+                            <Button Grid.Column="6" Click="BtnRecentSales_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="4,7" Cursor="Hand" ToolTip="Últimas ventas [F8]">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6" />
+                                    </Style>
+                                </Button.Resources>
+                                <TextBlock Text="[F8] Recientes" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" HorizontalAlignment="Center" />
                             </Button>
                         </Grid>
 

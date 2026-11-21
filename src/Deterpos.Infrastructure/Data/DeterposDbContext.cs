@@ -34,6 +34,8 @@ public class DeterposDbContext : DbContext, IApplicationDbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<UserPermissions> UserPermissions => Set<UserPermissions>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<Quotation> Quotations => Set<Quotation>();
+    public DbSet<QuotationDetail> QuotationDetails => Set<QuotationDetail>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -503,6 +505,35 @@ public class DeterposDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.Module).HasMaxLength(50).IsRequired();
             entity.Property(e => e.Action).HasMaxLength(100).IsRequired();
             entity.Property(e => e.IpAddress).HasMaxLength(50);
+        });
+
+        // Quotations (Presupuestos / Proformas Comerciales)
+        modelBuilder.Entity<Quotation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.QuotationNumber).IsUnique();
+            entity.Property(e => e.QuotationNumber).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.CustomerDocument).HasMaxLength(30);
+            entity.Property(e => e.CustomerName).HasMaxLength(150);
+            entity.Property(e => e.SubtotalUSD).HasPrecision(18, 4);
+            entity.Property(e => e.TaxAmountUSD).HasPrecision(18, 4);
+            entity.Property(e => e.TotalUSD).HasPrecision(18, 4);
+            entity.Property(e => e.ExchangeRateApplied).HasPrecision(18, 4);
+
+            entity.HasMany(e => e.Details)
+                  .WithOne()
+                  .HasForeignKey(d => d.QuotationId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<QuotationDetail>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Quantity).HasPrecision(18, 3);
+            entity.Property(e => e.UnitCostUSD).HasPrecision(18, 4);
+            entity.Property(e => e.UnitPriceUSD).HasPrecision(18, 4);
+            entity.Property(e => e.TotalPriceUSD).HasPrecision(18, 4);
+            entity.Property(e => e.VatAmountUSD).HasPrecision(18, 4);
         });
     }
 }

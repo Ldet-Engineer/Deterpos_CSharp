@@ -1,3 +1,4 @@
+using Deterpos.Application.Common;
 using Deterpos.Domain.Entities;
 using Deterpos.Domain.Enums;
 using Deterpos.Infrastructure.Data;
@@ -244,5 +245,79 @@ public class DatabaseConnectionAndModuleTests
             }
             throw;
         }
+    }
+
+    [Fact]
+    public void Test09_ParkedTickets_Manager_Park_And_Restore()
+    {
+        ParkedTicketsManager.ClearAll();
+        Assert.Equal(0, ParkedTicketsManager.Count);
+
+        var items = new List<Deterpos.Application.Common.ParkedCartItemDraft>
+        {
+            new() { ProductId = 1, ProductCode = "PROD-001", ProductName = "Harina", Quantity = 2, UnitPriceUSD = 1.30m, VatRate = VatRateType.Exento0 },
+            new() { ProductId = 2, ProductCode = "PROD-002", ProductName = "Arroz", Quantity = 3, UnitPriceUSD = 1.20m, VatRate = VatRateType.Exento0 }
+        };
+
+        var ticket = ParkedTicketsManager.ParkCart("Ticket Espera Test #1", 1, "V-00000000", "Cliente Genérico", 55.40m, items);
+        Assert.NotNull(ticket);
+        Assert.Equal(1, ParkedTicketsManager.Count);
+        _output.WriteLine($"Ticket en espera creado con éxito: ID #{ticket.Id} - Total: ${ticket.TotalUSD:N2}");
+
+        var restored = ParkedTicketsManager.Restore(ticket.Id);
+        Assert.NotNull(restored);
+        Assert.Equal(2, restored.Items.Count);
+        Assert.Equal(0, ParkedTicketsManager.Count);
+        _output.WriteLine($"Ticket #{ticket.Id} recuperado del almacén temporal con éxito.");
+    }
+
+    [Fact]
+    public async Task Test10_Quotations_Create_And_Verify_NoStockImpact()
+    {
+        var quotationService = new QuotationService(_factory);
+        await using var context = CreateDbContext();
+
+        var product = await context.Products.FirstAsync();
+        decimal initialStock = product.CurrentStock;
+
+        var draft = new Quotation
+        {
+            CustomerDocument = "V-12345678",
+            CustomerName = "Empresa Cliente Test C.A.",
+            CustomerPhone = "0414-1234567",
+            ExchangeRateApplied = 55.40m,
+            ValidUntil = DateTime.UtcNow.AddDays(7),
+            Notes = "Cotización de prueba para verificación automatizada"
+        };
+
+        var details = new List<QuotationDetail>
+        {
+            new()
+            {
+                ProductId = product.Id,
+                ProductCode = product.Code,
+                ProductName = product.Name,
+                Quantity = 5,
+                UnitCostUSD = product.CostUSD,
+                UnitPriceUSD = product.PriceUSD,
+                VatRate = product.VatRate
+            }
+        };
+
+        var saved = await quotationService.CreateQuotationAsync(draft, details);
+        _output.WriteLine($"Cotización creada: N° {saved.QuotationNumber} | Total: ${saved.TotalUSD:N2} | Total VES: {saved.TotalVES:N2} Bs.");
+
+        Assert.NotNull(saved);
+        Assert.StartsWith("COT-", saved.QuotationNumber);
+        Assert.Equal(QuotationStatus.Pendiente, saved.Status);
+
+        // Verificar que el stock NO fue descontado (la cotización no es fiscal ni mueve almacén)
+        var verifyProduct = await context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == product.Id);
+        Assert.NotNull(verifyProduct);
+        Assert.Equal(initialStock, verifyProduct.CurrentStock);
+        _output.WriteLine($"Stock inalterado verificado: {verifyProduct.CurrentStock} (Igual a inicial {initialStock})");
+
+        var allQuotes = await quotationService.GetAllQuotationsAsync();
+        Assert.Contains(allQuotes, q => q.QuotationNumber == saved.QuotationNumber);
     }
 }

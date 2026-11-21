@@ -74,6 +74,7 @@ public partial class PosView : UserControl
     private readonly SaleService _saleService;
     private readonly CashRegisterService _cashService;
     private readonly CustomerService _customerService;
+    private readonly QuotationService _quotationService;
 
     private readonly List<Product> _allProducts = new();
     private readonly ObservableCollection<CatalogItemDisplay> _displayedCatalog = new();
@@ -95,19 +96,23 @@ public partial class PosView : UserControl
         _saleService = new SaleService(factory);
         _cashService = new CashRegisterService(factory);
         _customerService = new CustomerService(factory);
+        _quotationService = new QuotationService(factory);
 
         DgCatalog.ItemsSource = _displayedCatalog;
         DgCart.ItemsSource = _cartItems;
 
         Loaded += PosView_Loaded;
         IsVisibleChanged += PosView_IsVisibleChanged;
+        PreviewKeyDown += PosView_PreviewKeyDown;
         AppEvents.InventoryChanged += OnInventoryChanged;
         AppEvents.CashChanged += OnCashChanged;
+        ParkedTicketsManager.ParkedTicketsChanged += () => Dispatcher.Invoke(UpdateHoldTicketsBadge);
     }
 
     private async void PosView_Loaded(object sender, RoutedEventArgs e)
     {
         await InitializePosAsync();
+        UpdateHoldTicketsBadge();
     }
 
     private async void PosView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -633,5 +638,271 @@ public partial class PosView : UserControl
         {
             MessageBox.Show($"Error consultando ventas recientes: {ex.Message}", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
+    }
+
+    private void PosView_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.F12)
+        {
+            e.Handled = true;
+            if (BtnCheckout.IsEnabled)
+            {
+                BtnCheckout_Click(BtnCheckout, new RoutedEventArgs());
+            }
+        }
+        else if (e.Key == Key.F4)
+        {
+            e.Handled = true;
+            BtnClearCart_Click(this, new RoutedEventArgs());
+        }
+        else if (e.Key == Key.F6)
+        {
+            e.Handled = true;
+            BtnCreateQuotationFromCart_Click(this, new RoutedEventArgs());
+        }
+        else if (e.Key == Key.F7)
+        {
+            e.Handled = true;
+            if (_cartItems.Count > 0)
+            {
+                BtnHoldCurrentCart_Click(this, new RoutedEventArgs());
+            }
+            else
+            {
+                OpenHoldTicketsDialog();
+            }
+        }
+        else if (e.Key == Key.F8)
+        {
+            e.Handled = true;
+            BtnRecentSales_Click(this, new RoutedEventArgs());
+        }
+    }
+
+    public void UpdateHoldTicketsBadge()
+    {
+        int count = ParkedTicketsManager.Count;
+        TxtHoldTicketsBadge.Text = $"En Espera ({count})";
+        BtnViewHoldTickets.Background = count > 0 
+            ? new SolidColorBrush(Color.FromRgb(252, 231, 243))
+            : new SolidColorBrush(Color.FromRgb(253, 242, 248));
+    }
+
+    public void OpenHoldTicketsDialog()
+    {
+        var holdDlg = new HoldTicketsDialog
+        {
+            Owner = Window.GetWindow(this)
+        };
+
+        if (holdDlg.ShowDialog() == true && holdDlg.RestoredTicket != null)
+        {
+            var ticket = holdDlg.RestoredTicket;
+            if (_cartItems.Count > 0)
+            {
+                var ask = MessageBox.Show(
+                    "Hay artículos en el carrito actual.\n¿Desea reemplazarlos con el ticket recuperado (Sí) o agregarlos al carrito existente (No)?",
+                    "Recuperar Venta",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Question);
+
+                if (ask == MessageBoxResult.Cancel) return;
+                if (ask == MessageBoxResult.Yes)
+                {
+                    _cartItems.Clear();
+                }
+            }
+
+            decimal bcv = ViewModel?.BcvRate ?? 55.40m;
+            foreach (var item in ticket.Items)
+            {
+                _cartItems.Add(new PosCartItem
+                {
+                    ItemIndex = _cartItems.Count + 1,
+                    ProductId = item.ProductId,
+                    ProductCode = item.ProductCode,
+                    ProductName = item.ProductName,
+                    CategoryName = item.CategoryName,
+                    UnitCostUSD = item.UnitCostUSD,
+                    UnitPriceUSD = item.UnitPriceUSD,
+                    Quantity = item.Quantity,
+                    VatRate = item.VatRate,
+                    BcvRate = bcv
+                });
+            }
+
+            if (ticket.CustomerId.HasValue)
+            {
+                _activeCustomer = new Customer
+                {
+                    Id = ticket.CustomerId.Value,
+                    DocumentNumber = ticket.CustomerDocument,
+                    FullName = ticket.CustomerName
+                };
+                TxtClientDoc.Text = _activeCustomer.DocumentNumber;
+                TxtClientName.Text = _activeCustomer.FullName;
+            }
+
+            RecalculateCartTotals();
+            FocusBarcodeInput();
+            MessageBox.Show($"Venta pausada '{ticket.Reference}' cargada exitosamente al carrito.", "Venta Restaurada", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
+    private void BtnViewHoldTickets_Click(object sender, RoutedEventArgs e)
+    {
+        OpenHoldTicketsDialog();
+    }
+
+    private void BtnHoldCurrentCart_Click(object sender, RoutedEventArgs e)
+    {
+        if (_cartItems.Count == 0)
+        {
+            MessageBox.Show("No hay artículos en el carrito para poner en espera.", "Carrito Vacío", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        string defaultRef = $"Venta {DateTime.Now:hh:mm tt} - {(_activeCustomer != null ? _activeCustomer.FullName : "Cliente Mostrador")}";
+        
+        var drafts = _cartItems.Select(i => new ParkedCartItemDraft
+        {
+            ProductId = i.ProductId,
+            ProductCode = i.ProductCode,
+            ProductName = i.ProductName,
+            CategoryName = i.CategoryName,
+            UnitCostUSD = i.UnitCostUSD,
+            UnitPriceUSD = i.UnitPriceUSD,
+            Quantity = i.Quantity,
+            VatRate = i.VatRate
+        }).ToList();
+
+        decimal rate = ViewModel?.BcvRate ?? 55.40m;
+        var parked = ParkedTicketsManager.ParkCart(
+            defaultRef,
+            _activeCustomer?.Id,
+            _activeCustomer?.DocumentNumber ?? "V-00000000",
+            _activeCustomer?.FullName ?? "Cliente de Contado / Genérico",
+            rate,
+            drafts
+        );
+
+        _cartItems.Clear();
+        RecalculateCartTotals();
+        FocusBarcodeInput();
+
+        MessageBox.Show($"Venta puesta en espera correctamente como:\n'{parked.Reference}'\n\nPuedes continuar cobrando a otros clientes.", "Venta en Espera", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private async void BtnCreateQuotationFromCart_Click(object sender, RoutedEventArgs e)
+    {
+        if (_cartItems.Count == 0)
+        {
+            MessageBox.Show("Agregue al menos un producto al carrito para generar una cotización.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        decimal bcv = ViewModel?.BcvRate ?? 55.40m;
+
+        var quotationDraft = new Quotation
+        {
+            CustomerId = _activeCustomer?.Id,
+            CustomerDocument = _activeCustomer?.DocumentNumber ?? "V-00000000",
+            CustomerName = _activeCustomer?.FullName ?? "Cliente de Contado / Genérico",
+            CustomerPhone = _activeCustomer?.Phone ?? string.Empty,
+            ExchangeRateApplied = bcv,
+            ValidUntil = DateTime.UtcNow.AddDays(7),
+            Notes = "Presupuesto comercial válido por 7 días a tasa oficial BCV."
+        };
+
+        var details = _cartItems.Select(i => new QuotationDetail
+        {
+            ProductId = i.ProductId,
+            ProductCode = i.ProductCode,
+            ProductName = i.ProductName,
+            Quantity = i.Quantity,
+            UnitCostUSD = i.UnitCostUSD,
+            UnitPriceUSD = i.UnitPriceUSD,
+            VatRate = i.VatRate
+        }).ToList();
+
+        try
+        {
+            var saved = await _quotationService.CreateQuotationAsync(quotationDraft, details);
+
+            var ticketDlg = new QuotationTicketDialog(saved)
+            {
+                Owner = Window.GetWindow(this)
+            };
+            ticketDlg.ShowDialog();
+
+            var ask = MessageBox.Show(
+                $"Cotización N° {saved.QuotationNumber} guardada exitosamente.\n\n¿Desea vaciar el carrito actual?",
+                "Cotización Creada",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (ask == MessageBoxResult.Yes)
+            {
+                _cartItems.Clear();
+                RecalculateCartTotals();
+                FocusBarcodeInput();
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error generando cotización: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    public void LoadQuotationToCart(Quotation quotation)
+    {
+        if (quotation == null || quotation.Details == null || quotation.Details.Count == 0) return;
+
+        if (_cartItems.Count > 0)
+        {
+            var ask = MessageBox.Show(
+                "Hay productos en el carrito actual.\n¿Desea reemplazarlos con los productos de la cotización?",
+                "Cargar Cotización",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (ask != MessageBoxResult.Yes) return;
+            _cartItems.Clear();
+        }
+
+        decimal bcv = ViewModel?.BcvRate ?? 55.40m;
+
+        foreach (var d in quotation.Details)
+        {
+            _cartItems.Add(new PosCartItem
+            {
+                ItemIndex = _cartItems.Count + 1,
+                ProductId = d.ProductId,
+                ProductCode = d.ProductCode,
+                ProductName = d.ProductName,
+                UnitCostUSD = d.UnitCostUSD,
+                UnitPriceUSD = d.UnitPriceUSD,
+                Quantity = d.Quantity,
+                VatRate = d.VatRate,
+                BcvRate = bcv
+            });
+        }
+
+        if (quotation.CustomerId.HasValue)
+        {
+            _activeCustomer = new Customer
+            {
+                Id = quotation.CustomerId.Value,
+                DocumentNumber = quotation.CustomerDocument,
+                FullName = quotation.CustomerName,
+                Phone = quotation.CustomerPhone
+            };
+            TxtClientDoc.Text = _activeCustomer.DocumentNumber;
+            TxtClientName.Text = _activeCustomer.FullName;
+        }
+
+        RecalculateCartTotals();
+        FocusBarcodeInput();
+        MessageBox.Show($"Cotización {quotation.QuotationNumber} cargada en el carrito del POS lista para facturar.", "Cotización Cargada", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 }

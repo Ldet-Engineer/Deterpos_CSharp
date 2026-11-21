@@ -201,6 +201,13 @@ public class MainViewModel : ViewModelBase
         }
     }
 
+    private string _posActionRequested = string.Empty;
+    public string PosActionRequested
+    {
+        get => _posActionRequested;
+        set => SetProperty(ref _posActionRequested, value);
+    }
+
     private string _cashActionRequested = string.Empty;
     public string CashActionRequested
     {
@@ -492,6 +499,7 @@ public class MainViewModel : ViewModelBase
                         break;
                     case "Tickets en Espera":
                         CurrentModule = ActiveViewModule.Pos;
+                        PosActionRequested = "HoldTickets";
                         break;
 
                     // DOCUMENTOS FISCALES Y DEVOLUCIONES
@@ -501,8 +509,8 @@ public class MainViewModel : ViewModelBase
                         IsCreditNoteFilterRequested = false;
                         break;
                     case "Cotizaciones":
-                        CurrentModule = ActiveViewModule.SalesInvoices;
-                        IsCreditNoteFilterRequested = false;
+                    case "Presupuestos":
+                        PosActionRequested = "Quotations";
                         break;
                     case "Notas de Crédito Fiscales":
                     case "Devoluciones":

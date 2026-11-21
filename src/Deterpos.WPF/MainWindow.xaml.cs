@@ -40,6 +40,26 @@ public partial class MainWindow : RibbonWindow
                         ViewPurchases.OpenNewPurchaseDialog();
                     }
                 }
+                else if (args.PropertyName == nameof(MainViewModel.PosActionRequested))
+                {
+                    if (vm.PosActionRequested == "HoldTickets")
+                    {
+                        ViewPos.OpenHoldTicketsDialog();
+                    }
+                    else if (vm.PosActionRequested == "Quotations")
+                    {
+                        var quotesDlg = new Views.Dialogs.QuotationsManagementDialog
+                        {
+                            Owner = this
+                        };
+                        if (quotesDlg.ShowDialog() == true && quotesDlg.SelectedQuotationToLoadToCart != null)
+                        {
+                            vm.CurrentModule = ViewModels.ActiveViewModule.Pos;
+                            ViewPos.LoadQuotationToCart(quotesDlg.SelectedQuotationToLoadToCart);
+                        }
+                    }
+                    vm.PosActionRequested = string.Empty;
+                }
                 else if (args.PropertyName == nameof(MainViewModel.CreditTabRequested))
                 {
                     ViewCreditManagement.SelectTab(vm.CreditTabRequested);

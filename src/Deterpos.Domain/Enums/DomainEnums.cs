@@ -59,3 +59,11 @@ public enum ExpensePaymentOrigin
     ZelleUSD,
     Otro
 }
+
+public enum QuotationStatus
+{
+    Pendiente,
+    Facturada,
+    Vencida,
+    Anulada
+}
