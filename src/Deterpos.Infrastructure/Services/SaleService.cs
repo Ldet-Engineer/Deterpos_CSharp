@@ -53,9 +53,27 @@ public class SaleService : ISaleService
 
         await using var context = GetContext();
 
-        // 1. Obtener o crear correlativo secuencial
+        // 1. Obtener o crear correlativo secuencial garantizando unicidad estricta
         var sequence = await context.CashRegisterSequences
             .FirstOrDefaultAsync(s => s.CashRegisterId == saleDraft.CashRegisterId && s.Prefix == "FAC");
+
+        // Consultar facturas existentes para evitar colisiones de unicidad fiscal
+        var existingNumbers = await context.Sales
+            .Where(s => s.InvoiceNumber.StartsWith("FAC-"))
+            .Select(s => s.InvoiceNumber)
+            .ToListAsync();
+
+        long maxExistingNum = 0;
+        foreach (var inv in existingNumbers)
+        {
+            var parts = inv.Split('-');
+            if (parts.Length == 2 && long.TryParse(parts[1], out var parsedNum))
+            {
+                if (parsedNum > maxExistingNum) maxExistingNum = parsedNum;
+            }
+        }
+
+        long nextInvoiceNumber = Math.Max(sequence?.CurrentNumber ?? 0, maxExistingNum) + 1;
 
         if (sequence == null)
         {
@@ -63,13 +81,13 @@ public class SaleService : ISaleService
             {
                 CashRegisterId = saleDraft.CashRegisterId,
                 Prefix = "FAC",
-                CurrentNumber = 1
+                CurrentNumber = nextInvoiceNumber
             };
             context.CashRegisterSequences.Add(sequence);
         }
         else
         {
-            sequence.CurrentNumber++;
+            sequence.CurrentNumber = nextInvoiceNumber;
         }
 
         // 2. Armar cabecera fiscal

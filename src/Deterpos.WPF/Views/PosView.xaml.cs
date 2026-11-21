@@ -534,7 +534,8 @@ public partial class PosView : UserControl
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al procesar la venta en PostgreSQL: {ex.Message}", "Error Fiscal", MessageBoxButton.OK, MessageBoxImage.Error);
+                string detail = ex.InnerException != null ? $"\n\nDetalle técnico: {ex.InnerException.Message}" : "";
+                MessageBox.Show($"Error al procesar la venta en PostgreSQL: {ex.Message}{detail}", "Error Fiscal", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
