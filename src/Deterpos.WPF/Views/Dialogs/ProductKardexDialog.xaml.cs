@@ -22,9 +22,11 @@ public class KardexProductComboItem
     public string Name { get; set; } = string.Empty;
     public decimal CurrentStock { get; set; }
     public decimal CostUSD { get; set; }
-    public Product Product { get; set; } = null!;
+    public Product? Product { get; set; }
 
-    public string DisplayName => $"{Code} • {Name} (Stock: {CurrentStock:G29})";
+    public string DisplayName => Id == 0
+        ? "★ Todos los Productos (Kárdex Global) ★"
+        : $"{Code} • {Name} (Stock: {CurrentStock:G29})";
 }
 
 public class KardexRowDisplay
@@ -67,6 +69,10 @@ public class KardexRowDisplay
         _ => new SolidColorBrush(Color.FromRgb(55, 65, 81))
     };
 
+    public string ProductDisplay => Source.Product != null
+        ? $"{Source.Product.Code} - {Source.Product.Name}"
+        : $"Producto #{Source.ProductId}";
+
     public string DocumentNumber => Source.DocumentNumber;
 
     public string DetailDisplay
@@ -101,6 +107,7 @@ public partial class ProductKardexDialog : Window
     private readonly decimal _bcvRate;
     private readonly int? _initialProductId;
 
+    private readonly List<Product> _catalogProducts = new();
     private readonly List<KardexProductComboItem> _allProducts = new();
     private readonly ObservableCollection<KardexRowDisplay> _kardexRows = new();
     private Product? _currentProduct;
@@ -136,8 +143,23 @@ public partial class ProductKardexDialog : Window
         try
         {
             var products = await _productService.GetAllProductsAsync();
+            _catalogProducts.Clear();
+            _catalogProducts.AddRange(products);
+
             _allProducts.Clear();
 
+            // Opción 0: Ámbito Global
+            _allProducts.Add(new KardexProductComboItem
+            {
+                Id = 0,
+                Code = "GLOBAL",
+                Name = "★ Todos los Productos (Kárdex Global) ★",
+                CurrentStock = products.Sum(p => p.CurrentStock),
+                CostUSD = 0,
+                Product = null
+            });
+
+            // Productos individuales
             foreach (var p in products)
             {
                 _allProducts.Add(new KardexProductComboItem
@@ -153,7 +175,7 @@ public partial class ProductKardexDialog : Window
 
             CmbProducts.ItemsSource = _allProducts;
 
-            if (_initialProductId.HasValue)
+            if (_initialProductId.HasValue && _initialProductId.Value > 0)
             {
                 var match = _allProducts.FirstOrDefault(p => p.Id == _initialProductId.Value);
                 if (match != null)
@@ -163,10 +185,8 @@ public partial class ProductKardexDialog : Window
                 }
             }
 
-            if (_allProducts.Count > 0)
-            {
-                CmbProducts.SelectedIndex = 0;
-            }
+            // Si no se pasó un producto específico, abrir directamente en modo global consolidado
+            CmbProducts.SelectedIndex = 0;
         }
         catch (Exception ex)
         {
@@ -179,18 +199,67 @@ public partial class ProductKardexDialog : Window
         if (!IsLoaded) return;
         if (CmbProducts.SelectedItem is KardexProductComboItem item)
         {
-            _currentProduct = item.Product;
-            UpdateProductHeaderCard();
+            if (item.Id == 0)
+            {
+                _currentProduct = null;
+                UpdateGlobalHeaderCard();
+                BtnAdjustStock.IsEnabled = false;
+                BtnAdjustStock.ToolTip = "Seleccione un producto específico para ajustar su inventario";
+            }
+            else
+            {
+                _currentProduct = item.Product;
+                UpdateProductHeaderCard();
+                BtnAdjustStock.IsEnabled = true;
+                BtnAdjustStock.ToolTip = "Ajustar stock de este producto";
+            }
+
             await LoadKardexDataAsync();
         }
+    }
+
+    private void UpdateGlobalHeaderCard()
+    {
+        int totalProducts = _catalogProducts.Count;
+        decimal totalStock = _catalogProducts.Sum(p => p.CurrentStock);
+        int lowStockCount = _catalogProducts.Count(p => p.CurrentStock <= p.MinimumStock);
+        decimal totalUSD = _catalogProducts.Sum(p => p.CurrentStock * p.CostUSD);
+        decimal totalVES = totalUSD * _bcvRate;
+
+        TxtHeaderCol1Title.Text = "ÁMBITO / CATÁLOGO";
+        TxtProductCodeName.Text = "★ Kárdex Global Consolidado ★";
+        TxtProductCategory.Text = $"{totalProducts} productos registrados en catálogo general";
+
+        TxtHeaderCol2Title.Text = "EXISTENCIAS TOTALES";
+        TxtCurrentStockDisplay.Text = $"{totalStock:N2} Unidades";
+        if (lowStockCount > 0)
+        {
+            TxtStockStatus.Text = $"{lowStockCount} artículos con stock bajo";
+            TxtStockStatus.Foreground = new SolidColorBrush(Color.FromRgb(217, 119, 6));
+        }
+        else
+        {
+            TxtStockStatus.Text = "Stock óptimo en todos los artículos";
+            TxtStockStatus.Foreground = new SolidColorBrush(Color.FromRgb(22, 101, 52));
+        }
+
+        TxtHeaderCol3Title.Text = "VALORACIÓN PONDERADA";
+        TxtAvgCostDisplay.Text = "Consolidado";
+        TxtAvgCostSubtitle.Text = "Calculado sobre costo de cada renglón";
+
+        TxtTotalValuationUSD.Text = $"$ {totalUSD:N2} USD";
+        TxtTotalValuationVES.Text = $"{totalVES:N2} Bs. (Tasa: {_bcvRate:N4})";
     }
 
     private void UpdateProductHeaderCard()
     {
         if (_currentProduct == null) return;
 
+        TxtHeaderCol1Title.Text = "ARTÍCULO / CÓDIGO";
         TxtProductCodeName.Text = $"{_currentProduct.Code} • {_currentProduct.Name}";
         TxtProductCategory.Text = $"Categoría: {_currentProduct.CategoryName} | Alícuota IVA: {_currentProduct.VatRate}";
+
+        TxtHeaderCol2Title.Text = "EXISTENCIA EN ALMACÉN";
         TxtCurrentStockDisplay.Text = $"{_currentProduct.CurrentStock:N2} Unidades";
 
         if (_currentProduct.CurrentStock <= 0)
@@ -209,7 +278,9 @@ public partial class ProductKardexDialog : Window
             TxtStockStatus.Foreground = new SolidColorBrush(Color.FromRgb(22, 101, 52));
         }
 
+        TxtHeaderCol3Title.Text = "COSTO PROMEDIO (CPP)";
         TxtAvgCostDisplay.Text = $"$ {_currentProduct.CostUSD:N2} USD";
+        TxtAvgCostSubtitle.Text = "Base de valoración de existencias";
 
         decimal totalUSD = _currentProduct.CurrentStock * _currentProduct.CostUSD;
         decimal totalVES = totalUSD * _bcvRate;
@@ -220,12 +291,11 @@ public partial class ProductKardexDialog : Window
 
     private async Task LoadKardexDataAsync()
     {
-        if (_currentProduct == null) return;
-
         try
         {
             DateTime? from = DpFromDate.SelectedDate;
             DateTime? to = DpToDate.SelectedDate;
+            string searchTerm = TxtSearchKardex.Text?.Trim() ?? string.Empty;
 
             InventoryMovementType? typeFilter = CmbTypeFilter.SelectedIndex switch
             {
@@ -237,7 +307,27 @@ public partial class ProductKardexDialog : Window
                 _ => null
             };
 
-            var movements = await _kardexService.GetProductKardexAsync(_currentProduct.Id, from, to, typeFilter);
+            IReadOnlyList<InventoryMovement> movements;
+
+            if (_currentProduct != null)
+            {
+                movements = await _kardexService.GetProductKardexAsync(_currentProduct.Id, from, to, typeFilter);
+                if (!string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    var term = searchTerm.ToLowerInvariant();
+                    movements = movements.Where(m =>
+                        m.DocumentNumber.ToLowerInvariant().Contains(term) ||
+                        m.EntityName.ToLowerInvariant().Contains(term) ||
+                        m.Reason.ToLowerInvariant().Contains(term) ||
+                        m.PerformedBy.ToLowerInvariant().Contains(term)
+                    ).ToList();
+                }
+            }
+            else
+            {
+                // Consulta Global de Movimientos
+                movements = await _kardexService.GetGlobalKardexAsync(searchTerm, from, to, typeFilter, limit: 2000);
+            }
 
             if (CmbTypeFilter.SelectedIndex == 4) // Solo Ajustes
             {
@@ -255,6 +345,12 @@ public partial class ProductKardexDialog : Window
         {
             MessageBox.Show($"Error al consultar movimientos de Kárdex: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private async void TxtSearchKardex_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (!IsLoaded) return;
+        await LoadKardexDataAsync();
     }
 
     private async void CmbTypeFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -276,7 +372,11 @@ public partial class ProductKardexDialog : Window
 
     private async void BtnAdjustStock_Click(object sender, RoutedEventArgs e)
     {
-        if (_currentProduct == null) return;
+        if (_currentProduct == null)
+        {
+            MessageBox.Show("Por favor selecciona un producto individual del selector para ajustar su stock.", "Ajuste de Stock", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
 
         var adjustDlg = new StockAdjustmentDialog(_currentProduct)
         {
@@ -307,17 +407,19 @@ public partial class ProductKardexDialog : Window
 
     private void BtnExport_Click(object sender, RoutedEventArgs e)
     {
-        if (_currentProduct == null || _kardexRows.Count == 0)
+        if (_kardexRows.Count == 0)
         {
-            MessageBox.Show("No hay movimientos registrados para imprimir o exportar en este período.", "Ficha Kárdex", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("No hay movimientos registrados para imprimir o exportar con los filtros seleccionados.", "Ficha Kárdex", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
+        string targetTitle = _currentProduct != null
+            ? $"• Producto: {_currentProduct.Code} - {_currentProduct.Name}\n• Existencias Actuales: {_currentProduct.CurrentStock:N2} Unidades\n• Costo Promedio Ponderado: $ {_currentProduct.CostUSD:N2} USD"
+            : $"• Ámbito: Kárdex Global Consolidado (Todos los Productos)\n• Artículos Registrados: {_catalogProducts.Count} productos\n• Existencias Totales: {_catalogProducts.Sum(p => p.CurrentStock):N2} Unidades";
+
         MessageBox.Show(
             $"Ficha Oficial de Kárdex de Inventario generada:\n\n" +
-            $"• Producto: {_currentProduct.Code} - {_currentProduct.Name}\n" +
-            $"• Existencias Actuales: {_currentProduct.CurrentStock:N2} Unidades\n" +
-            $"• Costo Promedio Ponderado: $ {_currentProduct.CostUSD:N2} USD\n" +
+            $"{targetTitle}\n" +
             $"• Total Movimientos Auditados: {_kardexRows.Count} registros\n\n" +
             $"Documento verificado y listo para exportación contable o archivo fiscal SENIAT.",
             "Ficha Técnica de Kárdex",

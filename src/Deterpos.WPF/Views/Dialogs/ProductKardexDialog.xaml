@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
         Title="Kárdex de Inventario"
-        Width="1080" Height="700"
+        Width="1180" Height="720"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -37,7 +37,7 @@
 
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="Kárdex de Inventario y Movimientos de Almacén" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                        <TextBlock Text="Trazabilidad contable en tiempo real • Método Costo Promedio Ponderado (CPP)" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Text="Trazabilidad contable en tiempo real • Ficha por producto o Kárdex global consolidado • Método CPP" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
                     </StackPanel>
 
                     <Button Grid.Column="2" Click="BtnClose_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6" VerticalAlignment="Center">
@@ -60,23 +60,31 @@
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="2.2*" />
-                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="1.4*" />
+                                <ColumnDefinition Width="10" />
                                 <ColumnDefinition Width="1.2*" />
-                                <ColumnDefinition Width="12" />
-                                <ColumnDefinition Width="1.2*" />
-                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="1.4*" />
+                                <ColumnDefinition Width="10" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <!-- Selector de Producto -->
+                            <!-- Selector de Producto / Global -->
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Producto Seleccionado:" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,3" />
+                                <TextBlock Text="Producto / Ámbito:" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,3" />
                                 <ComboBox x:Name="CmbProducts" DisplayMemberPath="DisplayName" SelectionChanged="CmbProducts_SelectionChanged" Padding="8,5" />
                             </StackPanel>
 
-                            <!-- Filtro de Tipo de Movimiento -->
+                            <!-- Búsqueda Rápida de Texto -->
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Tipo de Movimiento:" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,3" />
+                                <TextBlock Text="Búsqueda Rápida:" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,3" />
+                                <TextBox x:Name="TxtSearchKardex" TextChanged="TxtSearchKardex_TextChanged" Padding="8,5" ToolTip="Buscar por código, producto, comprobante, cliente o proveedor" />
+                            </StackPanel>
+
+                            <!-- Filtro de Tipo de Movimiento -->
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="Tipo de Operación:" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,3" />
                                 <ComboBox x:Name="CmbTypeFilter" SelectedIndex="0" SelectionChanged="CmbTypeFilter_SelectionChanged" Padding="8,5">
                                     <ComboBoxItem Content="Todos los Movimientos" />
                                     <ComboBoxItem Content="Compras (Entradas)" />
@@ -88,7 +96,7 @@
                             </StackPanel>
 
                             <!-- Filtro de Fechas -->
-                            <StackPanel Grid.Column="4">
+                            <StackPanel Grid.Column="6">
                                 <TextBlock Text="Rango de Fechas:" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,3" />
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -102,7 +110,7 @@
                             </StackPanel>
 
                             <!-- Botón Refrescar -->
-                            <Button Grid.Column="6" Click="BtnRefresh_Click" VerticalAlignment="Bottom" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="10,6" Cursor="Hand" ToolTip="Actualizar Kárdex">
+                            <Button Grid.Column="8" Click="BtnRefresh_Click" VerticalAlignment="Bottom" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="10,6" Cursor="Hand" ToolTip="Actualizar Kárdex">
                                 <Button.Resources>
                                     <Style TargetType="Border">
                                         <Setter Property="CornerRadius" Value="6" />
@@ -113,11 +121,11 @@
                         </Grid>
                     </Border>
 
-                    <!-- Fila 1: Tarjeta de Ficha Técnica del Producto -->
+                    <!-- Fila 1: Tarjeta de Ficha Técnica / Consolidado del Kárdex -->
                     <Border Grid.Row="1" Background="#FFFFFF" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,12">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1.5*" />
+                                <ColumnDefinition Width="1.6*" />
                                 <ColumnDefinition Width="1.2*" />
                                 <ColumnDefinition Width="1.2*" />
                                 <ColumnDefinition Width="1.5*" />
@@ -125,23 +133,23 @@
 
                             <!-- Col 1: Identificación -->
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="ARTÍCULO / CÓDIGO" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
-                                <TextBlock x:Name="TxtProductCodeName" Text="COD-001 • Nombre del Producto" FontWeight="Bold" FontSize="13" Foreground="{StaticResource PrimaryBrandBrush}" TextTrimming="CharacterEllipsis" />
-                                <TextBlock x:Name="TxtProductCategory" Text="Categoría: General | IVA: 16%" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="TxtHeaderCol1Title" Text="ARTÍCULO / ÁMBITO" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="TxtProductCodeName" Text="Todos los Productos (Kárdex Global)" FontWeight="Bold" FontSize="13" Foreground="{StaticResource PrimaryBrandBrush}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock x:Name="TxtProductCategory" Text="Trazabilidad integral de inventario y almacén" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
                             </StackPanel>
 
                             <!-- Col 2: Existencia Actual -->
                             <StackPanel Grid.Column="1">
-                                <TextBlock Text="EXISTENCIA EN ALMACÉN" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="TxtHeaderCol2Title" Text="EXISTENCIA EN ALMACÉN" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
                                 <TextBlock x:Name="TxtCurrentStockDisplay" Text="0.00 Unidades" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}" />
                                 <TextBlock x:Name="TxtStockStatus" Text="Stock Saludable" FontSize="11" Foreground="{StaticResource AccentGreenBrush}" FontWeight="SemiBold" />
                             </StackPanel>
 
                             <!-- Col 3: Costo Promedio Unitario -->
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="COSTO PROMEDIO (CPP)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="TxtHeaderCol3Title" Text="COSTO PROMEDIO (CPP)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
                                 <TextBlock x:Name="TxtAvgCostDisplay" Text="$ 0.00 USD" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}" />
-                                <TextBlock Text="Base de valoración de existencias" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock x:Name="TxtAvgCostSubtitle" Text="Base de valoración de existencias" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
                             </StackPanel>
 
                             <!-- Col 4: Valor Total en Almacén -->
@@ -163,7 +171,7 @@
                                 <DataGridTextColumn Header="Fecha / Hora" Binding="{Binding DateDisplay}" Width="110" />
 
                                 <!-- Tipo con Badge -->
-                                <DataGridTemplateColumn Header="Operación" Width="120">
+                                <DataGridTemplateColumn Header="Operación" Width="115">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border Background="{Binding TypeBackground}" CornerRadius="10" Padding="8,2" HorizontalAlignment="Center">
@@ -173,6 +181,9 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
+                                <!-- Producto (Código y Nombre) -->
+                                <DataGridTextColumn Header="Producto / Artículo" Binding="{Binding ProductDisplay}" Width="160" FontWeight="SemiBold" />
+
                                 <!-- N° Documento -->
                                 <DataGridTextColumn Header="Comprobante" Binding="{Binding DocumentNumber}" Width="105" FontWeight="SemiBold" />
 
@@ -180,7 +191,7 @@
                                 <DataGridTextColumn Header="Detalle / Tercero / Motivo" Binding="{Binding DetailDisplay}" Width="*" />
 
                                 <!-- Usuario -->
-                                <DataGridTextColumn Header="Usuario" Binding="{Binding PerformedBy}" Width="90" Foreground="{StaticResource TextSecondaryBrush}" />
+                                <DataGridTextColumn Header="Usuario" Binding="{Binding PerformedBy}" Width="85" Foreground="{StaticResource TextSecondaryBrush}" />
 
                                 <!-- ENTRADAS -->
                                 <DataGridTextColumn Header="Ent. (Cant)" Binding="{Binding InQtyDisplay}" Width="75" FontWeight="SemiBold" Foreground="#166534" />
@@ -209,7 +220,7 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Click="BtnAdjustStock_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0" Padding="14,7" Cursor="Hand" Margin="0,0,10,0">
+                        <Button x:Name="BtnAdjustStock" Click="BtnAdjustStock_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0" Padding="14,7" Cursor="Hand" Margin="0,0,10,0">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="6" />

@@ -265,18 +265,10 @@ public partial class InventoryCatalogView : UserControl
     public void OpenProductKardex(int? productId = null)
     {
         var bcvRate = ViewModel?.BcvRate ?? 55.40m;
-        int? targetId = productId;
 
-        if (!targetId.HasValue && DgProducts.SelectedItem is ProductDisplayItem selected)
-        {
-            targetId = selected.Id;
-        }
-        else if (!targetId.HasValue && _displayedProducts.Count > 0)
-        {
-            targetId = _displayedProducts[0].Id;
-        }
-
-        var dialog = new ProductKardexDialog(targetId, bcvRate)
+        // Si se pasa un productId explícito, abre ese producto.
+        // Si no se pasa parámetro (botón 'Ver Kárdex' o Ribbon), targetId es null y abre en Modo Global Consolidado.
+        var dialog = new ProductKardexDialog(productId, bcvRate)
         {
             Owner = Window.GetWindow(this)
         };
