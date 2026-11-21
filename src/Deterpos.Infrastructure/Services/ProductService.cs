@@ -1,6 +1,7 @@
 using Deterpos.Application.Common;
 using Deterpos.Application.Interfaces;
 using Deterpos.Domain.Entities;
+using Deterpos.Domain.Enums;
 using Deterpos.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -126,7 +127,42 @@ public class ProductService : IProductService
         var existing = await context.Products.FirstOrDefaultAsync(p => p.Id == productId);
         if (existing == null) return false;
 
-        existing.CurrentStock = decimal.Round(newStock, 2);
+        decimal prevStock = existing.CurrentStock;
+        decimal targetStock = decimal.Round(newStock, 2);
+        decimal diff = targetStock - prevStock;
+
+        if (diff == 0) return true; // Sin variación
+
+        existing.CurrentStock = targetStock;
+
+        // Generar correlativo de comprobante de ajuste
+        int adjustmentSeq = await context.InventoryMovements
+            .CountAsync(m => m.MovementType == InventoryMovementType.AjustePositivo || m.MovementType == InventoryMovementType.AjusteNegativo);
+        string adjustmentDoc = $"AJU-{(adjustmentSeq + 1):D6}";
+
+        bool isPositive = diff > 0;
+        decimal qtyIn = isPositive ? diff : 0m;
+        decimal qtyOut = isPositive ? 0m : Math.Abs(diff);
+
+        var movement = new InventoryMovement
+        {
+            ProductId = productId,
+            MovementDate = DateTime.UtcNow,
+            MovementType = isPositive ? InventoryMovementType.AjustePositivo : InventoryMovementType.AjusteNegativo,
+            DocumentNumber = adjustmentDoc,
+            ReferenceNumber = $"Stock: {prevStock:G29} -> {targetStock:G29}",
+            EntityName = "Ajuste Interno",
+            PerformedBy = string.IsNullOrWhiteSpace(username) ? "Administrador" : username.Trim(),
+            Reason = string.IsNullOrWhiteSpace(reason) ? "Ajuste de Existencias" : reason.Trim(),
+            QuantityIn = qtyIn,
+            UnitCostInUSD = existing.CostUSD,
+            QuantityOut = qtyOut,
+            UnitCostOutUSD = existing.CostUSD,
+            ResultingStock = targetStock,
+            ResultingUnitCostUSD = existing.CostUSD
+        };
+
+        context.InventoryMovements.Add(movement);
         await context.SaveChangesAsync();
         AppEvents.RaiseInventoryChanged();
         return true;

@@ -121,6 +121,25 @@ public class PurchaseService : IPurchaseService
             }
 
             purchaseDraft.Details.Add(detail);
+
+            // Registrar movimiento en Kárdex de Inventario
+            context.InventoryMovements.Add(new InventoryMovement
+            {
+                ProductId = item.ProductId,
+                MovementDate = DateTime.UtcNow,
+                MovementType = InventoryMovementType.Compra,
+                DocumentNumber = purchaseDraft.InvoiceNumber,
+                ReferenceNumber = purchaseDraft.ControlNumber,
+                EntityName = supplier.CompanyName,
+                PerformedBy = purchaseDraft.RegisteredBy,
+                Reason = $"Compra Recepción Factura {purchaseDraft.InvoiceNumber}",
+                QuantityIn = item.Quantity,
+                UnitCostInUSD = item.UnitCostUSD,
+                QuantityOut = 0m,
+                UnitCostOutUSD = 0m,
+                ResultingStock = newStock,
+                ResultingUnitCostUSD = newCost
+            });
         }
 
         purchaseDraft.BaseGeneralUSD = base16;

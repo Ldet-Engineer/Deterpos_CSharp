@@ -94,6 +94,9 @@ public partial class MainWindow : RibbonWindow
                         case "AdjustStock":
                             ViewInventoryCatalog.OpenAdjustStock();
                             break;
+                        case "ViewKardex":
+                            ViewInventoryCatalog.OpenProductKardex();
+                            break;
                         case "LowStockFilter":
                             ViewInventoryCatalog.FilterLowStock();
                             break;

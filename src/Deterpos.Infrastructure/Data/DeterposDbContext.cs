@@ -36,6 +36,7 @@ public class DeterposDbContext : DbContext, IApplicationDbContext
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<Quotation> Quotations => Set<Quotation>();
     public DbSet<QuotationDetail> QuotationDetails => Set<QuotationDetail>();
+    public DbSet<InventoryMovement> InventoryMovements => Set<InventoryMovement>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -534,6 +535,32 @@ public class DeterposDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.UnitPriceUSD).HasPrecision(18, 4);
             entity.Property(e => e.TotalPriceUSD).HasPrecision(18, 4);
             entity.Property(e => e.VatAmountUSD).HasPrecision(18, 4);
+        });
+
+        // Kárdex de Inventario y Control de Movimientos
+        modelBuilder.Entity<InventoryMovement>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.ProductId, e.MovementDate });
+            entity.Property(e => e.DocumentNumber).HasMaxLength(60).IsRequired();
+            entity.Property(e => e.ReferenceNumber).HasMaxLength(100);
+            entity.Property(e => e.EntityName).HasMaxLength(150);
+            entity.Property(e => e.PerformedBy).HasMaxLength(60);
+            entity.Property(e => e.Reason).HasMaxLength(255);
+
+            entity.Property(e => e.QuantityIn).HasPrecision(18, 2);
+            entity.Property(e => e.UnitCostInUSD).HasPrecision(18, 4);
+
+            entity.Property(e => e.QuantityOut).HasPrecision(18, 2);
+            entity.Property(e => e.UnitCostOutUSD).HasPrecision(18, 4);
+
+            entity.Property(e => e.ResultingStock).HasPrecision(18, 2);
+            entity.Property(e => e.ResultingUnitCostUSD).HasPrecision(18, 4);
+
+            entity.HasOne(e => e.Product)
+                  .WithMany()
+                  .HasForeignKey(e => e.ProductId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

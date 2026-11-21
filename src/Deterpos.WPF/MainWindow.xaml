@@ -427,11 +427,18 @@
                 </Fluent:RibbonGroupBox>
 
                 <Fluent:RibbonGroupBox Header="Existencias y Stock">
-                    <Fluent:Button Header="Ajuste de Stock" Size="Large"
-                                   Command="{Binding NavigateCommand}" CommandParameter="Ajuste de Stock">
+                    <Fluent:Button Header="Kárdex de&#x0a;Inventario" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Kárdex de Inventario">
                         <Fluent:Button.LargeIcon>
-                            <fluentIcons:SymbolIcon Symbol="ArrowTrendingLines" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
+                            <fluentIcons:SymbolIcon Symbol="BookOpen" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" />
                         </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Ajuste de Stock" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Ajuste de Stock">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="ArrowTrendingLines" FontSize="18" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.Icon>
                     </Fluent:Button>
 
                     <Fluent:Button Header="Alertas de Stock Bajo" Size="Middle"

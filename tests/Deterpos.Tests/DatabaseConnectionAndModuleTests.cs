@@ -499,4 +499,70 @@ public class DatabaseConnectionAndModuleTests
 
         _output.WriteLine($"Arqueo teórico de caja verificado: Saldo esperado ${updatedShift.ExpectedAmountUSD:N2} (Entrada Abono: +$50, Salida Devolución: -$20, Salida Proveedor: -$15).");
     }
+
+    [Fact]
+    public async Task Test13_Inventory_Kardex_Tracks_Movements()
+    {
+        var config = new DatabaseConfigurationService();
+        await config.InitializeDatabaseAsync();
+
+        var kardexService = new KardexService(_factory);
+        var productService = new ProductService(_factory);
+
+        // 1. Obtener o crear un producto exclusivo para la prueba de kárdex
+        await using var initContext = CreateDbContext();
+        var product = await initContext.Products.FirstOrDefaultAsync(p => p.Code == "TEST-KDX-01");
+        if (product == null)
+        {
+            var cat = await initContext.Categories.FirstAsync();
+            product = new Product
+            {
+                Code = "TEST-KDX-01",
+                Barcode = "75999990001",
+                Name = "Producto Prueba Kárdex Deterpos",
+                Description = "Item para pruebas de trazabilidad y kárdex",
+                CategoryName = cat.Name,
+                CurrentStock = 10m,
+                MinimumStock = 2m,
+                CostUSD = 15m,
+                PriceUSD = 25m,
+                VatRate = VatRateType.General16,
+                IsActive = true
+            };
+            initContext.Products.Add(product);
+            await initContext.SaveChangesAsync();
+        }
+
+        // Consultar stock actual de la base de datos
+        var currentProd = await productService.GetProductByIdAsync(product.Id);
+        Assert.NotNull(currentProd);
+        var stockBefore = currentProd.CurrentStock;
+
+        // 2. Realizar un ajuste positivo de stock (+5 unidades)
+        var stockPositive = stockBefore + 5m;
+        await productService.AdjustStockAsync(product.Id, stockPositive, "Ajuste de Conteo Físico Test", "Auditor");
+
+        // 3. Realizar un ajuste negativo de stock (-2 unidades)
+        var stockNegative = stockPositive - 2m;
+        await productService.AdjustStockAsync(product.Id, stockNegative, "Merma / Daño en Almacén", "Auditor");
+
+        // 4. Consultar el Kárdex del producto mediante KardexService
+        var kardex = await kardexService.GetProductKardexAsync(product.Id);
+
+        _output.WriteLine($"Movimientos en Kárdex para [{product.Code}] {product.Name}: {kardex.Count}");
+        foreach (var m in kardex)
+        {
+            _output.WriteLine($" - {m.MovementDate:yyyy-MM-dd HH:mm} | Tipo: {m.MovementType} | Doc: {m.DocumentNumber} | Entrada: {m.QuantityIn} | Salida: {m.QuantityOut} | Stock Res: {m.ResultingStock} | CPP: ${m.ResultingUnitCostUSD:N2}");
+        }
+
+        Assert.NotEmpty(kardex);
+
+        // 5. Verificar que el último movimiento refleja exactamente el stock final esperado
+        var lastMovement = kardex.Last();
+        Assert.Equal(stockNegative, lastMovement.ResultingStock);
+
+        // 6. Verificar que contiene tanto un AjustePositivo como un AjusteNegativo
+        Assert.Contains(kardex, m => m.MovementType == InventoryMovementType.AjustePositivo && m.QuantityIn == 5m);
+        Assert.Contains(kardex, m => m.MovementType == InventoryMovementType.AjusteNegativo && m.QuantityOut == 2m);
+    }
 }

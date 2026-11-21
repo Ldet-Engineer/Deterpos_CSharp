@@ -262,6 +262,40 @@ public partial class InventoryCatalogView : UserControl
         BtnAdjustStock_Click(this, new RoutedEventArgs());
     }
 
+    public void OpenProductKardex(int? productId = null)
+    {
+        var bcvRate = ViewModel?.BcvRate ?? 55.40m;
+        int? targetId = productId;
+
+        if (!targetId.HasValue && DgProducts.SelectedItem is ProductDisplayItem selected)
+        {
+            targetId = selected.Id;
+        }
+        else if (!targetId.HasValue && _displayedProducts.Count > 0)
+        {
+            targetId = _displayedProducts[0].Id;
+        }
+
+        var dialog = new ProductKardexDialog(targetId, bcvRate)
+        {
+            Owner = Window.GetWindow(this)
+        };
+        dialog.ShowDialog();
+    }
+
+    private void BtnViewKardex_Click(object sender, RoutedEventArgs e)
+    {
+        OpenProductKardex();
+    }
+
+    private void BtnKardexRow_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.DataContext is ProductDisplayItem item)
+        {
+            OpenProductKardex(item.Id);
+        }
+    }
+
     public async void ShowCategories()
     {
         var dialog = new CategoriesManagementDialog(_productService)

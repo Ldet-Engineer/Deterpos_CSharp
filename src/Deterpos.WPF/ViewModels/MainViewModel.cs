@@ -523,6 +523,13 @@ public class MainViewModel : ViewModelBase
                     case "Productos y Servicios":
                         CurrentModule = ActiveViewModule.Inventory;
                         break;
+                    case "Kárdex de Inventario":
+                    case "Kardex de Inventario":
+                    case "Kárdex":
+                    case "Kardex":
+                        CurrentModule = ActiveViewModule.Inventory;
+                        InventoryActionRequested = "ViewKardex";
+                        break;
                     case "Categorías y Marcas":
                         CurrentModule = ActiveViewModule.Inventory;
                         InventoryActionRequested = "Categories";

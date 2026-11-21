@@ -142,11 +142,29 @@ public class SaleService : ISaleService
 
             sale.Details.Add(item);
 
-            // 4. Descontar existencias de inventario
+            // 4. Descontar existencias de inventario y asentar en Kárdex
             var product = await context.Products.FindAsync(item.ProductId);
             if (product != null)
             {
                 product.CurrentStock -= item.Quantity;
+
+                context.InventoryMovements.Add(new InventoryMovement
+                {
+                    ProductId = item.ProductId,
+                    MovementDate = DateTime.UtcNow,
+                    MovementType = InventoryMovementType.Venta,
+                    DocumentNumber = sale.InvoiceNumber,
+                    ReferenceNumber = sale.ControlNumber,
+                    EntityName = sale.Customer?.FullName ?? "Cliente Mostrador",
+                    PerformedBy = sale.CashierUsername,
+                    Reason = $"Venta Factura Fiscal {sale.InvoiceNumber}",
+                    QuantityIn = 0m,
+                    UnitCostInUSD = 0m,
+                    QuantityOut = item.Quantity,
+                    UnitCostOutUSD = product.CostUSD,
+                    ResultingStock = product.CurrentStock,
+                    ResultingUnitCostUSD = product.CostUSD
+                });
             }
         }
 
@@ -358,11 +376,29 @@ public class SaleService : ISaleService
 
             creditNote.Details.Add(detail);
 
-            // Reingreso físico al inventario
+            // Reingreso físico al inventario y asentar en Kárdex
             var product = await context.Products.FindAsync(rItem.ProductId);
             if (product != null)
             {
                 product.CurrentStock += rItem.ReturnQuantity;
+
+                context.InventoryMovements.Add(new InventoryMovement
+                {
+                    ProductId = rItem.ProductId,
+                    MovementDate = DateTime.UtcNow,
+                    MovementType = InventoryMovementType.DevolucionCliente,
+                    DocumentNumber = creditNote.InvoiceNumber,
+                    ReferenceNumber = originalSale.InvoiceNumber,
+                    EntityName = originalSale.Customer?.FullName ?? "Cliente Mostrador",
+                    PerformedBy = cashierUsername,
+                    Reason = $"Devolución s/ Factura {originalSale.InvoiceNumber} - {reason}",
+                    QuantityIn = rItem.ReturnQuantity,
+                    UnitCostInUSD = product.CostUSD,
+                    QuantityOut = 0m,
+                    UnitCostOutUSD = 0m,
+                    ResultingStock = product.CurrentStock,
+                    ResultingUnitCostUSD = product.CostUSD
+                });
             }
         }
 
@@ -551,6 +587,24 @@ public class SaleService : ISaleService
             if (product != null)
             {
                 product.CurrentStock += item.Quantity;
+
+                context.InventoryMovements.Add(new InventoryMovement
+                {
+                    ProductId = item.ProductId,
+                    MovementDate = DateTime.UtcNow,
+                    MovementType = InventoryMovementType.AnulacionVenta,
+                    DocumentNumber = sale.InvoiceNumber,
+                    ReferenceNumber = "ANULACION",
+                    EntityName = sale.Customer?.FullName ?? "Cliente Mostrador",
+                    PerformedBy = "Supervisor",
+                    Reason = $"Anulación de Venta: {reason}",
+                    QuantityIn = item.Quantity,
+                    UnitCostInUSD = product.CostUSD,
+                    QuantityOut = 0m,
+                    UnitCostOutUSD = 0m,
+                    ResultingStock = product.CurrentStock,
+                    ResultingUnitCostUSD = product.CostUSD
+                });
             }
         }
 

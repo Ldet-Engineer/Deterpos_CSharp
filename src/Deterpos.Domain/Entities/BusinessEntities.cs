@@ -56,3 +56,34 @@ public class Product
     public VatRateType VatRate { get; set; } = VatRateType.General16;
     public bool IsActive { get; set; } = true;
 }
+
+public class InventoryMovement
+{
+    public int Id { get; set; }
+    public int ProductId { get; set; }
+    public Product? Product { get; set; }
+
+    public DateTime MovementDate { get; set; } = DateTime.UtcNow;
+    public InventoryMovementType MovementType { get; set; }
+
+    public string DocumentNumber { get; set; } = string.Empty; // FAC-00000001, NC-00000001, AJU-000001, COMP-1234
+    public string ReferenceNumber { get; set; } = string.Empty; // Control SENIAT, factura origen, etc.
+    public string EntityName { get; set; } = string.Empty; // Proveedor, Cliente o "Ajuste Interno"
+    public string PerformedBy { get; set; } = string.Empty; // Usuario responsable
+    public string Reason { get; set; } = string.Empty; // Motivo / Justificación
+
+    // Columnas de Entradas
+    public decimal QuantityIn { get; set; }
+    public decimal UnitCostInUSD { get; set; }
+    public decimal TotalCostInUSD => decimal.Round(QuantityIn * UnitCostInUSD, 4);
+
+    // Columnas de Salidas
+    public decimal QuantityOut { get; set; }
+    public decimal UnitCostOutUSD { get; set; }
+    public decimal TotalCostOutUSD => decimal.Round(QuantityOut * UnitCostOutUSD, 4);
+
+    // Columnas de Saldos Resultantes (Existencias tras la transacción)
+    public decimal ResultingStock { get; set; }
+    public decimal ResultingUnitCostUSD { get; set; }
+    public decimal ResultingTotalCostUSD => decimal.Round(ResultingStock * ResultingUnitCostUSD, 4);
+}

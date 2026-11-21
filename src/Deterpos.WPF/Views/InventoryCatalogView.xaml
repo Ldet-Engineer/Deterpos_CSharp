@@ -27,6 +27,19 @@
 
             <!-- Botones de Acción Principal -->
             <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Click="BtnViewKardex_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                        Padding="16,8" Margin="0,0,10,0" Cursor="Hand" ToolTip="Consultar Kárdex de Inventario y Movimientos Contables">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6" />
+                        </Style>
+                    </Button.Resources>
+                    <StackPanel Orientation="Horizontal">
+                        <fluentIcons:SymbolIcon Symbol="BookOpen" FontSize="18" Foreground="{StaticResource AccentGreenBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock Text="Ver Kárdex" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
                 <Button Click="BtnAdjustStock_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
                         Padding="16,8" Margin="0,0,10,0" Cursor="Hand">
                     <Button.Resources>
@@ -243,12 +256,17 @@
                         </DataGridTemplateColumn>
 
                         <!-- Acciones -->
-                        <DataGridTemplateColumn Header="Acción" Width="80">
+                        <DataGridTemplateColumn Header="Acción" Width="95">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Click="BtnEditProductRow_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="4" HorizontalAlignment="Center">
-                                        <fluentIcons:SymbolIcon Symbol="Edit" FontSize="16" Foreground="{StaticResource PrimaryBrandBrush}" />
-                                    </Button>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Click="BtnKardexRow_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="4" ToolTip="Ver Kárdex de Movimientos">
+                                            <fluentIcons:SymbolIcon Symbol="BookOpen" FontSize="16" Foreground="{StaticResource AccentGreenBrush}" />
+                                        </Button>
+                                        <Button Click="BtnEditProductRow_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="4" Margin="4,0,0,0" ToolTip="Editar Producto">
+                                            <fluentIcons:SymbolIcon Symbol="Edit" FontSize="16" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                        </Button>
+                                    </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

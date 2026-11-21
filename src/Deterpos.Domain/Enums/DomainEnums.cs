@@ -67,3 +67,15 @@ public enum QuotationStatus
     Vencida,
     Anulada
 }
+
+public enum InventoryMovementType
+{
+    Compra,
+    Venta,
+    DevolucionCliente,
+    AjustePositivo,
+    AjusteNegativo,
+    AnulacionVenta,
+    AnulacionCompra,
+    InventarioInicial
+}
