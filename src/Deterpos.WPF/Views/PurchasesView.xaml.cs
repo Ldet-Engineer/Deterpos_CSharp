@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Deterpos.Application.Common;
 using Deterpos.Application.Interfaces;
 using Deterpos.Domain.Entities;
 using Deterpos.Domain.Enums;
@@ -58,11 +59,29 @@ public partial class PurchasesView : UserControl
 
         DgPurchases.ItemsSource = _displayedPurchases;
         Loaded += PurchasesView_Loaded;
+        IsVisibleChanged += PurchasesView_IsVisibleChanged;
+        AppEvents.InventoryChanged += OnInventoryChanged;
     }
 
     private async void PurchasesView_Loaded(object sender, RoutedEventArgs e)
     {
         await LoadPurchasesAsync();
+    }
+
+    private async void PurchasesView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (IsVisible)
+        {
+            await LoadPurchasesAsync();
+        }
+    }
+
+    private void OnInventoryChanged()
+    {
+        Dispatcher.InvokeAsync(async () =>
+        {
+            await LoadPurchasesAsync();
+        });
     }
 
     public async Task LoadPurchasesAsync()

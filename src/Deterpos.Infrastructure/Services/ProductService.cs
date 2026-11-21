@@ -1,3 +1,4 @@
+using Deterpos.Application.Common;
 using Deterpos.Application.Interfaces;
 using Deterpos.Domain.Entities;
 using Deterpos.Infrastructure.Data;
@@ -80,6 +81,7 @@ public class ProductService : IProductService
 
         context.Products.Add(product);
         await context.SaveChangesAsync();
+        AppEvents.RaiseInventoryChanged();
         return product;
     }
 
@@ -101,6 +103,7 @@ public class ProductService : IProductService
         existing.IsActive = product.IsActive;
 
         await context.SaveChangesAsync();
+        AppEvents.RaiseInventoryChanged();
         return true;
     }
 
@@ -113,6 +116,7 @@ public class ProductService : IProductService
         // Borrado lógico para integridad fiscal
         existing.IsActive = false;
         await context.SaveChangesAsync();
+        AppEvents.RaiseInventoryChanged();
         return true;
     }
 
@@ -124,6 +128,7 @@ public class ProductService : IProductService
 
         existing.CurrentStock = decimal.Round(newStock, 2);
         await context.SaveChangesAsync();
+        AppEvents.RaiseInventoryChanged();
         return true;
     }
 

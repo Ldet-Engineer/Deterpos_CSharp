@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Deterpos.Application.Common;
 using Deterpos.Application.DTOs;
 using Deterpos.Application.Interfaces;
 using Deterpos.Domain.Entities;
@@ -162,6 +163,12 @@ public class PurchaseService : IPurchaseService
 
         context.Purchases.Add(purchaseDraft);
         await context.SaveChangesAsync();
+
+        AppEvents.RaiseInventoryChanged();
+        if (purchaseDraft.Condition == PaymentCondition.Contado && payFromCashShift && currentCashShiftId.HasValue)
+        {
+            AppEvents.RaiseCashChanged();
+        }
 
         return purchaseDraft;
     }

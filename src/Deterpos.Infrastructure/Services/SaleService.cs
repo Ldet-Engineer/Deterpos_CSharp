@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Deterpos.Application.Common;
 using Deterpos.Application.DTOs;
 using Deterpos.Application.Interfaces;
 using Deterpos.Domain.Entities;
@@ -230,6 +231,14 @@ public class SaleService : ISaleService
 
         context.Sales.Add(sale);
         await context.SaveChangesAsync();
+
+        AppEvents.RaiseInventoryChanged();
+        AppEvents.RaiseSalesChanged();
+        if (cashUsdToRegister > 0 || cashVesToRegister > 0)
+        {
+            AppEvents.RaiseCashChanged();
+        }
+
         return sale;
     }
 
@@ -422,6 +431,14 @@ public class SaleService : ISaleService
 
         context.Sales.Add(creditNote);
         await context.SaveChangesAsync();
+
+        AppEvents.RaiseInventoryChanged();
+        AppEvents.RaiseSalesChanged();
+        if (refundToCashRegister && currentCashShiftId > 0)
+        {
+            AppEvents.RaiseCashChanged();
+        }
+
         return creditNote;
     }
 
@@ -522,6 +539,8 @@ public class SaleService : ISaleService
         sale.Notes = $"{sale.Notes}\n[ANULADA]: {reason}".Trim();
 
         await context.SaveChangesAsync();
+        AppEvents.RaiseInventoryChanged();
+        AppEvents.RaiseSalesChanged();
         return true;
     }
 

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Deterpos.Application.Common;
 using Deterpos.Domain.Entities;
 using Deterpos.Infrastructure.Data;
 using Deterpos.Infrastructure.Services;
@@ -28,12 +29,30 @@ public partial class InventoryCatalogView : UserControl
 
         DgProducts.ItemsSource = _displayedProducts;
         Loaded += InventoryCatalogView_Loaded;
+        IsVisibleChanged += InventoryCatalogView_IsVisibleChanged;
+        AppEvents.InventoryChanged += OnInventoryChanged;
     }
 
     private async void InventoryCatalogView_Loaded(object sender, RoutedEventArgs e)
     {
         await LoadCategoriesAsync();
         await ReloadProductsFromDbAsync();
+    }
+
+    private async void InventoryCatalogView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (IsVisible)
+        {
+            await ReloadProductsFromDbAsync();
+        }
+    }
+
+    private void OnInventoryChanged()
+    {
+        Dispatcher.InvokeAsync(async () =>
+        {
+            await ReloadProductsFromDbAsync();
+        });
     }
 
     public async Task LoadCategoriesAsync()

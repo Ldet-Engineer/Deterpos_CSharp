@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Deterpos.Application.Common;
 using Deterpos.Domain.Entities;
 using Deterpos.Domain.Enums;
 using Deterpos.Infrastructure.Data;
@@ -99,11 +100,81 @@ public partial class PosView : UserControl
         DgCart.ItemsSource = _cartItems;
 
         Loaded += PosView_Loaded;
+        IsVisibleChanged += PosView_IsVisibleChanged;
+        AppEvents.InventoryChanged += OnInventoryChanged;
+        AppEvents.CashChanged += OnCashChanged;
     }
 
     private async void PosView_Loaded(object sender, RoutedEventArgs e)
     {
         await InitializePosAsync();
+    }
+
+    private async void PosView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (IsVisible)
+        {
+            await ReloadCatalogAsync();
+        }
+    }
+
+    private void OnInventoryChanged()
+    {
+        Dispatcher.InvokeAsync(async () =>
+        {
+            await ReloadCatalogAsync();
+        });
+    }
+
+    private void OnCashChanged()
+    {
+        Dispatcher.InvokeAsync(async () =>
+        {
+            await ReloadShiftStatusAsync();
+        });
+    }
+
+    public async Task ReloadCatalogAsync()
+    {
+        try
+        {
+            var prods = await _productService.GetAllProductsAsync();
+            _allProducts.Clear();
+            _allProducts.AddRange(prods);
+            BuildCategoryPills();
+            ApplyCatalogFilter();
+        }
+        catch
+        {
+        }
+    }
+
+    public async Task ReloadShiftStatusAsync()
+    {
+        try
+        {
+            if (_currentRegister != null)
+            {
+                _activeShift = await _cashService.GetActiveShiftAsync(_currentRegister.Id);
+                if (_activeShift != null)
+                {
+                    BadgeShift.Background = new SolidColorBrush(Color.FromRgb(230, 244, 234));
+                    TxtShiftBadge.Text = $"TURNO #{_activeShift.Id} ACTIVO";
+                    TxtShiftBadge.Foreground = new SolidColorBrush(Color.FromRgb(16, 124, 65));
+                    TxtTerminalCashier.Text = $"Caja: {_currentRegister.TerminalIdentifier} • Cajero: {_activeShift.CashierUsername}";
+                }
+                else
+                {
+                    BadgeShift.Background = new SolidColorBrush(Color.FromRgb(253, 231, 233));
+                    TxtShiftBadge.Text = "CAJA CERRADA";
+                    TxtShiftBadge.Foreground = new SolidColorBrush(Color.FromRgb(216, 59, 1));
+                    TxtTerminalCashier.Text = $"Caja: {_currentRegister.TerminalIdentifier} • Turno Cerrado";
+                }
+            }
+        }
+        catch
+        {
+        }
     }
 
     public async Task InitializePosAsync()

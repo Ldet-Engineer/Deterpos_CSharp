@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
+using Deterpos.Application.Common;
 using Deterpos.Application.Interfaces;
 using Deterpos.Domain.Entities;
 using Deterpos.Infrastructure.Data;
@@ -434,6 +435,11 @@ public class MainViewModel : ViewModelBase
 
         RefreshDashboardCommand = new RelayCommand(async _ => await LoadDashboardLiveMetricsAsync());
 
+        // Suscribirse a eventos en tiempo real de toda la aplicación
+        AppEvents.InventoryChanged += () => _ = LoadDashboardLiveMetricsAsync();
+        AppEvents.SalesChanged += () => _ = LoadDashboardLiveMetricsAsync();
+        AppEvents.CashChanged += () => _ = LoadDashboardLiveMetricsAsync();
+
         // Inicializar Monedas por defecto
         Currencies.Add(new CurrencyDisplayItem { Code = "USD", Name = "Dólar Americano", Symbol = "$", RateToUSD = 1.0000m, IsActive = true, IsFixed = true });
         Currencies.Add(new CurrencyDisplayItem { Code = "VES", Name = "Bolívar Digital", Symbol = "Bs.", RateToUSD = _bcvRate, IsActive = true, IsFixed = true });
@@ -453,6 +459,7 @@ public class MainViewModel : ViewModelBase
                     case "Panel Principal (Dashboard)":
                     case "Dashboard":
                         CurrentModule = ActiveViewModule.Dashboard;
+                        _ = LoadDashboardLiveMetricsAsync();
                         break;
 
                     // CONTROL DE CAJA

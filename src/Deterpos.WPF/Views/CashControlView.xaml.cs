@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Deterpos.Application.Common;
 using Deterpos.Domain.Entities;
 using Deterpos.Domain.Enums;
 using Deterpos.Infrastructure.Data;
@@ -135,11 +136,29 @@ public partial class CashControlView : UserControl
         DgMovements.ItemsSource = _shiftMovements;
 
         Loaded += CashControlView_Loaded;
+        IsVisibleChanged += CashControlView_IsVisibleChanged;
+        AppEvents.CashChanged += OnCashChanged;
     }
 
     private async void CashControlView_Loaded(object sender, RoutedEventArgs e)
     {
         await ReloadCashDataAsync();
+    }
+
+    private async void CashControlView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (IsVisible)
+        {
+            await ReloadCashDataAsync();
+        }
+    }
+
+    private void OnCashChanged()
+    {
+        Dispatcher.InvokeAsync(async () =>
+        {
+            await ReloadCashDataAsync();
+        });
     }
 
     public async Task ReloadCashDataAsync()
