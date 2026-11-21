@@ -77,6 +77,14 @@ public partial class HoldTicketsDialog : Window
         }
     }
 
+    private void Header_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.ButtonState == System.Windows.Input.MouseButtonState.Pressed)
+        {
+            DragMove();
+        }
+    }
+
     private void BtnClose_Click(object sender, RoutedEventArgs e)
     {
         DialogResult = false;

@@ -20,7 +20,13 @@ public static class AppEvents
     /// </summary>
     public static event Action? CashChanged;
 
+    /// <summary>
+    /// Evento global disparado cuando cambia el estado de deuda/abonos de clientes o proveedores.
+    /// </summary>
+    public static event Action? CreditChanged;
+
     public static void RaiseInventoryChanged() => InventoryChanged?.Invoke();
     public static void RaiseSalesChanged() => SalesChanged?.Invoke();
     public static void RaiseCashChanged() => CashChanged?.Invoke();
+    public static void RaiseCreditChanged() => CreditChanged?.Invoke();
 }

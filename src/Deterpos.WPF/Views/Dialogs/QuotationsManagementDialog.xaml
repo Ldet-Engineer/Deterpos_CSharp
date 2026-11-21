@@ -3,178 +3,197 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
         Title="Gestión de Cotizaciones y Presupuestos"
-        Width="960" Height="620"
+        Width="980" Height="640"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
         WindowStartupLocation="CenterOwner"
-        Background="#F8F9FA"
-        FontFamily="Segoe UI">
+        ShowInTaskbar="False"
+        FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
 
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <!-- Sombra Perimetral Moderna y Borde Redondeado -->
+    <Border Margin="15" Background="White" CornerRadius="12" BorderBrush="#D0D7DE" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="30" Direction="270" ShadowDepth="4" Opacity="0.25" Color="#000000" />
+        </Border.Effect>
 
-        <!-- Encabezado con Icono -->
-        <Grid Grid.Row="0" Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-            <Border Grid.Column="0" Background="#EFF6FF" CornerRadius="8" Width="44" Height="44" Margin="0,0,12,0">
-                <fluentIcons:SymbolIcon Symbol="DocumentBulletList" FontSize="22" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <!-- Encabezado Modal Arrastrable -->
+            <Border Grid.Row="0" Background="#F6F8FA" CornerRadius="12,12,0,0" Padding="22,14" BorderBrush="#E1E4E8" BorderThickness="0,0,0,1" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <fluentIcons:SymbolIcon Grid.Column="0" Symbol="DocumentBulletList" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Cotizaciones y Presupuestos Comerciales" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Documentos informativos no fiscales. Permite generar propuestas y facturarlas en el POS con un clic." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Click="BtnNewQuotation_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0" Padding="14,8" Cursor="Hand" Margin="0,0,10,0">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6" />
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <fluentIcons:SymbolIcon Symbol="Add" FontSize="14" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Nueva Cotización" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Click="BtnClose_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6" VerticalAlignment="Center">
+                            <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
             </Border>
 
-            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                <TextBlock Text="Cotizaciones y Presupuestos Comerciales" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
-                <TextBlock Text="Documentos informativos no fiscales. Permite generar propuestas y facturarlas en el POS con un clic." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
-            </StackPanel>
+            <!-- Contenido Principal -->
+            <Grid Grid.Row="1" Background="#F8F9FA" Margin="0" Grid.RowSpan="1">
+                <Grid Margin="20,16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Click="BtnNewQuotation_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0" Padding="14,8" Cursor="Hand" Margin="0,0,8,0">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="6" />
-                        </Style>
-                    </Button.Resources>
-                    <StackPanel Orientation="Horizontal">
-                        <fluentIcons:SymbolIcon Symbol="Add" FontSize="14" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
-                        <TextBlock Text="Nueva Cotización" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Button>
+                    <!-- Barra de Búsqueda y Filtros -->
+                    <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="14" />
+                                <ColumnDefinition Width="180" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                <Button Click="BtnClose_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6">
-                    <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
-                </Button>
-            </StackPanel>
-        </Grid>
+                            <Grid Grid.Column="0">
+                                <TextBox x:Name="TxtSearch" Padding="28,6,8,6" TextChanged="TxtSearch_TextChanged" VerticalAlignment="Center">
+                                    <TextBox.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="6" />
+                                        </Style>
+                                    </TextBox.Resources>
+                                </TextBox>
+                                <fluentIcons:SymbolIcon Symbol="Search" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" IsHitTestVisible="False" />
+                                <TextBlock x:Name="TxtSearchPlaceholder" Text="Buscar por N° Cotización, Cliente o Cédula..." FontSize="12" Foreground="#999999" VerticalAlignment="Center" Margin="28,0,0,0" IsHitTestVisible="False" />
+                            </Grid>
 
-        <!-- Barra de Búsqueda y Filtros -->
-        <Border Grid.Row="1" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,14">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="14" />
-                    <ColumnDefinition Width="180" />
-                    <ColumnDefinition Width="10" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+                            <ComboBox Grid.Column="2" x:Name="CmbStatusFilter" SelectedIndex="0" SelectionChanged="CmbStatusFilter_SelectionChanged" VerticalAlignment="Center">
+                                <ComboBoxItem Content="Todos los Estados" />
+                                <ComboBoxItem Content="Pendientes" />
+                                <ComboBoxItem Content="Facturadas" />
+                                <ComboBoxItem Content="Vencidas" />
+                            </ComboBox>
 
-                <Grid Grid.Column="0">
-                    <TextBox x:Name="TxtSearch" Padding="28,6,8,6" TextChanged="TxtSearch_TextChanged" VerticalAlignment="Center">
-                        <TextBox.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6" />
-                            </Style>
-                        </TextBox.Resources>
-                    </TextBox>
-                    <fluentIcons:SymbolIcon Symbol="Search" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" IsHitTestVisible="False" />
-                    <TextBlock x:Name="TxtSearchPlaceholder" Text="Buscar por N° Cotización, Cliente o Cédula..." FontSize="12" Foreground="#999999" VerticalAlignment="Center" Margin="28,0,0,0" IsHitTestVisible="False" />
+                            <Button Grid.Column="4" Click="BtnRefresh_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="10,6" Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6" />
+                                    </Style>
+                                </Button.Resources>
+                                <fluentIcons:SymbolIcon Symbol="ArrowCounterclockwise" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" />
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- Tabla de Cotizaciones -->
+                    <Border Grid.Row="1" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="0">
+                        <DataGrid x:Name="DgQuotations" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                                  BorderThickness="0" Background="Transparent" HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                                  HorizontalGridLinesBrush="#EEEEEE" RowHeight="42" SelectionMode="Single" SelectionChanged="DgQuotations_SelectionChanged">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="N° Cotización" Binding="{Binding QuotationNumber}" Width="120" FontWeight="Bold" />
+                                <DataGridTextColumn Header="Fecha Emisión" Binding="{Binding CreatedAtDisplay}" Width="120" />
+                                <DataGridTextColumn Header="Válido Hasta" Binding="{Binding ValidUntilDisplay}" Width="110" />
+                                <DataGridTextColumn Header="Cliente / Razón Social" Binding="{Binding CustomerName}" Width="*" />
+                                <DataGridTextColumn Header="Doc. Identidad" Binding="{Binding CustomerDocument}" Width="110" />
+                                <DataGridTextColumn Header="Renglones" Binding="{Binding ItemsCountDisplay}" Width="80" />
+                                <DataGridTextColumn Header="Total ($ USD)" Binding="{Binding TotalUSDDisplay}" Width="110" FontWeight="Bold" />
+                                <DataGridTextColumn Header="Total (Bs.)" Binding="{Binding TotalVESDisplay}" Width="120" />
+                                <DataGridTemplateColumn Header="Estado" Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{Binding StatusBackground}" CornerRadius="10" Padding="8,3" HorizontalAlignment="Center">
+                                                <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusForeground}" FontSize="11" FontWeight="Bold" />
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
                 </Grid>
-
-                <ComboBox Grid.Column="2" x:Name="CmbStatusFilter" SelectedIndex="0" SelectionChanged="CmbStatusFilter_SelectionChanged" VerticalAlignment="Center">
-                    <ComboBoxItem Content="Todos los Estados" />
-                    <ComboBoxItem Content="Pendientes" />
-                    <ComboBoxItem Content="Facturadas" />
-                    <ComboBoxItem Content="Vencidas" />
-                </ComboBox>
-
-                <Button Grid.Column="4" Click="BtnRefresh_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="10,6" Cursor="Hand">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="6" />
-                        </Style>
-                    </Button.Resources>
-                    <fluentIcons:SymbolIcon Symbol="ArrowCounterclockwise" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" />
-                </Button>
             </Grid>
-        </Border>
 
-        <!-- Tabla de Cotizaciones -->
-        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="0" Margin="0,0,0,16">
-            <DataGrid x:Name="DgQuotations" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
-                      BorderThickness="0" Background="Transparent" HeadersVisibility="Column" GridLinesVisibility="Horizontal"
-                      HorizontalGridLinesBrush="#EEEEEE" RowHeight="42" SelectionMode="Single" SelectionChanged="DgQuotations_SelectionChanged">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="N° Cotización" Binding="{Binding QuotationNumber}" Width="120" FontWeight="Bold" />
-                    <DataGridTextColumn Header="Fecha Emisión" Binding="{Binding CreatedAtDisplay}" Width="120" />
-                    <DataGridTextColumn Header="Válido Hasta" Binding="{Binding ValidUntilDisplay}" Width="110" />
-                    <DataGridTextColumn Header="Cliente / Razón Social" Binding="{Binding CustomerName}" Width="*" />
-                    <DataGridTextColumn Header="Doc. Identidad" Binding="{Binding CustomerDocument}" Width="110" />
-                    <DataGridTextColumn Header="Renglones" Binding="{Binding ItemsCountDisplay}" Width="80" />
-                    <DataGridTextColumn Header="Total ($ USD)" Binding="{Binding TotalUSDDisplay}" Width="110" FontWeight="Bold" />
-                    <DataGridTextColumn Header="Total (Bs.)" Binding="{Binding TotalVESDisplay}" Width="120" />
-                    <DataGridTemplateColumn Header="Estado" Width="100">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Border Background="{Binding StatusBackground}" CornerRadius="10" Padding="8,3" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding StatusText}" Foreground="{Binding StatusForeground}" FontSize="11" FontWeight="Bold" />
-                                </Border>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Border>
+            <!-- Barra de Acciones Inferior -->
+            <Border Grid.Row="2" Background="#F6F8FA" CornerRadius="0,0,12,12" Padding="20,12" BorderBrush="#E1E4E8" BorderThickness="0,1,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-        <!-- Barra de Acciones Inferior -->
-        <Border Grid.Row="3" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button x:Name="BtnLoadToCart" Click="BtnLoadToCart_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0" Padding="14,8" Cursor="Hand" Margin="0,0,10,0" IsEnabled="False">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6" />
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <fluentIcons:SymbolIcon Symbol="Cart" FontSize="15" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Cargar al POS para Facturar" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="BtnLoadToCart" Click="BtnLoadToCart_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0" Padding="14,8" Cursor="Hand" Margin="0,0,10,0" IsEnabled="False">
+                        <Button x:Name="BtnViewTicket" Click="BtnViewTicket_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="12,8" Cursor="Hand" Margin="0,0,10,0" IsEnabled="False">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6" />
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <fluentIcons:SymbolIcon Symbol="Print" FontSize="14" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Ver / Imprimir Comprobante" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="BtnDeleteQuotation" Click="BtnDeleteQuotation_Click" Background="White" BorderBrush="#FCA5A5" BorderThickness="1" Padding="10,8" Cursor="Hand" IsEnabled="False">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="6" />
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <fluentIcons:SymbolIcon Symbol="Delete" FontSize="14" Foreground="#DC2626" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Eliminar" Foreground="#DC2626" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <Button Grid.Column="1" Click="BtnClose_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="18,8" Cursor="Hand">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="6" />
                             </Style>
                         </Button.Resources>
-                        <StackPanel Orientation="Horizontal">
-                            <fluentIcons:SymbolIcon Symbol="Cart" FontSize="15" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
-                            <TextBlock Text="Cargar al POS para Facturar" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center" />
-                        </StackPanel>
+                        <TextBlock Text="Cerrar" FontWeight="SemiBold" FontSize="12.5" />
                     </Button>
-
-                    <Button x:Name="BtnViewTicket" Click="BtnViewTicket_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="12,8" Cursor="Hand" Margin="0,0,10,0" IsEnabled="False">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6" />
-                            </Style>
-                        </Button.Resources>
-                        <StackPanel Orientation="Horizontal">
-                            <fluentIcons:SymbolIcon Symbol="Print" FontSize="14" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
-                            <TextBlock Text="Ver / Imprimir Comprobante" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-
-                    <Button x:Name="BtnDeleteQuotation" Click="BtnDeleteQuotation_Click" Background="White" BorderBrush="#FCA5A5" BorderThickness="1" Padding="10,8" Cursor="Hand" IsEnabled="False">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6" />
-                            </Style>
-                        </Button.Resources>
-                        <StackPanel Orientation="Horizontal">
-                            <fluentIcons:SymbolIcon Symbol="Delete" FontSize="14" Foreground="#DC2626" Margin="0,0,4,0" VerticalAlignment="Center" />
-                            <TextBlock Text="Eliminar" Foreground="#DC2626" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-
-                <Button Grid.Column="1" Click="BtnClose_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="18,8" Cursor="Hand">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="6" />
-                        </Style>
-                    </Button.Resources>
-                    <TextBlock Text="Cerrar" FontWeight="SemiBold" FontSize="12.5" />
-                </Button>
-            </Grid>
-        </Border>
-    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
 </Window>

@@ -1,4 +1,5 @@
 using Deterpos.Application.Common;
+using Deterpos.Application.DTOs;
 using Deterpos.Domain.Entities;
 using Deterpos.Domain.Enums;
 using Deterpos.Infrastructure.Data;
@@ -319,5 +320,183 @@ public class DatabaseConnectionAndModuleTests
 
         var allQuotes = await quotationService.GetAllQuotationsAsync();
         Assert.Contains(allQuotes, q => q.QuotationNumber == saved.QuotationNumber);
+    }
+
+    [Fact]
+    public async Task Test11_CreditSale_And_CreditNote_Reduces_CustomerBalance_And_Updates_Statement()
+    {
+        var saleService = new SaleService(_factory);
+        var creditService = new CreditService(_factory);
+        await using var context = CreateDbContext();
+
+        var customer = await context.Customers.FirstOrDefaultAsync(c => c.DocumentNumber == "V-12345678");
+        if (customer == null)
+        {
+            customer = new Customer
+            {
+                DocumentNumber = "V-12345678",
+                FullName = "Cliente de Prueba Crédito",
+                Phone = "0412-0000000",
+                CreditLimitUSD = 1000m,
+                CurrentBalanceUSD = 0m
+            };
+            context.Customers.Add(customer);
+            await context.SaveChangesAsync();
+        }
+
+        var product = await context.Products.FirstAsync();
+        var shift = await context.CashShifts.OrderByDescending(s => s.Id).FirstOrDefaultAsync();
+        int shiftId = shift?.Id ?? 1;
+
+        decimal initialBalance = customer.CurrentBalanceUSD;
+        decimal saleQty = 2m;
+        decimal unitPrice = 10.00m;
+        decimal saleTotal = saleQty * unitPrice;
+
+        // 1. Procesar Venta a Crédito
+        var saleDraft = new Sale
+        {
+            CashRegisterId = 1,
+            CashShiftId = shiftId,
+            CashierUsername = "TestRunner",
+            CustomerId = customer.Id,
+            FiscalPrinterSerial = "Z4A9876543",
+            Notes = "Venta Test Crédito"
+        };
+
+        var details = new List<SaleDetail>
+        {
+            new()
+            {
+                ProductId = product.Id,
+                ProductCode = product.Code,
+                ProductName = product.Name,
+                Quantity = saleQty,
+                UnitCostUSD = product.CostUSD,
+                UnitPriceUSD = unitPrice,
+                VatRate = VatRateType.Exento0
+            }
+        };
+
+        var payments = new List<SalePayment>
+        {
+            new()
+            {
+                Method = PaymentMethodType.Credito,
+                CurrencyCode = "USD",
+                AmountOriginal = saleTotal,
+                ExchangeRateApplied = 1.0000m,
+                AmountEquivalentUSD = saleTotal,
+                ReferenceNumber = "CRED-TEST"
+            }
+        };
+
+        var completedSale = await saleService.ProcessSaleAsync(saleDraft, details, payments, 55.40m, isSpecialTaxpayer: false);
+        Assert.NotNull(completedSale);
+
+        await using var verifyContext1 = CreateDbContext();
+        var custAfterSale = await verifyContext1.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.Id == customer.Id);
+        Assert.NotNull(custAfterSale);
+        Assert.Equal(initialBalance + saleTotal, custAfterSale.CurrentBalanceUSD);
+        _output.WriteLine($"Venta a crédito procesada: Factura {completedSale.InvoiceNumber} | Deuda incrementada: ${custAfterSale.CurrentBalanceUSD:N2}");
+
+        // 2. Procesar Devolución (Nota de Crédito) sobre esa venta a crédito (sin egresar efectivo)
+        var returnDrafts = new List<CreditNoteItemDraft>
+        {
+            new()
+            {
+                ProductId = product.Id,
+                ProductCode = product.Code,
+                ProductName = product.Name,
+                OriginalQuantity = saleQty,
+                ReturnQuantity = 1m, // Devolver 1 unidad = $10
+                UnitPriceUSD = unitPrice,
+                VatRate = VatRateType.Exento0
+            }
+        };
+
+        var creditNote = await saleService.ProcessCreditNoteAsync(
+            completedSale.Id,
+            returnDrafts,
+            "Devolución parcial de prueba",
+            refundToCashRegister: false, // Debe acreditar a cuenta del cliente
+            shiftId,
+            "TestRunner");
+
+        Assert.NotNull(creditNote);
+        _output.WriteLine($"Nota de Crédito emitida: {creditNote.InvoiceNumber} | Monto acreditado: ${creditNote.TotalUSD:N2}");
+
+        // 3. Verificar que la deuda del cliente DISMINUYÓ en exactamente el total de la Nota de Crédito
+        await using var verifyContext2 = CreateDbContext();
+        var custAfterNC = await verifyContext2.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.Id == customer.Id);
+        Assert.NotNull(custAfterNC);
+        decimal expectedBalance = initialBalance + saleTotal - creditNote.TotalUSD;
+        Assert.Equal(expectedBalance, custAfterNC.CurrentBalanceUSD);
+        _output.WriteLine($"Saldo deudor actualizado verificado: ${custAfterNC.CurrentBalanceUSD:N2} (Reducido por NC)");
+
+        // 4. Verificar Estado de Cuenta
+        var statement = await creditService.GetCustomerStatementAsync(customer.Id, 55.40m);
+        Assert.NotEmpty(statement);
+
+        var ncItem = statement.FirstOrDefault(i => i.DocumentNumber == creditNote.InvoiceNumber);
+        Assert.NotNull(ncItem);
+        Assert.Equal("Nota de Crédito Fiscal", ncItem.DocumentType);
+        Assert.Equal(creditNote.TotalUSD, ncItem.CreditUSD); // En el HABER
+        Assert.Equal(0m, ncItem.DebitUSD); // 0 en el DEBE
+        _output.WriteLine($"Estado de cuenta verificado: {ncItem.DocumentType} {ncItem.DocumentNumber} imputado correctamente en Crédito/Haber por ${ncItem.CreditUSD:N2}");
+    }
+
+    [Fact]
+    public async Task Test12_CashRegister_CalculatesMovements_Including_Abono_Devolucion_PagoProveedor()
+    {
+        var cashService = new CashRegisterService(_factory);
+        await using var context = CreateDbContext();
+
+        var shift = await cashService.GetActiveShiftAsync(1);
+        if (shift == null)
+        {
+            shift = await cashService.OpenShiftAsync(1, "TestRunner", 100m, 5000m, "Turno de prueba");
+        }
+
+        decimal initialExpectedUSD = shift.ExpectedAmountUSD;
+
+        // Registrar AbonoCliente ($50 entrada)
+        var movAbono = await cashService.RegisterMovementAsync(
+            shift.Id,
+            TransactionType.AbonoCliente,
+            50m,
+            2770m,
+            "Abono Cliente Test",
+            "Supervisor");
+        Assert.NotNull(movAbono);
+
+        // Registrar EgresoDevolucion ($20 salida)
+        var movDev = await cashService.RegisterMovementAsync(
+            shift.Id,
+            TransactionType.EgresoDevolucion,
+            20m,
+            1108m,
+            "Devolución Reembolso Efectivo Test",
+            "Supervisor");
+        Assert.NotNull(movDev);
+
+        // Registrar PagoProveedor ($15 salida)
+        var movPagoProv = await cashService.RegisterMovementAsync(
+            shift.Id,
+            TransactionType.PagoProveedor,
+            15m,
+            831m,
+            "Pago Proveedor CxP Test",
+            "Supervisor");
+        Assert.NotNull(movPagoProv);
+
+        // Consultar el turno activo y verificar que el saldo esperado incluye los 3 movimientos (+50 -20 -15 = +15)
+        var updatedShift = await cashService.GetActiveShiftAsync(1);
+        Assert.NotNull(updatedShift);
+
+        decimal netExpectedUSD = initialExpectedUSD + 50m - 20m - 15m;
+        Assert.Equal(netExpectedUSD, updatedShift.ExpectedAmountUSD);
+
+        _output.WriteLine($"Arqueo teórico de caja verificado: Saldo esperado ${updatedShift.ExpectedAmountUSD:N2} (Entrada Abono: +$50, Salida Devolución: -$20, Salida Proveedor: -$15).");
     }
 }

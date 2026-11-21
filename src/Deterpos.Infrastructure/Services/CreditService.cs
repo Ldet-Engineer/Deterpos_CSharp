@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Deterpos.Application.Common;
 using Deterpos.Application.Interfaces;
 using Deterpos.Domain.Entities;
 using Deterpos.Domain.Enums;
@@ -137,6 +138,13 @@ public class CreditService : ICreditService
 
         context.CustomerPayments.Add(payment);
         await context.SaveChangesAsync();
+
+        AppEvents.RaiseCreditChanged();
+        if (sendToCashShift && currentCashShiftId.HasValue)
+        {
+            AppEvents.RaiseCashChanged();
+        }
+
         return payment;
     }
 
@@ -215,6 +223,13 @@ public class CreditService : ICreditService
 
         context.SupplierPayments.Add(payment);
         await context.SaveChangesAsync();
+
+        AppEvents.RaiseCreditChanged();
+        if (payFromCashShift && currentCashShiftId.HasValue)
+        {
+            AppEvents.RaiseCashChanged();
+        }
+
         return payment;
     }
 
@@ -222,8 +237,8 @@ public class CreditService : ICreditService
     {
         await using var context = GetContext();
 
-        // 1. Facturas a Crédito
-        var creditSales = await context.Sales
+        // 1. Facturas a Crédito y Notas de Crédito Fiscales
+        var salesAndCreditNotes = await context.Sales
             .Include(s => s.Payments)
             .Where(s => s.CustomerId == customerId && s.Status != SaleStatus.Anulada)
             .AsNoTracking()
@@ -231,21 +246,46 @@ public class CreditService : ICreditService
 
         var creditMovements = new List<AccountStatementItem>();
 
-        foreach (var sale in creditSales)
+        foreach (var doc in salesAndCreditNotes)
         {
-            var creditPay = sale.Payments.FirstOrDefault(p => p.Method == PaymentMethodType.Credito);
-            if (creditPay != null && creditPay.AmountEquivalentUSD > 0)
+            if (doc.DocumentType == FiscalDocumentType.Factura)
             {
-                creditMovements.Add(new AccountStatementItem
+                var creditPay = doc.Payments.FirstOrDefault(p => p.Method == PaymentMethodType.Credito);
+                if (creditPay != null && creditPay.AmountEquivalentUSD > 0)
                 {
-                    Date = sale.CreatedAt,
-                    DocumentType = "Factura a Crédito",
-                    DocumentNumber = sale.InvoiceNumber,
-                    Concept = $"Venta Factura {sale.InvoiceNumber}",
-                    DebitUSD = creditPay.AmountEquivalentUSD,
-                    CreditUSD = 0m,
-                    AppliedRateVES = bcvRate
-                });
+                    creditMovements.Add(new AccountStatementItem
+                    {
+                        Date = doc.CreatedAt,
+                        DocumentType = "Factura a Crédito",
+                        DocumentNumber = doc.InvoiceNumber,
+                        Concept = $"Venta Factura {doc.InvoiceNumber}",
+                        DebitUSD = creditPay.AmountEquivalentUSD,
+                        CreditUSD = 0m,
+                        AppliedRateVES = bcvRate
+                    });
+                }
+            }
+            else if (doc.DocumentType == FiscalDocumentType.NotaDeCredito)
+            {
+                // La Nota de Crédito amortiza deuda comercial en Cuentas por Cobrar (HABER)
+                var creditPay = doc.Payments.FirstOrDefault(p => p.Method == PaymentMethodType.Credito);
+                bool isCashRefund = doc.Payments.Any(p => p.Method == PaymentMethodType.EfectivoUSD || p.Method == PaymentMethodType.EfectivoVES);
+
+                decimal amountToAmortize = creditPay != null ? creditPay.AmountEquivalentUSD : (!isCashRefund ? doc.TotalUSD : 0m);
+
+                if (amountToAmortize > 0)
+                {
+                    creditMovements.Add(new AccountStatementItem
+                    {
+                        Date = doc.CreatedAt,
+                        DocumentType = "Nota de Crédito Fiscal",
+                        DocumentNumber = doc.InvoiceNumber,
+                        Concept = $"NC {doc.InvoiceNumber} s/ Fact. {doc.AffectedInvoiceNumber} ({doc.Notes})",
+                        DebitUSD = 0m,
+                        CreditUSD = amountToAmortize, // Disminuye la deuda
+                        AppliedRateVES = bcvRate
+                    });
+                }
             }
         }
 
@@ -275,6 +315,7 @@ public class CreditService : ICreditService
         foreach (var item in ordered)
         {
             running += item.DebitUSD - item.CreditUSD;
+            if (running < 0) running = 0m;
             item.RunningBalanceUSD = running;
         }
 

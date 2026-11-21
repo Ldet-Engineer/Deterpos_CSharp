@@ -227,6 +227,60 @@ public partial class SplitPaymentDialog : Window
             equivUSD = _bcvRate > 0 ? decimal.Round(amount / _bcvRate, 2) : 0m;
         }
 
+        // Validaciones estrictas para Ventas a Crédito
+        if (method == PaymentMethodType.Credito)
+        {
+            if (_customer == null || _customer.DocumentNumber == "V-00000000" || string.IsNullOrWhiteSpace(_customer.DocumentNumber))
+            {
+                MessageBox.Show(
+                    "No se puede otorgar crédito al cliente genérico de mostrador (V-00000000).\n\n" +
+                    "Para vender a crédito, debe seleccionar o registrar previamente un cliente formal con Cédula/RIF en el POS.",
+                    "Crédito No Autorizado",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            decimal currentDebt = _customer.CurrentBalanceUSD;
+            decimal existingConfirmedCredit = ConfirmedPayments.Where(p => p.Method == PaymentMethodType.Credito).Sum(p => p.AmountEquivalentUSD);
+            decimal projectedDebt = currentDebt + existingConfirmedCredit + equivUSD;
+
+            if (_customer.CreditLimitUSD > 0 && projectedDebt > _customer.CreditLimitUSD + 0.05m)
+            {
+                var prompt = MessageBox.Show(
+                    $"El cliente '{_customer.FullName}' excedería su límite de crédito autorizado:\n\n" +
+                    $"• Límite Autorizado: $ {_customer.CreditLimitUSD:N2}\n" +
+                    $"• Deuda Actual en Cuenta: $ {currentDebt:N2}\n" +
+                    $"• Crédito Solicitado: $ {equivUSD:N2}\n" +
+                    $"• Deuda Total Proyectada: $ {projectedDebt:N2}\n\n" +
+                    $"¿Desea autorizar y conceder este crédito de todas formas?",
+                    "Exceso de Límite de Crédito",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (prompt != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+            }
+            else if (_customer.CreditLimitUSD <= 0)
+            {
+                var prompt = MessageBox.Show(
+                    $"El cliente '{_customer.FullName}' no tiene límite de crédito asignado ($ 0.00).\n\n" +
+                    $"• Crédito Solicitado: $ {equivUSD:N2}\n" +
+                    $"• Deuda Total Proyectada: $ {projectedDebt:N2}\n\n" +
+                    $"¿Desea conceder este crédito comercial?",
+                    "Crédito Sin Límite Asignado",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (prompt != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+            }
+        }
+
         var payment = new SalePayment
         {
             Method = method,

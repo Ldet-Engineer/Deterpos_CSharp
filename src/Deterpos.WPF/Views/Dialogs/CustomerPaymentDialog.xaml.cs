@@ -58,7 +58,22 @@ public partial class CustomerPaymentDialog : Window
             TxtAmountInput.Text = vesAmount.ToString("N2");
             CmbPaymentMethod.SelectedIndex = 1; // Pago Móvil
         }
+        UpdateCashShiftCheckbox();
         RecalculateEquivalence();
+    }
+
+    private void CmbPaymentMethod_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsLoaded) return;
+        UpdateCashShiftCheckbox();
+    }
+
+    private void UpdateCashShiftCheckbox()
+    {
+        // Solo Efectivo USD (índice 0) o Efectivo Bs (índice 5) representan dinero físico para la gaveta
+        bool isPhysicalCash = CmbPaymentMethod.SelectedIndex == 0 || CmbPaymentMethod.SelectedIndex == 5;
+        ChkSendToCashShift.IsEnabled = isPhysicalCash;
+        ChkSendToCashShift.IsChecked = isPhysicalCash;
     }
 
     private void TxtAmountInput_TextChanged(object sender, TextChangedEventArgs e)

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Deterpos.Application.Common;
 using Deterpos.Application.Interfaces;
 using Deterpos.Domain.Entities;
 using Deterpos.Infrastructure.Data;
@@ -68,6 +69,13 @@ public partial class CreditManagementView : UserControl
         DgSupplierPaymentsHistory.ItemsSource = _displayedSupplierPayments;
 
         Loaded += CreditManagementView_Loaded;
+        AppEvents.CreditChanged += async () =>
+        {
+            if (IsLoaded)
+            {
+                await Dispatcher.InvokeAsync(LoadAllDataAsync);
+            }
+        };
     }
 
     private async void CreditManagementView_Loaded(object sender, RoutedEventArgs e)

@@ -62,11 +62,7 @@ public class CashRegisterService : ICashRegisterService
         if (shift != null)
         {
             // Recalcular saldo esperado en tiempo real sumando movimientos
-            decimal inUSD = shift.Movements.Where(m => m.Type == TransactionType.IngresoManual || m.Type == TransactionType.IngresoVenta).Sum(m => m.AmountUSD);
-            decimal outUSD = shift.Movements.Where(m => m.Type == TransactionType.EgresoCajaChica || m.Type == TransactionType.EgresoGastoOperativo).Sum(m => m.AmountUSD);
-
-            decimal inVES = shift.Movements.Where(m => m.Type == TransactionType.IngresoManual || m.Type == TransactionType.IngresoVenta).Sum(m => m.AmountVES);
-            decimal outVES = shift.Movements.Where(m => m.Type == TransactionType.EgresoCajaChica || m.Type == TransactionType.EgresoGastoOperativo).Sum(m => m.AmountVES);
+            var (inUSD, outUSD, inVES, outVES) = CalculateShiftMovements(shift.Movements);
 
             shift.ExpectedAmountUSD = shift.OpeningAmountUSD + inUSD - outUSD;
             shift.ExpectedAmountVES = shift.OpeningAmountVES + inVES - outVES;
@@ -126,12 +122,12 @@ public class CashRegisterService : ICashRegisterService
             CreatedAt = DateTime.UtcNow
         };
 
-        if (type == TransactionType.IngresoManual || type == TransactionType.IngresoVenta)
+        if (type == TransactionType.IngresoManual || type == TransactionType.IngresoVenta || type == TransactionType.AbonoCliente)
         {
             shift.ExpectedAmountUSD += movement.AmountUSD;
             shift.ExpectedAmountVES += movement.AmountVES;
         }
-        else if (type == TransactionType.EgresoCajaChica || type == TransactionType.EgresoGastoOperativo)
+        else if (type == TransactionType.EgresoCajaChica || type == TransactionType.EgresoGastoOperativo || type == TransactionType.EgresoDevolucion || type == TransactionType.PagoProveedor)
         {
             shift.ExpectedAmountUSD -= movement.AmountUSD;
             shift.ExpectedAmountVES -= movement.AmountVES;
@@ -140,6 +136,29 @@ public class CashRegisterService : ICashRegisterService
         context.CashMovements.Add(movement);
         await context.SaveChangesAsync();
         return movement;
+    }
+
+    private static (decimal InUSD, decimal OutUSD, decimal InVES, decimal OutVES) CalculateShiftMovements(IEnumerable<CashMovement> movements)
+    {
+        decimal inUSD = movements.Where(m => m.Type == TransactionType.IngresoManual || 
+                                             m.Type == TransactionType.IngresoVenta || 
+                                             m.Type == TransactionType.AbonoCliente).Sum(m => m.AmountUSD);
+
+        decimal outUSD = movements.Where(m => m.Type == TransactionType.EgresoCajaChica || 
+                                              m.Type == TransactionType.EgresoGastoOperativo || 
+                                              m.Type == TransactionType.EgresoDevolucion || 
+                                              m.Type == TransactionType.PagoProveedor).Sum(m => m.AmountUSD);
+
+        decimal inVES = movements.Where(m => m.Type == TransactionType.IngresoManual || 
+                                             m.Type == TransactionType.IngresoVenta || 
+                                             m.Type == TransactionType.AbonoCliente).Sum(m => m.AmountVES);
+
+        decimal outVES = movements.Where(m => m.Type == TransactionType.EgresoCajaChica || 
+                                              m.Type == TransactionType.EgresoGastoOperativo || 
+                                              m.Type == TransactionType.EgresoDevolucion || 
+                                              m.Type == TransactionType.PagoProveedor).Sum(m => m.AmountVES);
+
+        return (inUSD, outUSD, inVES, outVES);
     }
 
     public async Task<CashShift> CloseShiftWithBlindAuditAsync(int shiftId, decimal declaredUSD, decimal declaredVES, string auditDetailsSummary, string? closingNotes = null)
@@ -160,11 +179,7 @@ public class CashRegisterService : ICashRegisterService
         }
 
         // Recalcular el saldo teórico final del turno
-        decimal inUSD = shift.Movements.Where(m => m.Type == TransactionType.IngresoManual || m.Type == TransactionType.IngresoVenta).Sum(m => m.AmountUSD);
-        decimal outUSD = shift.Movements.Where(m => m.Type == TransactionType.EgresoCajaChica || m.Type == TransactionType.EgresoGastoOperativo).Sum(m => m.AmountUSD);
-
-        decimal inVES = shift.Movements.Where(m => m.Type == TransactionType.IngresoManual || m.Type == TransactionType.IngresoVenta).Sum(m => m.AmountVES);
-        decimal outVES = shift.Movements.Where(m => m.Type == TransactionType.EgresoCajaChica || m.Type == TransactionType.EgresoGastoOperativo).Sum(m => m.AmountVES);
+        var (inUSD, outUSD, inVES, outVES) = CalculateShiftMovements(shift.Movements);
 
         shift.ExpectedAmountUSD = shift.OpeningAmountUSD + inUSD - outUSD;
         shift.ExpectedAmountVES = shift.OpeningAmountVES + inVES - outVES;
@@ -209,10 +224,7 @@ public class CashRegisterService : ICashRegisterService
         var allPayments = sales.SelectMany(s => s.Payments).ToList();
 
         // 1. Teóricos de Efectivo Físico
-        decimal inUSD = shift.Movements.Where(m => m.Type == TransactionType.IngresoManual || m.Type == TransactionType.IngresoVenta).Sum(m => m.AmountUSD);
-        decimal outUSD = shift.Movements.Where(m => m.Type == TransactionType.EgresoCajaChica || m.Type == TransactionType.EgresoGastoOperativo).Sum(m => m.AmountUSD);
-        decimal inVES = shift.Movements.Where(m => m.Type == TransactionType.IngresoManual || m.Type == TransactionType.IngresoVenta).Sum(m => m.AmountVES);
-        decimal outVES = shift.Movements.Where(m => m.Type == TransactionType.EgresoCajaChica || m.Type == TransactionType.EgresoGastoOperativo).Sum(m => m.AmountVES);
+        var (inUSD, outUSD, inVES, outVES) = CalculateShiftMovements(shift.Movements);
 
         decimal expCashUSD = decimal.Round(shift.OpeningAmountUSD + inUSD - outUSD, 2);
         decimal expCashVES = decimal.Round(shift.OpeningAmountVES + inVES - outVES, 2);
@@ -352,10 +364,7 @@ public class CashRegisterService : ICashRegisterService
 
         var allPayments = sales.SelectMany(s => s.Payments).ToList();
 
-        decimal inUSD = shift.Movements.Where(m => m.Type == TransactionType.IngresoManual || m.Type == TransactionType.IngresoVenta).Sum(m => m.AmountUSD);
-        decimal outUSD = shift.Movements.Where(m => m.Type == TransactionType.EgresoCajaChica || m.Type == TransactionType.EgresoGastoOperativo).Sum(m => m.AmountUSD);
-        decimal inVES = shift.Movements.Where(m => m.Type == TransactionType.IngresoManual || m.Type == TransactionType.IngresoVenta).Sum(m => m.AmountVES);
-        decimal outVES = shift.Movements.Where(m => m.Type == TransactionType.EgresoCajaChica || m.Type == TransactionType.EgresoGastoOperativo).Sum(m => m.AmountVES);
+        var (inUSD, outUSD, inVES, outVES) = CalculateShiftMovements(shift.Movements);
 
         decimal expCashUSD = decimal.Round(shift.OpeningAmountUSD + inUSD - outUSD, 2);
         decimal expCashVES = decimal.Round(shift.OpeningAmountVES + inVES - outVES, 2);

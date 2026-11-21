@@ -234,6 +234,10 @@ public class SaleService : ISaleService
 
         AppEvents.RaiseInventoryChanged();
         AppEvents.RaiseSalesChanged();
+        if (creditAmount > 0)
+        {
+            AppEvents.RaiseCreditChanged();
+        }
         if (cashUsdToRegister > 0 || cashVesToRegister > 0)
         {
             AppEvents.RaiseCashChanged();
@@ -386,10 +390,14 @@ public class SaleService : ISaleService
 
         creditNote.TotalUSD = creditNote.SubtotalUSD + creditNote.TaxAmountUSD + creditNote.IgtfAmountUSD;
 
+        // Determinar si la venta de origen fue a crédito para proteger la caja
+        bool wasCreditSale = originalSale.Payments.Any(p => p.Method == PaymentMethodType.Credito);
+        bool shouldRefundCash = refundToCashRegister && !wasCreditSale;
+
         // Registrar forma de devolución / reembolso
         creditNote.Payments.Add(new SalePayment
         {
-            Method = refundToCashRegister ? PaymentMethodType.EfectivoUSD : PaymentMethodType.Credito,
+            Method = shouldRefundCash ? PaymentMethodType.EfectivoUSD : PaymentMethodType.Credito,
             CurrencyCode = "USD",
             AmountOriginal = creditNote.TotalUSD,
             ExchangeRateApplied = 1.0000m,
@@ -397,8 +405,8 @@ public class SaleService : ISaleService
             ReferenceNumber = creditNote.InvoiceNumber
         });
 
-        // Salida de caja si se devuelve efectivo en el turno actual
-        if (refundToCashRegister && currentCashShiftId > 0)
+        // Salida de caja si se devuelve efectivo en el turno actual (solo para ventas que fueron de contado)
+        if (shouldRefundCash && currentCashShiftId > 0)
         {
             var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == currentCashShiftId && s.Status == CashShiftStatus.Abierta);
             if (shift != null)
@@ -418,6 +426,16 @@ public class SaleService : ISaleService
                 });
             }
         }
+        else if (originalSale.CustomerId.HasValue)
+        {
+            // Amortizar la deuda de Cuentas por Cobrar (CxC) del cliente
+            var customer = await context.Customers.FindAsync(originalSale.CustomerId.Value);
+            if (customer != null)
+            {
+                customer.CurrentBalanceUSD -= creditNote.TotalUSD;
+                if (customer.CurrentBalanceUSD < 0) customer.CurrentBalanceUSD = 0;
+            }
+        }
 
         // Determinar si la devolución fue total
         decimal totalOriginalQty = originalSale.Details.Sum(d => d.Quantity);
@@ -434,7 +452,8 @@ public class SaleService : ISaleService
 
         AppEvents.RaiseInventoryChanged();
         AppEvents.RaiseSalesChanged();
-        if (refundToCashRegister && currentCashShiftId > 0)
+        AppEvents.RaiseCreditChanged();
+        if (shouldRefundCash && currentCashShiftId > 0)
         {
             AppEvents.RaiseCashChanged();
         }
@@ -535,12 +554,27 @@ public class SaleService : ISaleService
             }
         }
 
+        // Revertir deuda del cliente si la venta anulada fue a crédito
+        decimal creditAmount = sale.Payments.Where(p => p.Method == PaymentMethodType.Credito).Sum(p => p.AmountEquivalentUSD);
+        if (creditAmount > 0 && sale.CustomerId.HasValue)
+        {
+            var customer = await context.Customers.FindAsync(sale.CustomerId.Value);
+            if (customer != null)
+            {
+                customer.CurrentBalanceUSD = Math.Max(0m, customer.CurrentBalanceUSD - creditAmount);
+            }
+        }
+
         sale.Status = SaleStatus.Anulada;
         sale.Notes = $"{sale.Notes}\n[ANULADA]: {reason}".Trim();
 
         await context.SaveChangesAsync();
         AppEvents.RaiseInventoryChanged();
         AppEvents.RaiseSalesChanged();
+        if (creditAmount > 0)
+        {
+            AppEvents.RaiseCreditChanged();
+        }
         return true;
     }
 

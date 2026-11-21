@@ -90,6 +90,20 @@ public partial class CreateCreditNoteDialog : Window
         var cust = _originalSale.Customer;
         TxtCustomerInfo.Text = cust != null ? $"{cust.FullName} ({cust.DocumentNumber})" : "Cliente de Contado / Genérico (V-00000000)";
         TxtExchangeRateInfo.Text = $"1 USD = {_originalSale.AppliedRateVES:N4} Bs.";
+
+        bool wasCreditSale = _originalSale.Payments.Any(p => p.Method == PaymentMethodType.Credito);
+        if (wasCreditSale)
+        {
+            ChkRefundToCash.IsChecked = false;
+            ChkRefundToCash.IsEnabled = false;
+            ChkRefundToCash.Content = "Acreditar a cuenta del cliente (Venta a Crédito: Amortiza deuda pendiente en CxC)";
+        }
+        else
+        {
+            ChkRefundToCash.IsChecked = true;
+            ChkRefundToCash.IsEnabled = true;
+            ChkRefundToCash.Content = "Reembolsar dinero desde Caja Actual (Turno Abierto)";
+        }
     }
 
     private void PopulateItems()

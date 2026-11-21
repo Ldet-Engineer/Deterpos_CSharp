@@ -117,7 +117,7 @@
 
                     <!-- Método de Pago -->
                     <TextBlock Text="Método de Pago:" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" />
-                    <ComboBox x:Name="CmbPaymentMethod" SelectedIndex="0" Padding="8,5" Margin="0,0,0,10">
+                    <ComboBox x:Name="CmbPaymentMethod" SelectedIndex="0" Padding="8,5" Margin="0,0,0,10" SelectionChanged="CmbPaymentMethod_SelectionChanged">
                         <ComboBoxItem Content="Efectivo USD ($)" />
                         <ComboBoxItem Content="Pago Móvil (Bs.)" />
                         <ComboBoxItem Content="Punto de Venta / Débito (Bs.)" />

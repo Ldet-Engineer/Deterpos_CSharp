@@ -58,7 +58,25 @@ public partial class SupplierPaymentDialog : Window
             TxtAmountInput.Text = vesAmount.ToString("N2");
             CmbPaymentMethod.SelectedIndex = 1; // Pago Móvil o Transferencia
         }
+        UpdateCashShiftCheckbox();
         RecalculateEquivalence();
+    }
+
+    private void CmbPaymentMethod_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsLoaded) return;
+        UpdateCashShiftCheckbox();
+    }
+
+    private void UpdateCashShiftCheckbox()
+    {
+        // Solo Efectivo USD (0) o Efectivo VES (5) pueden egresarse de la caja física
+        bool isPhysicalCash = CmbPaymentMethod.SelectedIndex == 0 || CmbPaymentMethod.SelectedIndex == 5;
+        ChkPayFromCashShift.IsEnabled = isPhysicalCash;
+        if (!isPhysicalCash)
+        {
+            ChkPayFromCashShift.IsChecked = false;
+        }
     }
 
     private void TxtAmountInput_TextChanged(object sender, TextChangedEventArgs e)

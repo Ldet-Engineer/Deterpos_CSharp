@@ -3,139 +3,153 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
         Title="Tickets en Espera - Punto de Venta"
-        Width="640" Height="500"
+        Width="660" Height="520"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
         WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
         ResizeMode="NoResize"
-        Background="#F8F9FA"
-        FontFamily="Segoe UI">
+        FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
 
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <!-- Sombra Perimetral Moderna y Borde Redondeado -->
+    <Border Margin="15" Background="White" CornerRadius="12" BorderBrush="#D0D7DE" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="30" Direction="270" ShadowDepth="4" Opacity="0.25" Color="#000000" />
+        </Border.Effect>
 
-        <!-- Encabezado con Icono -->
-        <Grid Grid.Row="0" Margin="0,0,0,14">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-            <Border Grid.Column="0" Background="#FCE7F3" CornerRadius="8" Width="44" Height="44" Margin="0,0,12,0">
-                <fluentIcons:SymbolIcon Symbol="Clock" FontSize="22" Foreground="#DB2777" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <!-- Encabezado Modal Arrastrable -->
+            <Border Grid.Row="0" Background="#F6F8FA" CornerRadius="12,12,0,0" Padding="20,14" BorderBrush="#E1E4E8" BorderThickness="0,0,0,1" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#FCE7F3" CornerRadius="8" Width="38" Height="38" Margin="0,0,12,0">
+                        <fluentIcons:SymbolIcon Symbol="Clock" FontSize="20" Foreground="#DB2777" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Ventas y Tickets en Espera" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock x:Name="TxtSubtitleCount" Text="Ventas pausadas temporalmente en el terminal POS" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <Button Grid.Column="2" Click="BtnClose_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6" VerticalAlignment="Center">
+                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Button>
+                </Grid>
             </Border>
 
-            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                <TextBlock Text="Ventas y Tickets en Espera" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
-                <TextBlock x:Name="TxtSubtitleCount" Text="Ventas pausadas temporalmente en el terminal POS" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
-            </StackPanel>
-
-            <Button Grid.Column="2" Click="BtnClose_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6" VerticalAlignment="Top">
-                <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
-            </Button>
-        </Grid>
-
-        <!-- Banner Informativo -->
-        <Border Grid.Row="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6" Padding="12,8" Margin="0,0,0,14">
-            <StackPanel Orientation="Horizontal">
-                <fluentIcons:SymbolIcon Symbol="Info" FontSize="16" Foreground="#2563EB" Margin="0,0,8,0" VerticalAlignment="Center" />
-                <TextBlock Text="Al recuperar un ticket, sus artículos se cargan de inmediato al carrito del POS para facturar." FontSize="11.5" Foreground="#1E40AF" VerticalAlignment="Center" />
-            </StackPanel>
-        </Border>
-
-        <!-- Contenedor Principal: Lista o Estado Vacío -->
-        <Grid Grid.Row="2" Margin="0,0,0,16">
-            <!-- Estado Vacío -->
-            <Border x:Name="PanelEmptyState" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Visibility="Collapsed">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <fluentIcons:SymbolIcon Symbol="DocumentBulletListOff" FontSize="44" Foreground="#CCCCCC" HorizontalAlignment="Center" Margin="0,0,0,10" />
-                    <TextBlock Text="No hay tickets en espera" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" />
-                    <TextBlock Text="Cuando tengas una venta activa en el POS, presiona [F7] o 'Poner en Espera' para pausarla." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0" MaxWidth="360" />
+            <!-- Banner Informativo -->
+            <Border Grid.Row="1" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="0,0,0,1" Padding="16,8">
+                <StackPanel Orientation="Horizontal">
+                    <fluentIcons:SymbolIcon Symbol="Info" FontSize="15" Foreground="#2563EB" Margin="0,0,8,0" VerticalAlignment="Center" />
+                    <TextBlock Text="Al recuperar un ticket, sus artículos se cargan de inmediato al carrito del POS para facturar." FontSize="11.5" Foreground="#1E40AF" VerticalAlignment="Center" />
                 </StackPanel>
             </Border>
 
-            <!-- Lista de Tickets -->
-            <ScrollViewer x:Name="ScrollTicketsList" VerticalScrollBarVisibility="Auto">
-                <ItemsControl x:Name="ItemsTickets">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,12" Margin="0,0,0,10">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
+            <!-- Contenedor Principal: Lista o Estado Vacío -->
+            <Grid Grid.Row="2" Background="#F8F9FA" Margin="0">
+                <Grid Margin="16,12">
+                    <!-- Estado Vacío -->
+                    <Border x:Name="PanelEmptyState" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Visibility="Collapsed">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <fluentIcons:SymbolIcon Symbol="DocumentBulletListOff" FontSize="44" Foreground="#CCCCCC" HorizontalAlignment="Center" Margin="0,0,0,10" />
+                            <TextBlock Text="No hay tickets en espera" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Text="Cuando tengas una venta activa en el POS, presiona [F7] o 'Poner en Espera' para pausarla." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,4,0,0" MaxWidth="360" />
+                        </StackPanel>
+                    </Border>
 
-                                    <!-- Detalles del Ticket -->
-                                    <StackPanel Grid.Column="0">
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                            <Border Background="#F3F4F6" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
-                                                <TextBlock Text="{Binding Id, StringFormat='ID: #{0}'}" FontSize="11" FontWeight="Bold" Foreground="#4B5563" />
-                                            </Border>
-                                            <TextBlock Text="{Binding Reference}" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
-                                            <TextBlock Text="{Binding TimeDisplay, StringFormat='•  Hora: {0}'}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center" />
-                                        </StackPanel>
+                    <!-- Lista de Tickets -->
+                    <ScrollViewer x:Name="ScrollTicketsList" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="ItemsTickets">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,12" Margin="0,0,0,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
 
-                                        <TextBlock Text="{Binding CustomerName, StringFormat='Cliente: {0}'}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,2" />
-                                        <TextBlock Text="{Binding SummaryDisplay}" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" />
-                                    </StackPanel>
+                                            <!-- Detalles del Ticket -->
+                                            <StackPanel Grid.Column="0">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                    <Border Background="#F3F4F6" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
+                                                        <TextBlock Text="{Binding Id, StringFormat='ID: #{0}'}" FontSize="11" FontWeight="Bold" Foreground="#4B5563" />
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Reference}" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding TimeDisplay, StringFormat='•  Hora: {0}'}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                </StackPanel>
 
-                                    <!-- Botones de Acción -->
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Button Tag="{Binding Id}" Click="BtnRestoreTicket_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0" Padding="12,7" Cursor="Hand" Margin="0,0,8,0">
-                                            <Button.Resources>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="CornerRadius" Value="6" />
-                                                </Style>
-                                            </Button.Resources>
-                                            <StackPanel Orientation="Horizontal">
-                                                <fluentIcons:SymbolIcon Symbol="ArrowUndo" FontSize="14" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
-                                                <TextBlock Text="Recuperar" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding CustomerName, StringFormat='Cliente: {0}'}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,2" />
+                                                <TextBlock Text="{Binding SummaryDisplay}" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" />
                                             </StackPanel>
-                                        </Button>
 
-                                        <Button Tag="{Binding Id}" Click="BtnDiscardTicket_Click" Background="White" BorderBrush="#FCA5A5" BorderThickness="1" Padding="8,7" Cursor="Hand" ToolTip="Descartar / Eliminar este ticket">
-                                            <Button.Resources>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="CornerRadius" Value="6" />
-                                                </Style>
-                                            </Button.Resources>
-                                            <fluentIcons:SymbolIcon Symbol="Delete" FontSize="14" Foreground="#DC2626" />
-                                        </Button>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
-        </Grid>
+                                            <!-- Botones de Acción -->
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Button Tag="{Binding Id}" Click="BtnRestoreTicket_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0" Padding="12,7" Cursor="Hand" Margin="0,0,8,0">
+                                                    <Button.Resources>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="CornerRadius" Value="6" />
+                                                        </Style>
+                                                    </Button.Resources>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <fluentIcons:SymbolIcon Symbol="ArrowUndo" FontSize="14" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                                        <TextBlock Text="Recuperar" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Button>
 
-        <!-- Botonera Inferior -->
-        <Border Grid.Row="3" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <Button Grid.Column="0" Click="BtnClearAll_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Left">
-                    <TextBlock Text="Vaciar todos los tickets" FontSize="11.5" Foreground="#DC2626" TextDecorations="Underline" />
-                </Button>
-
-                <Button Grid.Column="1" Click="BtnClose_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="16,6" Cursor="Hand">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="6" />
-                        </Style>
-                    </Button.Resources>
-                    <TextBlock Text="Cerrar" FontWeight="SemiBold" FontSize="12" />
-                </Button>
+                                                <Button Tag="{Binding Id}" Click="BtnDiscardTicket_Click" Background="White" BorderBrush="#FCA5A5" BorderThickness="1" Padding="8,7" Cursor="Hand" ToolTip="Descartar / Eliminar este ticket">
+                                                    <Button.Resources>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="CornerRadius" Value="6" />
+                                                        </Style>
+                                                    </Button.Resources>
+                                                    <fluentIcons:SymbolIcon Symbol="Delete" FontSize="14" Foreground="#DC2626" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
             </Grid>
-        </Border>
-    </Grid>
+
+            <!-- Botonera Inferior -->
+            <Border Grid.Row="3" Background="#F6F8FA" CornerRadius="0,0,12,12" Padding="16,12" BorderBrush="#E1E4E8" BorderThickness="0,1,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0" Click="BtnClearAll_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Left">
+                        <TextBlock Text="Vaciar todos los tickets" FontSize="11.5" Foreground="#DC2626" TextDecorations="Underline" />
+                    </Button>
+
+                    <Button Grid.Column="1" Click="BtnClose_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="18,6" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <TextBlock Text="Cerrar" FontWeight="SemiBold" FontSize="12" />
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
 </Window>
