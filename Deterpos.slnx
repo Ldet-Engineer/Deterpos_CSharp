@@ -5,4 +5,7 @@
     <Project Path="src/Deterpos.Infrastructure/Deterpos.Infrastructure.csproj" />
     <Project Path="src/Deterpos.WPF/Deterpos.WPF.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Deterpos.Tests/Deterpos.Tests.csproj" />
+  </Folder>
 </Solution>
