@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Deterpos.Application.Common;
 using Deterpos.Application.Interfaces;
 using Deterpos.Domain.Entities;
 using Deterpos.Domain.Enums;
@@ -82,6 +83,22 @@ public partial class CasheaBnplView : UserControl
 
         GridCasheaOrders.ItemsSource = _orders;
         Loaded += async (s, e) => await LoadDataAsync();
+        IsVisibleChanged += async (s, e) =>
+        {
+            if (IsVisible)
+            {
+                await LoadDataAsync();
+            }
+        };
+
+        AppEvents.CasheaChanged += () =>
+        {
+            Dispatcher.InvokeAsync(async () => await LoadDataAsync());
+        };
+        AppEvents.SalesChanged += () =>
+        {
+            Dispatcher.InvokeAsync(async () => await LoadDataAsync());
+        };
     }
 
     public async Task LoadDataAsync()
@@ -192,7 +209,10 @@ public partial class CasheaBnplView : UserControl
 
     public void OpenSimulatorDialog()
     {
-        var dlg = new CasheaPaymentAssistantDialog(50.0m, 55.40m, _casheaService, "V-00000000", "Simulación Mostrador");
+        var dlg = new CasheaPaymentAssistantDialog(50.0m, 55.40m, _casheaService, "V-00000000", "Simulación Mostrador")
+        {
+            Owner = Window.GetWindow(this)
+        };
         dlg.ShowDialog();
     }
 

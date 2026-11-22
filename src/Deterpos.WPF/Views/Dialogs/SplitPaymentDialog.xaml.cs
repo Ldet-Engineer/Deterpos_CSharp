@@ -237,7 +237,7 @@ public partial class SplitPaymentDialog : Window
             if (CasheaOrderResult.DownPaymentAmountUSD > 0)
             {
                 bool isForeign = CasheaOrderResult.DownPaymentMethod == PaymentMethodType.EfectivoUSD || CasheaOrderResult.DownPaymentMethod == PaymentMethodType.Zelle;
-                ConfirmedPayments.Add(new SalePayment
+                var downPayment = new SalePayment
                 {
                     Method = CasheaOrderResult.DownPaymentMethod,
                     CurrencyCode = isForeign ? "USD" : "VES",
@@ -245,13 +245,15 @@ public partial class SplitPaymentDialog : Window
                     ExchangeRateApplied = isForeign ? 1.0000m : _bcvRate,
                     AmountEquivalentUSD = CasheaOrderResult.DownPaymentAmountUSD,
                     ReferenceNumber = CasheaOrderResult.DownPaymentReference
-                });
+                };
+                ConfirmedPayments.Add(downPayment);
+                _displayedPayments.Add(new SplitPaymentDisplayItem { Source = downPayment });
             }
 
             // 2. Agregar línea de Saldo Financiado Cashea
             if (CasheaOrderResult.FinancedAmountUSD > 0)
             {
-                ConfirmedPayments.Add(new SalePayment
+                var financedPayment = new SalePayment
                 {
                     Method = PaymentMethodType.Cashea,
                     CurrencyCode = "USD",
@@ -259,7 +261,9 @@ public partial class SplitPaymentDialog : Window
                     ExchangeRateApplied = 1.0000m,
                     AmountEquivalentUSD = CasheaOrderResult.FinancedAmountUSD,
                     ReferenceNumber = CasheaOrderResult.OrderNumber
-                });
+                };
+                ConfirmedPayments.Add(financedPayment);
+                _displayedPayments.Add(new SplitPaymentDisplayItem { Source = financedPayment });
             }
 
             RecalculateTotals();
@@ -377,6 +381,12 @@ public partial class SplitPaymentDialog : Window
             }
         }
 
+        string refNum = TxtReferenceNumber.Text.Trim();
+        if (method == PaymentMethodType.Cashea && string.IsNullOrWhiteSpace(refNum))
+        {
+            refNum = $"CSH-{new Random().Next(10000, 99999)}";
+        }
+
         var payment = new SalePayment
         {
             Method = method,
@@ -384,7 +394,7 @@ public partial class SplitPaymentDialog : Window
             AmountOriginal = amount,
             ExchangeRateApplied = rate,
             AmountEquivalentUSD = equivUSD,
-            ReferenceNumber = TxtReferenceNumber.Text.Trim()
+            ReferenceNumber = refNum
         };
 
         ConfirmedPayments.Add(payment);
@@ -400,6 +410,10 @@ public partial class SplitPaymentDialog : Window
         {
             ConfirmedPayments.Remove(item.Source);
             _displayedPayments.Remove(item);
+            if (item.Source.Method == PaymentMethodType.Cashea)
+            {
+                CasheaOrderResult = null;
+            }
             RecalculateTotals();
         }
     }

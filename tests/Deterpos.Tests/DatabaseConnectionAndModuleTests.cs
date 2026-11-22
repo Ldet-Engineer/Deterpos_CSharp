@@ -742,4 +742,116 @@ public class DatabaseConnectionAndModuleTests
         Assert.Equal(bankRef, updated.SettlementBankReference);
         _output.WriteLine($"Orden conciliar exitosamente: Estado={updated.Status}, Ref={updated.SettlementBankReference}");
     }
+
+    [Fact]
+    public async Task Test18_Pos_Cashea_Sale_Registration_And_Events()
+    {
+        var config = new DatabaseConfigurationService();
+        await config.InitializeDatabaseAsync();
+        var factory = new DeterposDbContextFactory(config);
+        var saleService = new SaleService(factory);
+        var casheaService = new CasheaService(factory);
+
+        bool casheaEventFired = false;
+        Deterpos.Application.Common.AppEvents.CasheaChanged += () => casheaEventFired = true;
+
+        // Crear venta simulada en POS con 40% inicial y 60% Cashea
+        decimal total = 50.00m;
+        decimal bcv = 55.40m;
+        decimal down = 20.00m;
+        decimal financed = 30.00m;
+        string orderNum = $"CSH-POS-{Guid.NewGuid():N}"[..12].ToUpperInvariant();
+
+        await using var ctx = factory.CreateDbContext();
+        var prod = await ctx.Products.FirstAsync(p => p.IsActive);
+        var shift = await ctx.CashShifts.FirstAsync(s => s.Status == CashShiftStatus.Abierta);
+
+        var saleDraft = new Sale
+        {
+            CashRegisterId = 1,
+            CashShiftId = shift.Id,
+            CashierUsername = "TestCashier",
+            FiscalPrinterSerial = "TESTFISCAL01",
+            Notes = "Test POS Cashea BNPL"
+        };
+
+        var details = new List<SaleDetail>
+        {
+            new SaleDetail
+            {
+                ProductId = prod.Id,
+                ProductCode = prod.Code,
+                ProductName = prod.Name,
+                Quantity = 1.0m,
+                UnitPriceUSD = total,
+                UnitCostUSD = prod.CostUSD,
+                VatRate = VatRateType.General16
+            }
+        };
+
+        var payments = new List<SalePayment>
+        {
+            new SalePayment
+            {
+                Method = PaymentMethodType.PuntoDeVenta,
+                CurrencyCode = "VES",
+                AmountOriginal = down * bcv,
+                ExchangeRateApplied = bcv,
+                AmountEquivalentUSD = down,
+                ReferenceNumber = "POS-12345"
+            },
+            new SalePayment
+            {
+                Method = PaymentMethodType.Cashea,
+                CurrencyCode = "USD",
+                AmountOriginal = financed,
+                ExchangeRateApplied = 1.0m,
+                AmountEquivalentUSD = financed,
+                ReferenceNumber = orderNum
+            }
+        };
+
+        var completedSale = await saleService.ProcessSaleAsync(saleDraft, details, payments, bcv, false);
+        Assert.True(completedSale.Id > 0);
+
+        // Registrar orden Cashea como lo hace PosView
+        var casheaOrder = new CasheaOrder
+        {
+            SaleId = completedSale.Id,
+            OrderNumber = orderNum,
+            CustomerDocument = "V-12345678",
+            CustomerName = "Cliente Test POS",
+            CasheaLevel = 3,
+            TotalSaleUSD = completedSale.TotalUSD,
+            DownPaymentAmountUSD = down,
+            FinancedAmountUSD = financed,
+            ExchangeRateApplied = bcv,
+            TotalSaleVES = completedSale.TotalUSD * bcv,
+            DownPaymentAmountVES = down * bcv,
+            FinancedAmountVES = financed * bcv,
+            DownPaymentMethod = PaymentMethodType.PuntoDeVenta,
+            DownPaymentReference = "POS-12345",
+            InstallmentsCount = 3,
+            InstallmentAmountUSD = decimal.Round(financed / 3m, 2),
+            InstallmentAmountVES = decimal.Round((financed * bcv) / 3m, 2),
+            EstimatedCommissionPercentage = 5.0m,
+            EstimatedCommissionUSD = decimal.Round(financed * 0.05m, 2),
+            Status = CasheaOrderStatus.PorLiquidar,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await casheaService.RegisterOrderAsync(casheaOrder);
+
+        // Verificar que el evento global AppEvents.CasheaChanged fue emitido
+        Assert.True(casheaEventFired, "El evento AppEvents.CasheaChanged debe dispararse al registrar la orden Cashea.");
+
+        // Verificar que la orden existe en base de datos
+        var orders = await casheaService.GetOrdersAsync(search: orderNum);
+        Assert.Single(orders);
+        var found = orders.First();
+        Assert.Equal(completedSale.Id, found.SaleId);
+        Assert.Equal(financed, found.FinancedAmountUSD);
+        Assert.Equal(down, found.DownPaymentAmountUSD);
+        _output.WriteLine($"Orden POS #{found.OrderNumber} verificada con éxito: Venta #{found.SaleId}, Financiado: ${found.FinancedAmountUSD:N2}, Inicial: ${found.DownPaymentAmountUSD:N2}");
+    }
 }

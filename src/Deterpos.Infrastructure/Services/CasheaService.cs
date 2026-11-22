@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Deterpos.Application.Common;
 using Deterpos.Application.Interfaces;
 using Deterpos.Domain.Entities;
 using Deterpos.Domain.Enums;
@@ -147,6 +148,7 @@ public class CasheaService : ICasheaService
 
         context.CasheaOrders.Add(order);
         await context.SaveChangesAsync();
+        AppEvents.RaiseCasheaChanged();
         return order;
     }
 
@@ -227,6 +229,7 @@ public class CasheaService : ICasheaService
         order.SettlementDate = settlementDate.ToUniversalTime();
 
         await context.SaveChangesAsync();
+        AppEvents.RaiseCasheaChanged();
         return true;
     }
 }

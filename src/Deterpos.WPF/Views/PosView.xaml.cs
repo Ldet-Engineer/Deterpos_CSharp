@@ -124,6 +124,8 @@ public partial class PosView : UserControl
     {
         if (IsVisible)
         {
+            var cSettings = _casheaService.LoadSettings();
+            BtnCasheaCheckout.Visibility = cSettings.IsEnabled ? Visibility.Visible : Visibility.Collapsed;
             await ReloadCatalogAsync();
         }
     }
@@ -593,39 +595,47 @@ public partial class PosView : UserControl
                     splitDialog.CasheaOrderResult.SaleId = completedSale.Id;
                     await _casheaService.RegisterOrderAsync(splitDialog.CasheaOrderResult);
                 }
-                else if (completedSale.Payments.Any(p => p.Method == PaymentMethodType.Cashea))
+                else
                 {
-                    var casheaPay = completedSale.Payments.First(p => p.Method == PaymentMethodType.Cashea);
-                    decimal financedUSD = casheaPay.AmountEquivalentUSD;
-                    decimal downUSD = Math.Max(0m, completedSale.TotalUSD - financedUSD);
+                    var casheaPay = splitDialog.ConfirmedPayments.FirstOrDefault(p => p.Method == PaymentMethodType.Cashea)
+                                 ?? completedSale.Payments.FirstOrDefault(p => p.Method == PaymentMethodType.Cashea);
 
-                    var autoOrder = new CasheaOrder
+                    if (casheaPay != null)
                     {
-                        SaleId = completedSale.Id,
-                        OrderNumber = string.IsNullOrWhiteSpace(casheaPay.ReferenceNumber) || casheaPay.ReferenceNumber == "N/A"
-                            ? $"CSH-{new Random().Next(10000, 99999)}"
-                            : casheaPay.ReferenceNumber,
-                        CustomerDocument = _activeCustomer?.DocumentNumber ?? "V-00000000",
-                        CustomerName = _activeCustomer?.FullName ?? "Cliente Cashea",
-                        CasheaLevel = 3,
-                        TotalSaleUSD = completedSale.TotalUSD,
-                        DownPaymentAmountUSD = downUSD,
-                        FinancedAmountUSD = financedUSD,
-                        ExchangeRateApplied = bcv,
-                        TotalSaleVES = completedSale.TotalUSD * bcv,
-                        DownPaymentAmountVES = downUSD * bcv,
-                        FinancedAmountVES = financedUSD * bcv,
-                        DownPaymentMethod = completedSale.Payments.FirstOrDefault(p => p.Method != PaymentMethodType.Cashea)?.Method ?? PaymentMethodType.PuntoDeVenta,
-                        DownPaymentReference = completedSale.Payments.FirstOrDefault(p => p.Method != PaymentMethodType.Cashea)?.ReferenceNumber ?? string.Empty,
-                        InstallmentsCount = 3,
-                        InstallmentAmountUSD = decimal.Round(financedUSD / 3m, 2),
-                        InstallmentAmountVES = decimal.Round((financedUSD * bcv) / 3m, 2),
-                        EstimatedCommissionPercentage = 5.0m,
-                        EstimatedCommissionUSD = decimal.Round(financedUSD * 0.05m, 2),
-                        Status = CasheaOrderStatus.PorLiquidar,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    await _casheaService.RegisterOrderAsync(autoOrder);
+                        decimal financedUSD = casheaPay.AmountEquivalentUSD;
+                        decimal downUSD = Math.Max(0m, completedSale.TotalUSD - financedUSD);
+
+                        var downPaymentItem = splitDialog.ConfirmedPayments.FirstOrDefault(p => p.Method != PaymentMethodType.Cashea)
+                                           ?? completedSale.Payments.FirstOrDefault(p => p.Method != PaymentMethodType.Cashea);
+
+                        var autoOrder = new CasheaOrder
+                        {
+                            SaleId = completedSale.Id,
+                            OrderNumber = string.IsNullOrWhiteSpace(casheaPay.ReferenceNumber) || casheaPay.ReferenceNumber == "N/A"
+                                ? $"CSH-{new Random().Next(10000, 99999)}"
+                                : casheaPay.ReferenceNumber,
+                            CustomerDocument = _activeCustomer?.DocumentNumber ?? "V-00000000",
+                            CustomerName = _activeCustomer?.FullName ?? "Cliente Cashea",
+                            CasheaLevel = 3,
+                            TotalSaleUSD = completedSale.TotalUSD,
+                            DownPaymentAmountUSD = downUSD,
+                            FinancedAmountUSD = financedUSD,
+                            ExchangeRateApplied = bcv,
+                            TotalSaleVES = completedSale.TotalUSD * bcv,
+                            DownPaymentAmountVES = downUSD * bcv,
+                            FinancedAmountVES = financedUSD * bcv,
+                            DownPaymentMethod = downPaymentItem?.Method ?? PaymentMethodType.PuntoDeVenta,
+                            DownPaymentReference = downPaymentItem?.ReferenceNumber ?? string.Empty,
+                            InstallmentsCount = 3,
+                            InstallmentAmountUSD = decimal.Round(financedUSD / 3m, 2),
+                            InstallmentAmountVES = decimal.Round((financedUSD * bcv) / 3m, 2),
+                            EstimatedCommissionPercentage = 5.0m,
+                            EstimatedCommissionUSD = decimal.Round(financedUSD * 0.05m, 2),
+                            Status = CasheaOrderStatus.PorLiquidar,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        await _casheaService.RegisterOrderAsync(autoOrder);
+                    }
                 }
 
                 // Mostrar Comprobante Fiscal SENIAT

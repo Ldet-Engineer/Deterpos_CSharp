@@ -25,8 +25,14 @@ public static class AppEvents
     /// </summary>
     public static event Action? CreditChanged;
 
+    /// <summary>
+    /// Evento global disparado cuando se crea, actualiza o concilia una orden de financiamiento Cashea BNPL.
+    /// </summary>
+    public static event Action? CasheaChanged;
+
     public static void RaiseInventoryChanged() => InventoryChanged?.Invoke();
     public static void RaiseSalesChanged() => SalesChanged?.Invoke();
     public static void RaiseCashChanged() => CashChanged?.Invoke();
     public static void RaiseCreditChanged() => CreditChanged?.Invoke();
+    public static void RaiseCasheaChanged() => CasheaChanged?.Invoke();
 }
