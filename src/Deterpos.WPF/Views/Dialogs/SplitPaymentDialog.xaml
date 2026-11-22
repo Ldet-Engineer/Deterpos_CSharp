@@ -146,9 +146,9 @@
                                 <TextBox x:Name="TxtReferenceNumber" Text="" VerticalContentAlignment="Center" KeyDown="TxtReferenceNumber_KeyDown" />
                             </StackPanel>
 
-                            <!-- Botón Agregar -->
-                            <StackPanel Grid.Column="6" VerticalAlignment="Bottom">
-                                <Button Click="BtnAddPayment_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0" Padding="18,8" Cursor="Hand" FontWeight="SemiBold">
+                            <!-- Botón Agregar y Asistente Cashea -->
+                            <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                <Button Click="BtnAddPayment_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0" Padding="14,8" Cursor="Hand" FontWeight="SemiBold" Margin="0,0,8,0">
                                     <Button.Resources>
                                         <Style TargetType="Border">
                                             <Setter Property="CornerRadius" Value="6" />
@@ -157,6 +157,18 @@
                                     <StackPanel Orientation="Horizontal">
                                         <fluentIcons:SymbolIcon Symbol="Add" FontSize="16" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
                                         <TextBlock Text="Agregar Pago" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+
+                                <Button x:Name="BtnOpenCasheaAssistant" Click="BtnOpenCasheaAssistant_Click" Background="#0284C7" Foreground="White" BorderThickness="0" Padding="12,8" Cursor="Hand" FontWeight="SemiBold" ToolTip="Calcular automáticamente inicial en caja y cuotas Cashea">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="6" />
+                                        </Style>
+                                    </Button.Resources>
+                                    <StackPanel Orientation="Horizontal">
+                                        <fluentIcons:SymbolIcon Symbol="BarcodeScanner" FontSize="15" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="Asistente Cashea" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
                             </StackPanel>

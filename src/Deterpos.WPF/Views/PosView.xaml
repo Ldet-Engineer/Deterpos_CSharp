@@ -404,7 +404,9 @@
                         </Button>
 
                         <Button x:Name="BtnCasheaCheckout" Click="BtnCasheaCheckout_Click" Background="#0284C7" Foreground="White" BorderThickness="0"
-                                Padding="14,9" Cursor="Hand" Margin="0,0,0,8" IsEnabled="False" Visibility="Collapsed" ToolTip="Procesar venta con inicial y 3 cuotas quincenales [F10]">
+                                Padding="14,10" Cursor="Hand" Margin="0,0,0,8" IsEnabled="False"
+                                Visibility="{Binding IsCasheaIntegrationEnabled, Converter={StaticResource BoolToVisConverter}}"
+                                ToolTip="Procesar venta con inicial en caja y 3 cuotas quincenales sin interés [F10]">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="8" />
@@ -412,7 +414,7 @@
                             </Button.Resources>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <fluentIcons:SymbolIcon Symbol="BarcodeScanner" FontSize="18" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
-                                <TextBlock Text="[F10] COBRAR CON CASHEA" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" />
+                                <TextBlock Text="[F10] COBRAR CON CASHEA" FontSize="13.5" FontWeight="Bold" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
 

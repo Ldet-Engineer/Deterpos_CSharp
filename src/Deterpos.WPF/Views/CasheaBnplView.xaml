@@ -121,6 +121,19 @@
                 <!-- Botones de Acción -->
                 <StackPanel Grid.Column="5" Orientation="Horizontal">
 
+                    <!-- Botón Ver Detalle y Cuotas -->
+                    <Button x:Name="BtnViewOrderDetails" Click="BtnViewOrderDetails_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="14,7" Cursor="Hand" Margin="0,0,8,0" IsEnabled="False">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="DocumentSearch" FontSize="15" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Ver Plan de Cuotas" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
                     <!-- Botón Simulador de Cuotas -->
                     <Button Click="BtnOpenSimulator_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="14,7" Cursor="Hand" Margin="0,0,8,0">
                         <Button.Resources>
@@ -167,7 +180,7 @@
             <DataGrid x:Name="GridCasheaOrders" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
                       HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E1E4E8"
                       Background="White" BorderThickness="0" RowHeight="38" SelectionMode="Single"
-                      SelectionChanged="GridCasheaOrders_SelectionChanged">
+                      SelectionChanged="GridCasheaOrders_SelectionChanged" MouseDoubleClick="GridCasheaOrders_MouseDoubleClick">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="N° Orden Cashea" Binding="{Binding OrderNumber}" FontWeight="Bold" Width="130" />
                     <DataGridTextColumn Header="Fecha Emisión" Binding="{Binding CreatedAt, StringFormat={}{0:dd/MM/yyyy HH:mm}}" Width="120" />

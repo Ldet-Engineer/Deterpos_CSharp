@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using Deterpos.Application.Interfaces;
 using Deterpos.Domain.Entities;
@@ -155,7 +156,33 @@ public partial class CasheaBnplView : UserControl
     private void GridCasheaOrders_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         _selectedOrder = GridCasheaOrders.SelectedItem as CasheaOrderItemViewModel;
+        BtnViewOrderDetails.IsEnabled = _selectedOrder != null;
         BtnSettleOrder.IsEnabled = _selectedOrder != null && _selectedOrder.Source.Status != CasheaOrderStatus.LiquidadaEnBanco;
+    }
+
+    private void GridCasheaOrders_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (_selectedOrder != null)
+        {
+            OpenOrderDetailsDialog(_selectedOrder.Source);
+        }
+    }
+
+    private void BtnViewOrderDetails_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedOrder != null)
+        {
+            OpenOrderDetailsDialog(_selectedOrder.Source);
+        }
+    }
+
+    private void OpenOrderDetailsDialog(CasheaOrder order)
+    {
+        var dlg = new CasheaOrderDetailsDialog(order)
+        {
+            Owner = Window.GetWindow(this)
+        };
+        dlg.ShowDialog();
     }
 
     private void BtnOpenSimulator_Click(object sender, RoutedEventArgs e)

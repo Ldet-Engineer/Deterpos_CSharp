@@ -159,7 +159,7 @@
                         <StackPanel>
                             <Grid Margin="0,0,0,10">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <fluentIcons:SymbolIcon Symbol="CalendarLtr" FontSize="16" Foreground="#0284C7" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                    <fluentIcons:SymbolIcon Symbol="Clock" FontSize="16" Foreground="#0284C7" Margin="0,0,6,0" VerticalAlignment="Center" />
                                     <TextBlock Text="Cronograma de Pago de Cuotas para el Cliente (Cada 14 Días)" FontWeight="Bold" FontSize="12.5" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Text="El cliente pagará estas cuotas directamente en su app" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />

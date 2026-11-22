@@ -9,6 +9,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Deterpos.Domain.Entities;
 using Deterpos.Domain.Enums;
+using Deterpos.Infrastructure.Data;
+using Deterpos.Infrastructure.Services;
 
 namespace Deterpos.WPF.Views.Dialogs;
 
@@ -55,6 +57,7 @@ public partial class SplitPaymentDialog : Window
     public decimal FinalTotalUSD { get; private set; }
     public decimal ChangeUSD { get; private set; }
     public decimal ChangeVES { get; private set; }
+    public CasheaOrder? CasheaOrderResult { get; private set; }
 
     public SplitPaymentDialog(decimal baseSaleTotalUSD, decimal bcvRate, bool isSpecialTaxpayer, Customer? customer = null)
     {
@@ -63,6 +66,20 @@ public partial class SplitPaymentDialog : Window
         _bcvRate = bcvRate > 0 ? bcvRate : 55.4000m;
         _isSpecialTaxpayer = isSpecialTaxpayer;
         _customer = customer;
+
+        var dbConfig = new DatabaseConfigurationService();
+        var factory = new DeterposDbContextFactory(dbConfig);
+        var casheaService = new CasheaService(factory);
+        var cSettings = casheaService.LoadSettings();
+
+        if (CmbItemCashea != null)
+        {
+            CmbItemCashea.Visibility = cSettings.IsEnabled ? Visibility.Visible : Visibility.Collapsed;
+        }
+        if (BtnOpenCasheaAssistant != null)
+        {
+            BtnOpenCasheaAssistant.Visibility = cSettings.IsEnabled ? Visibility.Visible : Visibility.Collapsed;
+        }
 
         TxtClientInfoSubtitle.Text = $"Cliente: {customer?.FullName ?? "Cliente de Contado"} ({customer?.DocumentNumber ?? "V-00000000"}) • Tasa Oficial BCV: {_bcvRate:N4} Bs.";
         DgPayments.ItemsSource = _displayedPayments;
@@ -155,9 +172,23 @@ public partial class SplitPaymentDialog : Window
         decimal remainingUSD = Math.Max(0m, FinalTotalUSD - totalPaidUSD);
 
         var selectedTag = (CmbPaymentMethod.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "EfectivoUSD";
-        bool isUSD = selectedTag == "EfectivoUSD" || selectedTag == "Zelle" || selectedTag == "Credito";
+        bool isUSD = selectedTag == "EfectivoUSD" || selectedTag == "Zelle" || selectedTag == "Credito" || selectedTag == "Cashea";
 
-        if (isUSD)
+        if (selectedTag == "Cashea")
+        {
+            decimal financedUSD = decimal.Round(remainingUSD * 0.60m, 2);
+            decimal downUSD = remainingUSD - financedUSD;
+            decimal quotaUSD = decimal.Round(financedUSD / 3m, 2);
+
+            TxtPaymentAmount.Text = financedUSD.ToString("F2", CultureInfo.InvariantCulture);
+            TxtAmountLabel.Text = "Saldo Financiado Cashea ($) *";
+            TxtPaymentHelper.Text = $"• Cashea financia 60% ($ {financedUSD:N2}) en 3 cuotas de $ {quotaUSD:N2}. Cobre la inicial de 40% ($ {downUSD:N2}) en efectivo o punto.";
+            if (string.IsNullOrWhiteSpace(TxtReferenceNumber.Text))
+            {
+                TxtReferenceNumber.Text = $"CSH-{new Random().Next(10000, 99999)}";
+            }
+        }
+        else if (isUSD)
         {
             TxtPaymentAmount.Text = remainingUSD.ToString("F2", CultureInfo.InvariantCulture);
             TxtAmountLabel.Text = "Monto en Dólares (USD $) *";
@@ -169,6 +200,70 @@ public partial class SplitPaymentDialog : Window
             TxtPaymentAmount.Text = remainingVES.ToString("F2", CultureInfo.InvariantCulture);
             TxtAmountLabel.Text = "Monto en Bolívares (VES Bs.) *";
             TxtPaymentHelper.Text = $"• Equivalente en moneda base: $ {remainingUSD:N2} USD (Tasa BCV: {_bcvRate:N4})";
+        }
+    }
+
+    private void BtnOpenCasheaAssistant_Click(object sender, RoutedEventArgs e)
+    {
+        decimal totalPaidUSD = ConfirmedPayments.Sum(p => p.AmountEquivalentUSD);
+        decimal remainingUSD = Math.Max(0m, FinalTotalUSD - totalPaidUSD);
+
+        if (remainingUSD <= 0)
+        {
+            MessageBox.Show("El total de la venta ya ha sido cubierto completamente.", "Total Cubierto", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var dbConfig = new DatabaseConfigurationService();
+        var factory = new DeterposDbContextFactory(dbConfig);
+        var casheaService = new CasheaService(factory);
+
+        var dlg = new CasheaPaymentAssistantDialog(
+            remainingUSD,
+            _bcvRate,
+            casheaService,
+            _customer?.DocumentNumber,
+            _customer?.FullName
+        )
+        {
+            Owner = this
+        };
+
+        if (dlg.ShowDialog() == true && dlg.IsConfirmed && dlg.CreatedCasheaOrder != null)
+        {
+            CasheaOrderResult = dlg.CreatedCasheaOrder;
+
+            // 1. Agregar línea de Inicial
+            if (CasheaOrderResult.DownPaymentAmountUSD > 0)
+            {
+                bool isForeign = CasheaOrderResult.DownPaymentMethod == PaymentMethodType.EfectivoUSD || CasheaOrderResult.DownPaymentMethod == PaymentMethodType.Zelle;
+                ConfirmedPayments.Add(new SalePayment
+                {
+                    Method = CasheaOrderResult.DownPaymentMethod,
+                    CurrencyCode = isForeign ? "USD" : "VES",
+                    AmountOriginal = isForeign ? CasheaOrderResult.DownPaymentAmountUSD : CasheaOrderResult.DownPaymentAmountVES,
+                    ExchangeRateApplied = isForeign ? 1.0000m : _bcvRate,
+                    AmountEquivalentUSD = CasheaOrderResult.DownPaymentAmountUSD,
+                    ReferenceNumber = CasheaOrderResult.DownPaymentReference
+                });
+            }
+
+            // 2. Agregar línea de Saldo Financiado Cashea
+            if (CasheaOrderResult.FinancedAmountUSD > 0)
+            {
+                ConfirmedPayments.Add(new SalePayment
+                {
+                    Method = PaymentMethodType.Cashea,
+                    CurrencyCode = "USD",
+                    AmountOriginal = CasheaOrderResult.FinancedAmountUSD,
+                    ExchangeRateApplied = 1.0000m,
+                    AmountEquivalentUSD = CasheaOrderResult.FinancedAmountUSD,
+                    ReferenceNumber = CasheaOrderResult.OrderNumber
+                });
+            }
+
+            RecalculateTotals();
+            SuggestPaymentAmount();
         }
     }
 
