@@ -329,33 +329,51 @@ public partial class FiscalReportsView : UserControl
             year = y;
         }
 
-        bool isSales = _currentTabIndex == 0 || _currentTabIndex == 2 || _currentTabIndex == 3;
-        string defaultName = isSales
-            ? $"Libro_Ventas_Fiscal_SENIAT_{month:D2}_{year}.csv"
-            : $"Libro_Compras_Fiscal_SENIAT_{month:D2}_{year}.csv";
+        string defaultName;
+        string dialogTitle;
+
+        if (_currentTabIndex == 0)
+        {
+            defaultName = $"Libro_Ventas_Fiscal_SENIAT_{month:D2}_{year}.csv";
+            dialogTitle = "Exportar Libro de Ventas Fiscal a Excel";
+        }
+        else if (_currentTabIndex == 1)
+        {
+            defaultName = $"Libro_Compras_Fiscal_SENIAT_{month:D2}_{year}.csv";
+            dialogTitle = "Exportar Libro de Compras Fiscal a Excel";
+        }
+        else
+        {
+            defaultName = $"Resumen_Tributario_SENIAT_Forma30_{month:D2}_{year}.csv";
+            dialogTitle = "Exportar Resumen Fiscal y Forma 30 a Excel";
+        }
 
         var sfd = new SaveFileDialog
         {
             FileName = defaultName,
             Filter = "Archivo Excel CSV (*.csv)|*.csv|Todos los archivos (*.*)|*.*",
-            Title = isSales ? "Exportar Libro de Ventas Fiscal a Excel" : "Exportar Libro de Compras Fiscal a Excel"
+            Title = dialogTitle
         };
 
         if (sfd.ShowDialog() == true)
         {
             try
             {
-                if (isSales)
+                if (_currentTabIndex == 0)
                 {
                     await _fiscalBookService.ExportSalesBookToCsvAsync(year, month, sfd.FileName);
                 }
-                else
+                else if (_currentTabIndex == 1)
                 {
                     await _fiscalBookService.ExportPurchasesBookToCsvAsync(year, month, sfd.FileName);
                 }
+                else
+                {
+                    await _fiscalBookService.ExportTaxSummaryToCsvAsync(year, month, sfd.FileName);
+                }
 
                 var res = MessageBox.Show(
-                    $"El Libro Fiscal reglamentario fue exportado con éxito a:\n{sfd.FileName}\n\n¿Desea abrir el archivo en Microsoft Excel ahora?",
+                    $"El documento fiscal reglamentario fue exportado con éxito a:\n{sfd.FileName}\n\n¿Desea abrir el archivo en Microsoft Excel ahora?",
                     "Exportación Exitosa",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Information);
@@ -371,7 +389,7 @@ public partial class FiscalReportsView : UserControl
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al exportar libro fiscal: {ex.Message}", "Error al Exportar", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error al exportar documento fiscal: {ex.Message}", "Error al Exportar", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

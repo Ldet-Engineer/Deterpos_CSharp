@@ -139,4 +139,5 @@ public interface IFiscalBookService
 
     Task<string> ExportSalesBookToCsvAsync(int year, int month, string targetFilePath, CompanyFiscalProfile? company = null);
     Task<string> ExportPurchasesBookToCsvAsync(int year, int month, string targetFilePath, CompanyFiscalProfile? company = null);
+    Task<string> ExportTaxSummaryToCsvAsync(int year, int month, string targetFilePath, CompanyFiscalProfile? company = null);
 }

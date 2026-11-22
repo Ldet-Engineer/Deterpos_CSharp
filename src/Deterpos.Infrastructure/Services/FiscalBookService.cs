@@ -445,4 +445,76 @@ public class FiscalBookService : IFiscalBookService
         await File.WriteAllTextAsync(targetFilePath, sb.ToString(), utf8WithBom);
         return targetFilePath;
     }
+
+    public async Task<string> ExportTaxSummaryToCsvAsync(int year, int month, string targetFilePath, CompanyFiscalProfile? company = null)
+    {
+        var summary = await GetFiscalMonthSummaryAsync(year, month);
+        var start = new DateTime(year, month, 1);
+        var end = start.AddMonths(1).AddDays(-1);
+        var analytics = await GetSalesAnalyticsAsync(start, end);
+
+        var sb = new StringBuilder();
+
+        string companyName = company?.BusinessName ?? "Deterpos C.A.";
+        string rif = company != null ? $"{company.RifPrefix}-{company.RifNumber}" : "J-409182730";
+        string address = company?.FiscalAddress ?? "Caracas, Venezuela";
+
+        sb.AppendLine($"\"{companyName.ToUpper()}\";;;");
+        sb.AppendLine($"\"RIF: {rif}\";;;");
+        sb.AppendLine($"\"DOMICILIO FISCAL: {address}\";;;");
+        sb.AppendLine($"\"RESUMEN TRIBUTARIO FISCAL SENIAT - DECLARACIÓN MENSUAL (FORMA 30 / IGTF)\";;;");
+        sb.AppendLine($"\"PERÍODO TRIBUTARIO: {month:D2}/{year}\";;;");
+        sb.AppendLine();
+
+        // SECCIÓN I: VENTAS Y DÉBITOS FISCALES
+        sb.AppendLine("\"SECCIÓN I: DETERMINACIÓN DE DÉBITOS FISCALES (VENTAS)\";;;");
+        sb.AppendLine("Concepto Tributario;Base Imponible (Bs.);Alicuota;Débito Fiscal (Bs.)");
+        sb.AppendLine($"Ventas Internas No Gravadas (Exentas / Exoneradas);{summary.TotalSalesExemptVES:F2};0.00%;0.00");
+        sb.AppendLine($"Ventas Internas Gravadas por Alícuota General;{(summary.TotalSalesVES - summary.TotalSalesExemptVES - summary.TotalSalesVatDebitVES):F2};16.00%;{summary.TotalSalesVatDebitVES:F2}");
+        sb.AppendLine($"Total Ventas Brutas Facturadas del Período;{summary.TotalSalesVES:F2};—;{summary.TotalSalesVatDebitVES:F2}");
+        sb.AppendLine($"Base Imponible Sujeta a Percepción de IGTF (Divisas);{summary.TotalSalesVES:F2};3.00%;{summary.TotalSalesIgtfVES:F2}");
+        sb.AppendLine();
+
+        // SECCIÓN II: COMPRAS Y CRÉDITOS FISCALES
+        sb.AppendLine("\"SECCIÓN II: DETERMINACIÓN DE CRÉDITOS FISCALES (COMPRAS)\";;;");
+        sb.AppendLine("Concepto Tributario;Base Imponible (Bs.);Alicuota;Crédito Fiscal (Bs.)");
+        sb.AppendLine($"Compras Internas No Gravadas (Exentas / Exoneradas);{summary.TotalPurchasesExemptVES:F2};0.00%;0.00");
+        sb.AppendLine($"Compras Internas Gravadas por Alícuota General;{(summary.TotalPurchasesVES - summary.TotalPurchasesExemptVES - summary.TotalPurchasesVatCreditVES):F2};16.00%;{summary.TotalPurchasesVatCreditVES:F2}");
+        sb.AppendLine($"Total Compras Brutas Recibidas en el Período;{summary.TotalPurchasesVES:F2};—;{summary.TotalPurchasesVatCreditVES:F2}");
+        sb.AppendLine($"Retenciones de IVA Acumuladas por Enterar;{summary.TotalPurchasesWithheldVatVES:F2};—;0.00");
+        sb.AppendLine();
+
+        // SECCIÓN III: AUTOLIQUIDACIÓN Y OBLIGACIÓN FISCAL
+        sb.AppendLine("\"SECCIÓN III: AUTOLIQUIDACIÓN Y RESULTADO DE LA FORMA 30\";;;");
+        sb.AppendLine("Línea de Declaración;Monto en Bolívares (Bs.);Referencia USD ($);Observación");
+        sb.AppendLine($"Total Débito Fiscal IVA Generado;{summary.TotalSalesVatDebitVES:F2};${(summary.TotalSalesVatDebitVES / (summary.TotalSalesUSD > 0 ? (summary.TotalSalesVES / summary.TotalSalesUSD) : 55.40m)):F2};Ventas a clientes");
+        sb.AppendLine($"Total Crédito Fiscal IVA Deducible;{summary.TotalPurchasesVatCreditVES:F2};${(summary.TotalPurchasesVatCreditVES / 55.40m):F2};Compras con derecho a crédito");
+
+        decimal netVat = summary.NetVatPositionVES;
+        if (netVat > 0)
+        {
+            sb.AppendLine($"TOTAL CUOTA TRIBUTARIA IVA A PAGAR AL FISCO (SENIAT);{netVat:F2};${(netVat / 55.40m):F2};\"PAGO OBLIGATORIO SENIAT\"");
+        }
+        else
+        {
+            decimal surplus = Math.Abs(netVat);
+            sb.AppendLine($"EXCEDENTE DE CRÉDITO FISCAL A FAVOR PARA EL PRÓXIMO MES;{surplus:F2};${(surplus / 55.40m):F2};\"SALDO A FAVOR DEDUCIBLE\"");
+        }
+
+        sb.AppendLine($"TOTAL IGTF 3% PERCIBIDO A ENTERAR AL SENIAT;{summary.TotalSalesIgtfVES:F2};${(summary.TotalSalesIgtfVES / 55.40m):F2};\"PAGO POR CUENTA DE TERCEROS\"");
+        sb.AppendLine();
+
+        // SECCIÓN IV: RESULTADOS COMERCIALES DEL MES
+        sb.AppendLine("\"SECCIÓN IV: RESUMEN DE RENDIMIENTO COMERCIAL (ESTADO DE RESULTADOS)\";;;");
+        sb.AppendLine("Concepto Económico;Monto USD ($);Monto Bs. (Tasa Oficial);Margen");
+        sb.AppendLine($"Ingresos Operativos Netos;${analytics.TotalRevenueUSD:F2};{(analytics.TotalRevenueUSD * 55.40m):F2};100.0%");
+        sb.AppendLine($"Costo de Mercancía Vendida (CPP);${analytics.TotalCostUSD:F2};{(analytics.TotalCostUSD * 55.40m):F2};—");
+        sb.AppendLine($"Utilidad Bruta de Operaciones;${analytics.GrossProfitUSD:F2};{(analytics.GrossProfitUSD * 55.40m):F2};{analytics.ProfitMarginPercentage:F1}%");
+        sb.AppendLine($"Gastos Operativos y Caja Chica;${analytics.TotalOperatingExpensesUSD:F2};{(analytics.TotalOperatingExpensesUSD * 55.40m):F2};—");
+        sb.AppendLine($"UTILIDAD NETA FINAL DEL PERÍODO;${analytics.NetProfitUSD:F2};{(analytics.NetProfitUSD * 55.40m):F2};{analytics.NetMarginPercentage:F1}%");
+
+        var utf8WithBom = new UTF8Encoding(true);
+        await File.WriteAllTextAsync(targetFilePath, sb.ToString(), utf8WithBom);
+        return targetFilePath;
+    }
 }

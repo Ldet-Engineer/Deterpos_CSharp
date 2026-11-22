@@ -565,4 +565,74 @@ public class DatabaseConnectionAndModuleTests
         Assert.Contains(kardex, m => m.MovementType == InventoryMovementType.AjustePositivo && m.QuantityIn == 5m);
         Assert.Contains(kardex, m => m.MovementType == InventoryMovementType.AjusteNegativo && m.QuantityOut == 2m);
     }
+
+    [Fact]
+    public async Task Test14_Fiscal_Export_TaxSummary_Excel()
+    {
+        var config = new DatabaseConfigurationService();
+        var factory = new DeterposDbContextFactory(config);
+        var fiscalService = new FiscalBookService(factory);
+        var company = new CompanyFiscalProfile
+        {
+            BusinessName = "DISTRIBUIDORA DETERPOS C.A.",
+            RifPrefix = "J",
+            RifNumber = "501234567",
+            FiscalAddress = "Av. Las Delicias, Centro Empresarial, Maracay, Aragua"
+        };
+
+        int year = DateTime.Now.Year;
+        int month = DateTime.Now.Month;
+        string tempFile = Path.Combine(Path.GetTempPath(), $"Test_TaxSummary_{Guid.NewGuid():N}.csv");
+
+        try
+        {
+            var resultPath = await fiscalService.ExportTaxSummaryToCsvAsync(year, month, tempFile, company);
+            _output.WriteLine($"Archivo de Resumen Tributario generado en: {resultPath}");
+
+            Assert.True(File.Exists(resultPath), "El archivo exportado no existe.");
+            var content = await File.ReadAllTextAsync(resultPath, System.Text.Encoding.UTF8);
+            Assert.NotEmpty(content);
+            Assert.Contains("RESUMEN TRIBUTARIO FISCAL SENIAT", content);
+            Assert.Contains("DETERMINACIÓN DE DÉBITOS FISCALES (VENTAS)", content);
+            Assert.Contains("DETERMINACIÓN DE CRÉDITOS FISCALES (COMPRAS)", content);
+            Assert.Contains("AUTOLIQUIDACIÓN Y RESULTADO DE LA FORMA 30", content);
+        }
+        finally
+        {
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task Test15_Database_Backup_Service_Create_And_Test()
+    {
+        var config = new DatabaseConfigurationService();
+        var backupService = new DatabaseBackupService(config);
+
+        var p = backupService.GetCurrentConnectionParams();
+        var testResult = await backupService.TestConnectionAsync(p);
+        _output.WriteLine($"TestConnection: Success={testResult.Success}, Msg={testResult.Message}, Tables={testResult.TablesCount}");
+        Assert.True(testResult.Success, $"Fallo de conexión a PostgreSQL: {testResult.Message}");
+
+        string tempBackupFile = Path.Combine(Path.GetTempPath(), $"Test_Backup_{Guid.NewGuid():N}.sql");
+        try
+        {
+            var backupResult = await backupService.CreateBackupAsync(tempBackupFile, p);
+            _output.WriteLine($"BackupResult: Success={backupResult.Success}, Msg={backupResult.Message}, Size={backupResult.FileSizeBytes}");
+
+            Assert.True(backupResult.Success, $"Fallo creando respaldo: {backupResult.Message}");
+            Assert.True(File.Exists(tempBackupFile), "El archivo de respaldo SQL no fue generado.");
+            Assert.True(new FileInfo(tempBackupFile).Length > 0, "El archivo de respaldo SQL está vacío.");
+        }
+        finally
+        {
+            if (File.Exists(tempBackupFile))
+            {
+                File.Delete(tempBackupFile);
+            }
+        }
+    }
 }
