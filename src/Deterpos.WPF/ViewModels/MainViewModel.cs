@@ -161,6 +161,14 @@ public class MainViewModel : ViewModelBase
     public bool IsFiscalReportsViewActive => _currentModule == ActiveViewModule.FiscalReports;
     public bool IsUsersViewActive => _currentModule == ActiveViewModule.UsersSecurity;
 
+    // Disparador para abrir pestaña del Backstage (Menú Archivo)
+    private string _backstageTabRequested = string.Empty;
+    public string BackstageTabRequested
+    {
+        get => _backstageTabRequested;
+        set => SetProperty(ref _backstageTabRequested, value);
+    }
+
     // Disparadores de Acciones Secundarias en Vistas Hijas
     private bool _isSupplierTabRequested = false;
     public bool IsSupplierTabRequested
@@ -641,16 +649,17 @@ public class MainViewModel : ViewModelBase
                         FiscalReportTabRequested = 3;
                         break;
 
-                    // SEGURIDAD Y USUARIOS
+                    // SEGURIDAD Y USUARIOS (En Menú Archivo / Backstage)
                     case "Usuarios y Roles":
                     case "Gestión de Usuarios":
                     case "Pistas de Auditoría":
-                        CurrentModule = ActiveViewModule.UsersSecurity;
+                    case "Seguridad y Usuarios":
+                        BackstageTabRequested = "UsersSecurity";
                         break;
 
                     default:
                         if (moduleName.Contains("Usuario") || moduleName.Contains("Seguridad") || moduleName.Contains("Roles"))
-                            CurrentModule = ActiveViewModule.UsersSecurity;
+                            BackstageTabRequested = "UsersSecurity";
                         else if (moduleName.Contains("Libro") || moduleName.Contains("Reporte") || moduleName.Contains("Ganancia") || moduleName.Contains("Forma 30"))
                             CurrentModule = ActiveViewModule.FiscalReports;
                         else if (moduleName.Contains("Gasto"))

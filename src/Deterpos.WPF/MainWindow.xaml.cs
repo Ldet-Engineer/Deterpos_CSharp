@@ -132,6 +132,18 @@ public partial class MainWindow : RibbonWindow
                     }
                     vm.ExpenseActionRequested = string.Empty;
                 }
+                else if (args.PropertyName == nameof(MainViewModel.BackstageTabRequested))
+                {
+                    if (!string.IsNullOrEmpty(vm.BackstageTabRequested))
+                    {
+                        RibbonBackstage.IsOpen = true;
+                        if (vm.BackstageTabRequested == "UsersSecurity")
+                        {
+                            BackstageTabs.SelectedItem = TabBackstageUsers;
+                        }
+                        vm.BackstageTabRequested = string.Empty;
+                    }
+                }
             };
         }
     }

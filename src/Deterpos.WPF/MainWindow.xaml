@@ -41,82 +41,168 @@
 
             <!-- Menú de la Aplicación: ARCHIVO (Backstage estilo Office) -->
             <Fluent:Ribbon.Menu>
-                <Fluent:Backstage Header="Archivo" Background="#005A9E">
-                    <Fluent:BackstageTabControl>
+                <Fluent:Backstage x:Name="RibbonBackstage" Header="Archivo" Background="#004578">
+                    <Fluent:BackstageTabControl x:Name="BackstageTabs">
 
-                        <!-- Pestaña Backstage: Información y Estado -->
-                        <Fluent:BackstageTabItem Header="Información de Empresa">
-                            <ScrollViewer Margin="30,20">
-                                <StackPanel MaxWidth="700" HorizontalAlignment="Left">
-                                    <TextBlock Text="Deterpos ERP" FontSize="26" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" />
-                                    <TextBlock Text="Sistema de Gestión y Punto de Venta Multimoneda Homologado SENIAT" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,25" />
+                        <!-- PESTAÑA 1: INFORMACIÓN Y PERFIL DE EMPRESA -->
+                        <Fluent:BackstageTabItem x:Name="TabBackstageCompany" Header="Información de Empresa">
+                            <ScrollViewer Margin="30,24" VerticalScrollBarVisibility="Auto">
+                                <StackPanel MaxWidth="880" HorizontalAlignment="Left">
+                                    <!-- Encabezado con Icono -->
+                                    <Grid Margin="0,0,0,22">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Background="#EFF6FC" CornerRadius="10" Width="48" Height="48" Margin="0,0,16,0" VerticalAlignment="Center">
+                                            <fluentIcons:SymbolIcon Symbol="Building" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="Perfil y Datos de la Empresa" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                            <TextBlock Text="Identificación jurídica, domicilio tributario y sucursal de operaciones activa" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </Grid>
 
-                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+                                    <!-- Tarjeta 1: Identificación Legal y RIF -->
+                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,16">
+                                        <StackPanel>
+                                            <TextBlock Text="Identificación Legal y Tributaria (Venezuela)" FontWeight="Bold" FontSize="15" Margin="0,0,0,14" />
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="170" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Razón Social:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="Deterpos C.A." FontWeight="Bold" Margin="0,5" FontSize="13.5" />
+
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Registro Fiscal (RIF):" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="J-40918273-0 (Contribuyente Especial)" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,5" FontSize="13.5" />
+
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Nombre Comercial:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="2" Grid.Column="1" Text="Deterpos ERP - Punto de Venta y Distribución" Margin="0,5" />
+
+                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Domicilio Fiscal:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="3" Grid.Column="1" Text="Av. Francisco de Miranda, Edif. Torre Centro, Nivel PB, Caracas, D.C." Margin="0,5" />
+
+                                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Teléfonos de Contacto:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="4" Grid.Column="1" Text="+58 (212) 555-0199 / +58 (414) 234-5678" Margin="0,5" />
+
+                                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Correo Electrónico:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="5" Grid.Column="1" Text="administracion@deterpos.com.ve" Margin="0,5" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Tarjeta 2: Parámetros del Sistema y Monedas -->
+                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,16">
+                                        <StackPanel>
+                                            <TextBlock Text="Parámetros de Operación Comercial" FontWeight="Bold" FontSize="15" Margin="0,0,0,14" />
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="170" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Sucursal Activa:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CurrentBranch}" FontWeight="SemiBold" Margin="0,5" />
+
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Terminal / Punto:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="Caja Principal Mostrador 01" Margin="0,5" />
+
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Moneda Base Inmutable:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="2" Grid.Column="1" Text="Dólar ($ USD) • Valoración Contable por Costo Promedio Ponderado (CPP)" FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}" Margin="0,5" />
+
+                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Moneda Legal Local:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="3" Grid.Column="1" Text="Bolívar Digital (Bs. VES) según Tasa Oficial del Banco Central de Venezuela (BCV)" Margin="0,5" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Tarjeta 3: Estado de la Licencia -->
+                                    <Border Background="#F9FAFB" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="18">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="140" />
+                                                <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-
-                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Razón Social:" FontWeight="SemiBold" Margin="0,5" />
-                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="Deterpos C.A." Margin="0,5" />
-
-                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="RIF Fiscal:" FontWeight="SemiBold" Margin="0,5" />
-                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="J-40918273-0 (Venezuela)" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,5" />
-
-                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Sucursal:" FontWeight="SemiBold" Margin="0,5" />
-                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CurrentBranch}" Margin="0,5" />
-
-                                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Base de Datos:" FontWeight="SemiBold" Margin="0,5" />
-                                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding DbStatusText}" Foreground="{StaticResource AccentGreenBrush}" FontWeight="SemiBold" Margin="0,5" />
-
-                                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Moneda Base:" FontWeight="SemiBold" Margin="0,5" />
-                                            <TextBlock Grid.Row="4" Grid.Column="1" Text="Dólar ($ USD) | Referencia Legal Obligatoria: Bolívar Digital (Bs. VES)" Margin="0,5" />
+                                            <fluentIcons:SymbolIcon Grid.Column="0" Symbol="ShieldCheckmark" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" VerticalAlignment="Center" Margin="0,0,14,0" />
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="Licencia Comercial Activa • Deterpos Enterprise Edition v2.0" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                <TextBlock Text="Arquitectura .NET 10 WPF homologada para operaciones fiscales en Venezuela." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                            </StackPanel>
+                                            <Border Grid.Column="2" Background="#DCFCE7" CornerRadius="6" Padding="10,4" VerticalAlignment="Center">
+                                                <TextBlock Text="ACTIVO • HOMOLOGADO" FontWeight="Bold" FontSize="10.5" Foreground="#166534" />
+                                            </Border>
                                         </Grid>
                                     </Border>
                                 </StackPanel>
                             </ScrollViewer>
                         </Fluent:BackstageTabItem>
 
-                        <!-- Pestaña Backstage: Configuración Fiscal SENIAT -->
-                        <Fluent:BackstageTabItem Header="Cumplimiento Fiscal SENIAT">
-                            <ScrollViewer Margin="30,20">
-                                <StackPanel MaxWidth="800" HorizontalAlignment="Left">
-                                    <TextBlock Text="Normativa Tributaria y Homologación SENIAT" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                                    <TextBlock Text="Parámetros de facturación fiscal, percepción de IGTF y control de impresoras homologadas." 
-                                               FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,20" TextWrapping="Wrap" />
+                        <!-- PESTAÑA 2: USUARIOS, ROLES Y SEGURIDAD (Módulo Completo Trasladado) -->
+                        <Fluent:BackstageTabItem x:Name="TabBackstageUsers" Header="Usuarios y Seguridad">
+                            <views:UsersManagementView x:Name="BackstageUsersView" />
+                        </Fluent:BackstageTabItem>
+
+                        <!-- PESTAÑA 3: CUMPLIMIENTO FISCAL SENIAT -->
+                        <Fluent:BackstageTabItem x:Name="TabBackstageSeniat" Header="Cumplimiento Fiscal SENIAT">
+                            <ScrollViewer Margin="30,24" VerticalScrollBarVisibility="Auto">
+                                <StackPanel MaxWidth="880" HorizontalAlignment="Left">
+                                    <!-- Encabezado con Icono -->
+                                    <Grid Margin="0,0,0,22">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Background="#FEF3C7" CornerRadius="10" Width="48" Height="48" Margin="0,0,16,0" VerticalAlignment="Center">
+                                            <fluentIcons:SymbolIcon Symbol="DocumentCheckmark" FontSize="26" Foreground="#B45309" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="Normativa Tributaria y Homologación SENIAT" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                            <TextBlock Text="Parámetros de facturación fiscal, percepción de IGTF y control de impresoras homologadas." FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </Grid>
 
                                     <!-- Tarjeta: Condición de Contribuyente e IGTF -->
-                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="20" Margin="0,0,0,16">
+                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,16">
                                         <StackPanel>
-                                            <TextBlock Text="Condición del Sujeto Pasivo" FontWeight="Bold" FontSize="15" Margin="0,0,0,10" />
+                                            <TextBlock Text="Condición del Sujeto Pasivo Especial (SENIAT)" FontWeight="Bold" FontSize="15" Margin="0,0,0,10" />
                                             <CheckBox Content="Empresa designada como Sujeto Pasivo Especial (Contribuyente Especial SENIAT)"
                                                       IsChecked="{Binding IsSpecialTaxpayer}" FontWeight="SemiBold" Margin="0,0,0,8" />
-                                            <TextBlock Text="• Aplica automáticamente la percepción del 3% de IGTF sobre pagos recibidos en divisas extranjeras (USD, EUR, Zelle, etc.) según Providencia 000013."
-                                                       FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="20,0,0,10" TextWrapping="Wrap" />
+                                            <TextBlock Text="• Aplica automáticamente la percepción de la alícuota del 3% de IGTF sobre pagos recibidos en divisas extranjeras (USD, EUR, Zelle, efectivo) según Providencia SNAT/2022/000013."
+                                                       FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="20,0,0,12" TextWrapping="Wrap" />
 
                                             <Grid Margin="20,5,0,0">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="180" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Porcentaje de IGTF:" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                                <TextBox Grid.Column="1" Text="3.00 %" IsReadOnly="True" Width="100" HorizontalAlignment="Left" Padding="6,4" Background="#F0F0F0" />
+                                                <TextBlock Text="Alícuota de IGTF:" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                <TextBox Grid.Column="1" Text="3.00 % (Fijo según Providencia)" IsReadOnly="True" Width="200" HorizontalAlignment="Left" Padding="8,5" Background="#F0F0F0" FontWeight="Bold" />
                                             </Grid>
                                         </StackPanel>
                                     </Border>
 
                                     <!-- Tarjeta: Dispositivo de Emisión Fiscal -->
-                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
                                         <StackPanel>
-                                            <TextBlock Text="Dispositivo de Facturación Fiscal (Providencia 0141)" FontWeight="Bold" FontSize="15" Margin="0,0,0,10" />
+                                            <TextBlock Text="Dispositivo de Facturación Fiscal (Providencia 0141)" FontWeight="Bold" FontSize="15" Margin="0,0,0,12" />
 
                                             <Grid Margin="0,0,0,12">
                                                 <Grid.ColumnDefinitions>
@@ -140,7 +226,7 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="Puerto de Comunicación:" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                                <TextBox Grid.Column="1" Text="{Binding FiscalPort}" Padding="8,5" Width="200" HorizontalAlignment="Left" />
+                                                <TextBox Grid.Column="1" Text="{Binding FiscalPort}" Padding="8,5" Width="220" HorizontalAlignment="Left" />
                                             </Grid>
 
                                             <Grid Margin="0,0,0,12">
@@ -149,10 +235,10 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="Serial de Máquina Fiscal:" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                                <TextBox Grid.Column="1" Text="{Binding FiscalSerial}" IsReadOnly="True" Padding="8,5" Width="200" HorizontalAlignment="Left" Background="#F9F9F9" FontWeight="Bold" />
+                                                <TextBox Grid.Column="1" Text="{Binding FiscalSerial}" IsReadOnly="True" Padding="8,5" Width="220" HorizontalAlignment="Left" Background="#F9F9F9" FontWeight="Bold" />
                                             </Grid>
 
-                                            <Border Background="#E6F4EA" BorderBrush="#34A853" BorderThickness="1" CornerRadius="4" Padding="12" Margin="0,10,0,0">
+                                            <Border Background="#E6F4EA" BorderBrush="#34A853" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,10,0,0">
                                                 <StackPanel Orientation="Horizontal">
                                                     <fluentIcons:SymbolIcon Symbol="CheckmarkCircle" FontSize="18" Foreground="{StaticResource AccentGreenBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
                                                     <TextBlock Text="{Binding FiscalDeviceStatus}" Foreground="{StaticResource AccentGreenBrush}" FontWeight="SemiBold" VerticalAlignment="Center" />
@@ -164,19 +250,30 @@
                             </ScrollViewer>
                         </Fluent:BackstageTabItem>
 
-                        <!-- Pestaña Backstage: Configuración Multimoneda -->
-                        <Fluent:BackstageTabItem Header="Configuración Multimoneda">
-                            <ScrollViewer Margin="30,20">
-                                <StackPanel MaxWidth="800" HorizontalAlignment="Left">
-                                    <TextBlock Text="Gestión y Activación de Monedas" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                                    <TextBlock Text="El Dólar ($) es la moneda base inmutable y el Bolívar (Bs.) es la moneda primaria local. Puedes activar o desactivar Euros y Pesos." 
-                                               FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,20" TextWrapping="Wrap" />
+                        <!-- PESTAÑA 4: CONFIGURACIÓN MULTIMONEDA -->
+                        <Fluent:BackstageTabItem x:Name="TabBackstageCurrency" Header="Configuración Multimoneda">
+                            <ScrollViewer Margin="30,24" VerticalScrollBarVisibility="Auto">
+                                <StackPanel MaxWidth="880" HorizontalAlignment="Left">
+                                    <!-- Encabezado con Icono -->
+                                    <Grid Margin="0,0,0,22">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Background="#DCFCE7" CornerRadius="10" Width="48" Height="48" Margin="0,0,16,0" VerticalAlignment="Center">
+                                            <fluentIcons:SymbolIcon Symbol="CurrencyDollarEuro" FontSize="26" Foreground="#166534" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="Gestión Multimoneda y Tipos de Cambio" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                            <TextBlock Text="El Dólar ($) es la moneda base inmutable y el Bolívar (Bs.) es la moneda primaria local según tasa oficial BCV. Puedes activar o desactivar Euros y Pesos." FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Grid>
 
-                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="15">
+                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="15">
                                         <ItemsControl ItemsSource="{Binding Currencies}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="0,0,0,1" Padding="12,10">
+                                                    <Border BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="0,0,0,1" Padding="12,12">
                                                         <Grid>
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="60" />
@@ -186,7 +283,7 @@
                                                                 <ColumnDefinition Width="*" />
                                                             </Grid.ColumnDefinitions>
 
-                                                            <TextBlock Grid.Column="0" Text="{Binding Symbol}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Foreground="{StaticResource PrimaryBrandBrush}" />
+                                                            <TextBlock Grid.Column="0" Text="{Binding Symbol}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" Foreground="{StaticResource PrimaryBrandBrush}" />
                                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" />
                                                                 <TextBlock Text="{Binding Code}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
@@ -232,30 +329,139 @@
                             </ScrollViewer>
                         </Fluent:BackstageTabItem>
 
-                        <!-- Pestaña Backstage: Conexión PostgreSQL -->
-                        <Fluent:BackstageTabItem Header="Base de Datos PostgreSQL">
-                            <ScrollViewer Margin="30,20">
-                                <StackPanel MaxWidth="600" HorizontalAlignment="Left">
-                                    <TextBlock Text="Conexión PostgreSQL" FontSize="22" FontWeight="SemiBold" />
-                                    <TextBlock Text="Parámetros de conexión con la arquitectura en capas hacia PostgreSQL." 
-                                               FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,20" />
+                        <!-- PESTAÑA 5: BASE DE DATOS POSTGRESQL -->
+                        <Fluent:BackstageTabItem x:Name="TabBackstageDb" Header="Base de Datos PostgreSQL">
+                            <ScrollViewer Margin="30,24" VerticalScrollBarVisibility="Auto">
+                                <StackPanel MaxWidth="880" HorizontalAlignment="Left">
+                                    <!-- Encabezado con Icono -->
+                                    <Grid Margin="0,0,0,22">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Background="#DBEAFE" CornerRadius="10" Width="48" Height="48" Margin="0,0,16,0" VerticalAlignment="Center">
+                                            <fluentIcons:SymbolIcon Symbol="Database" FontSize="26" Foreground="#1D4ED8" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="Infraestructura y Base de Datos PostgreSQL" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                            <TextBlock Text="Parámetros de conexión desacoplada con Entity Framework Core 10 y motor PostgreSQL en Docker." FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </Grid>
 
-                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
                                         <StackPanel>
-                                            <TextBlock Text="Host / Servidor:" FontWeight="SemiBold" Margin="0,0,0,4" />
-                                            <TextBox Text="localhost" Padding="8,5" Margin="0,0,0,12" />
+                                            <TextBlock Text="Parámetros del Servidor y Credenciales" FontWeight="Bold" FontSize="15" Margin="0,0,0,14" />
 
-                                            <TextBlock Text="Puerto:" FontWeight="SemiBold" Margin="0,0,0,4" />
-                                            <TextBox Text="5432" Padding="8,5" Margin="0,0,0,12" />
+                                            <Grid Margin="0,0,0,10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Host / Servidor:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBox Grid.Column="1" Text="localhost" Padding="8,5" Width="260" HorizontalAlignment="Left" />
+                                            </Grid>
 
-                                            <TextBlock Text="Base de Datos:" FontWeight="SemiBold" Margin="0,0,0,4" />
-                                            <TextBox Text="deterpos_db" Padding="8,5" Margin="0,0,0,12" />
+                                            <Grid Margin="0,0,0,10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Puerto TCP:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBox Grid.Column="1" Text="5432" Padding="8,5" Width="260" HorizontalAlignment="Left" />
+                                            </Grid>
 
-                                            <TextBlock Text="Usuario:" FontWeight="SemiBold" Margin="0,0,0,4" />
-                                            <TextBox Text="postgres" Padding="8,5" Margin="0,0,0,12" />
+                                            <Grid Margin="0,0,0,10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Nombre Base de Datos:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBox Grid.Column="1" Text="deterpos_db" Padding="8,5" Width="260" HorizontalAlignment="Left" />
+                                            </Grid>
+
+                                            <Grid Margin="0,0,0,14">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Usuario / Rol:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBox Grid.Column="1" Text="postgres" Padding="8,5" Width="260" HorizontalAlignment="Left" />
+                                            </Grid>
+
+                                            <Border Background="#F0FDF4" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,14">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <fluentIcons:SymbolIcon Symbol="CheckmarkCircle" FontSize="18" Foreground="#166534" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                                    <TextBlock Text="Motor Activo: PostgreSQL 16 Alpine en Contenedor Docker (betoplatanito_db) • Pool IDbContextFactory Conectado" Foreground="#166534" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </Border>
 
                                             <Button Content="Probar Conexión PostgreSQL" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" 
-                                                    Padding="12,8" Margin="0,10,0,0" FontWeight="SemiBold" Cursor="Hand" />
+                                                    Padding="16,8" Width="220" HorizontalAlignment="Left" FontWeight="SemiBold" Cursor="Hand">
+                                                <Button.Resources>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="CornerRadius" Value="6" />
+                                                    </Style>
+                                                </Button.Resources>
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Fluent:BackstageTabItem>
+
+                        <!-- PESTAÑA 6: ACERCA DE DETERPOS ERP -->
+                        <Fluent:BackstageTabItem x:Name="TabBackstageAbout" Header="Acerca de Deterpos ERP">
+                            <ScrollViewer Margin="30,24" VerticalScrollBarVisibility="Auto">
+                                <StackPanel MaxWidth="880" HorizontalAlignment="Left">
+                                    <!-- Encabezado con Icono -->
+                                    <Grid Margin="0,0,0,22">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Background="#EDE9FE" CornerRadius="10" Width="48" Height="48" Margin="0,0,16,0" VerticalAlignment="Center">
+                                            <fluentIcons:SymbolIcon Symbol="Info" FontSize="26" Foreground="#6D28D9" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="Acerca de Deterpos ERP Enterprise" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                            <TextBlock Text="Software empresarial de gestión comercial, inventario, finanzas y facturación SENIAT" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Ficha Técnica -->
+                                    <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="22" Margin="0,0,0,16">
+                                        <StackPanel>
+                                            <TextBlock Text="Deterpos ERP Enterprise Edition" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,0,4" />
+                                            <TextBlock Text="Versión 2.0.26 (Build .NET 10.0 x64 LTS)" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,16" />
+
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Tecnología Core:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="Microsoft .NET 10 (C# 14) / WPF con Fluent Design UI" Margin="0,5" />
+
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Base de Datos:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="PostgreSQL 16 en Contenedor Docker / Entity Framework Core 10" Margin="0,5" />
+
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Homologación SENIAT:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="2" Grid.Column="1" Text="Providencias 0141 (Facturación) y 000013 (IGTF 3%)" Margin="0,5" />
+
+                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Valuación de Inventario:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="3" Grid.Column="1" Text="Método Costo Promedio Ponderado (CPP) con Kárdex Contable Inmutable" Margin="0,5" />
+
+                                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Ingeniería y Desarrollo:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="4" Grid.Column="1" Text="Desarrollado para Deterpos C.A. por Ldet-Dev &amp; Ldet-Engineer" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,5" />
+                                            </Grid>
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
@@ -618,27 +824,6 @@
                                    Command="{Binding NavigateCommand}" CommandParameter="Ganancias y Pérdidas">
                         <Fluent:Button.LargeIcon>
                             <fluentIcons:SymbolIcon Symbol="ArrowTrendingLines" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" />
-                        </Fluent:Button.LargeIcon>
-                    </Fluent:Button>
-                </Fluent:RibbonGroupBox>
-            </Fluent:RibbonTabItem>
-
-            <!-- ============================================== -->
-            <!-- PESTAÑA 8: SEGURIDAD, USUARIOS Y ROLES (FASE 11)-->
-            <!-- ============================================== -->
-            <Fluent:RibbonTabItem Header="Seguridad y Usuarios">
-                <Fluent:RibbonGroupBox Header="Control de Accesos">
-                    <Fluent:Button Header="Gestión de&#x0a;Usuarios" Size="Large"
-                                   Command="{Binding NavigateCommand}" CommandParameter="Usuarios y Roles">
-                        <Fluent:Button.LargeIcon>
-                            <fluentIcons:SymbolIcon Symbol="PeopleSettings" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
-                        </Fluent:Button.LargeIcon>
-                    </Fluent:Button>
-
-                    <Fluent:Button Header="Pistas de&#x0a;Auditoría" Size="Large"
-                                   Command="{Binding NavigateCommand}" CommandParameter="Pistas de Auditoría">
-                        <Fluent:Button.LargeIcon>
-                            <fluentIcons:SymbolIcon Symbol="ShieldCheckmark" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" />
                         </Fluent:Button.LargeIcon>
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
@@ -1174,9 +1359,6 @@
 
             <!-- VISTA 11: LIBROS OFICIALES SENIAT Y REPORTES EJECUTIVOS (FASE 10) -->
             <views:FiscalReportsView x:Name="ViewFiscalReports" Visibility="{Binding IsFiscalReportsViewActive, Converter={StaticResource BoolToVisConverter}}" />
-
-            <!-- VISTA 12: USUARIOS, ROLES Y SEGURIDAD (FASE 11) -->
-            <views:UsersManagementView x:Name="ViewUsersManagement" Visibility="{Binding IsUsersViewActive, Converter={StaticResource BoolToVisConverter}}" />
 
         </Grid>
 
