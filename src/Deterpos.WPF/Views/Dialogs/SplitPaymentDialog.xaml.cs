@@ -25,6 +25,7 @@ public class SplitPaymentDisplayItem
         PaymentMethodType.Zelle => "Zelle ($ USD)",
         PaymentMethodType.TransferenciaBancaria => "Transferencia Bancaria (Bs.)",
         PaymentMethodType.Credito => "Crédito Comercial ($)",
+        PaymentMethodType.Cashea => "Financiamiento Cashea BNPL ($)",
         _ => Source.Method.ToString()
     };
 
@@ -216,7 +217,7 @@ public partial class SplitPaymentDialog : Window
         decimal rate = _bcvRate;
         decimal equivUSD;
 
-        if (method == PaymentMethodType.EfectivoUSD || method == PaymentMethodType.Zelle || method == PaymentMethodType.Credito)
+        if (method == PaymentMethodType.EfectivoUSD || method == PaymentMethodType.Zelle || method == PaymentMethodType.Credito || method == PaymentMethodType.Cashea)
         {
             currencyCode = "USD";
             rate = 1.0000m;

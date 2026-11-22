@@ -130,6 +130,7 @@
                                     <ComboBoxItem Content="Zelle ($ USD)" Tag="Zelle" />
                                     <ComboBoxItem Content="Transferencia (VES Bs.)" Tag="TransferenciaBancaria" />
                                     <ComboBoxItem Content="Crédito Comercial ($)" Tag="Credito" />
+                                    <ComboBoxItem x:Name="CmbItemCashea" Content="Financiamiento Cashea BNPL ($)" Tag="Cashea" />
                                 </ComboBox>
                             </StackPanel>
 

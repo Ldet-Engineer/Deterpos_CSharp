@@ -96,6 +96,7 @@ public partial class InvoiceTicketDialog : Window
                 PaymentMethodType.Zelle => "Zelle USD",
                 PaymentMethodType.TransferenciaBancaria => "Transferencia Bancaria",
                 PaymentMethodType.Credito => "Crédito Comercial",
+                PaymentMethodType.Cashea => "Financiamiento Cashea BNPL",
                 _ => p.Method.ToString()
             };
 

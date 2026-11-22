@@ -635,4 +635,111 @@ public class DatabaseConnectionAndModuleTests
             }
         }
     }
+
+    [Fact]
+    public void Test16_Cashea_Installments_Calculation_And_Levels()
+    {
+        var config = new DatabaseConfigurationService();
+        var factory = new DeterposDbContextFactory(config);
+        var casheaService = new CasheaService(factory);
+
+        decimal totalAmount = 100.00m;
+        decimal bcvRate = 55.40m;
+
+        // 1. Probar Nivel 1 (60% Inicial / 40% Financiado en 3 cuotas)
+        var planN1 = casheaService.CalculatePlan(totalAmount, 1, bcvRate);
+        Assert.Equal(60.00m, planN1.DownPaymentUSD);
+        Assert.Equal(40.00m, planN1.FinancedAmountUSD);
+        Assert.Equal(3, planN1.Installments.Count);
+        decimal sumQuotasN1 = planN1.Installments.Sum(i => i.AmountUSD);
+        Assert.Equal(planN1.FinancedAmountUSD, sumQuotasN1);
+        _output.WriteLine($"Nivel 1: Inicial=${planN1.DownPaymentUSD}, Financiado=${planN1.FinancedAmountUSD}, Cuotas={string.Join(", ", planN1.Installments.Select(i => $"${i.AmountUSD}"))}");
+
+        // 2. Probar Nivel 2 (50% Inicial / 50% Financiado)
+        var planN2 = casheaService.CalculatePlan(totalAmount, 2, bcvRate);
+        Assert.Equal(50.00m, planN2.DownPaymentUSD);
+        Assert.Equal(50.00m, planN2.FinancedAmountUSD);
+        Assert.Equal(3, planN2.Installments.Count);
+        decimal sumQuotasN2 = planN2.Installments.Sum(i => i.AmountUSD);
+        Assert.Equal(planN2.FinancedAmountUSD, sumQuotasN2);
+
+        // 3. Probar Nivel 3 (40% Inicial / 60% Financiado) - El más popular
+        var planN3 = casheaService.CalculatePlan(totalAmount, 3, bcvRate);
+        Assert.Equal(40.00m, planN3.DownPaymentUSD);
+        Assert.Equal(60.00m, planN3.FinancedAmountUSD);
+        Assert.Equal(3, planN3.Installments.Count);
+        Assert.All(planN3.Installments, i => Assert.Equal(20.00m, i.AmountUSD));
+        Assert.Equal(3.00m, planN3.EstimatedCommissionUSD); // 5% de $60 = $3.00
+
+        // 4. Probar Inicial personalizada ($35.00 inicial)
+        var planCustom = casheaService.CalculatePlan(totalAmount, 3, bcvRate, 35.00m);
+        Assert.Equal(35.00m, planCustom.DownPaymentUSD);
+        Assert.Equal(65.00m, planCustom.FinancedAmountUSD);
+        decimal sumCustom = planCustom.Installments.Sum(i => i.AmountUSD);
+        Assert.Equal(65.00m, sumCustom);
+    }
+
+    [Fact]
+    public async Task Test17_Cashea_Order_Registration_Metrics_And_Settlement()
+    {
+        var config = new DatabaseConfigurationService();
+        await config.InitializeDatabaseAsync();
+        var factory = new DeterposDbContextFactory(config);
+        var casheaService = new CasheaService(factory);
+
+        string testOrderNum = $"CSH-TEST-{Guid.NewGuid():N}"[..12].ToUpperInvariant();
+        var order = new CasheaOrder
+        {
+            OrderNumber = testOrderNum,
+            CustomerDocument = "V-28999888",
+            CustomerName = "Cliente Prueba Cashea",
+            CasheaLevel = 3,
+            TotalSaleUSD = 80.00m,
+            DownPaymentAmountUSD = 32.00m, // 40% inicial
+            FinancedAmountUSD = 48.00m, // 60% financiado
+            ExchangeRateApplied = 55.40m,
+            TotalSaleVES = 80.00m * 55.40m,
+            DownPaymentAmountVES = 32.00m * 55.40m,
+            FinancedAmountVES = 48.00m * 55.40m,
+            DownPaymentMethod = PaymentMethodType.PuntoDeVenta,
+            DownPaymentReference = "POS-987123",
+            InstallmentsCount = 3,
+            InstallmentAmountUSD = 16.00m,
+            InstallmentAmountVES = 16.00m * 55.40m,
+            EstimatedCommissionPercentage = 5.0m,
+            EstimatedCommissionUSD = 2.40m, // 5% de $48
+            Status = CasheaOrderStatus.PorLiquidar,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // 1. Registrar orden en base de datos
+        var created = await casheaService.RegisterOrderAsync(order);
+        Assert.True(created.Id > 0, "No se generó el Id para CasheaOrder.");
+        _output.WriteLine($"Orden Cashea creada con Id: {created.Id}, Número: {created.OrderNumber}");
+
+        // 2. Consultar la orden registrada
+        var orders = await casheaService.GetOrdersAsync(search: testOrderNum);
+        Assert.NotEmpty(orders);
+        var fetched = orders.First();
+        Assert.Equal(CasheaOrderStatus.PorLiquidar, fetched.Status);
+        Assert.Equal(48.00m, fetched.FinancedAmountUSD);
+
+        // 3. Consultar métricas
+        var metrics = await casheaService.GetMetricsAsync();
+        Assert.True(metrics.TotalOrdersCount > 0);
+        Assert.True(metrics.TotalPendingSettlementUSD >= 48.00m);
+        _output.WriteLine($"Métricas Cashea: Total={metrics.TotalOrdersCount}, Pendiente=${metrics.TotalPendingSettlementUSD:N2}, Liquidado=${metrics.TotalSettledUSD:N2}");
+
+        // 4. Conciliar orden (marcar como liquidada en banco)
+        string bankRef = "BANESCO-TRF-554433";
+        bool settled = await casheaService.MarkOrderSettledAsync(created.Id, bankRef, DateTime.UtcNow);
+        Assert.True(settled, "Fallo al conciliar orden Cashea.");
+
+        // 5. Verificar estado actualizado
+        var ordersAfter = await casheaService.GetOrdersAsync(search: testOrderNum);
+        var updated = ordersAfter.First();
+        Assert.Equal(CasheaOrderStatus.LiquidadaEnBanco, updated.Status);
+        Assert.Equal(bankRef, updated.SettlementBankReference);
+        _output.WriteLine($"Orden conciliar exitosamente: Estado={updated.Status}, Ref={updated.SettlementBankReference}");
+    }
 }

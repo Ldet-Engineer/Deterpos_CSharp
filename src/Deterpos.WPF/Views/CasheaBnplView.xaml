@@ -1,0 +1,204 @@
+<UserControl x:Class="Deterpos.WPF.Views.CasheaBnplView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+             FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
+
+    <Grid Margin="30,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ============================================== -->
+        <!--  FILA 0: ENCABEZADO Y TARJETAS KPI DE CASHEA   -->
+        <!-- ============================================== -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Título y Subtítulo -->
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <TextBlock Text="Cashea BNPL - Compra Ahora, Paga Después" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,12,0" />
+                    <Border Background="#E0F2FE" CornerRadius="6" Padding="10,3" VerticalAlignment="Center">
+                        <TextBlock Text="CRÉDITO AL CONSUMO" FontSize="11" FontWeight="Bold" Foreground="#0284C7" />
+                    </Border>
+                </StackPanel>
+                <TextBlock Text="Control de órdenes quincenales sin intereses, iniciales recaudadas en caja y conciliación de liquidaciones bancarias." FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
+            </StackPanel>
+
+            <!-- Tarjetas KPI Resumen -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+
+                <!-- KPI 1: Total Ventas Cashea -->
+                <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,10,0" MinWidth="150">
+                    <StackPanel>
+                        <TextBlock Text="TOTAL VENTAS CASHEA" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        <TextBlock x:Name="TxtKpiTotalSalesUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,2,0,0" />
+                        <TextBlock x:Name="TxtKpiTotalOrdersCount" Text="0 órdenes" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- KPI 2: Iniciales Cobradas en Caja -->
+                <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,10,0" MinWidth="150">
+                    <StackPanel>
+                        <TextBlock Text="INICIALES EN CAJA" FontSize="10" FontWeight="Bold" Foreground="#047857" />
+                        <TextBlock x:Name="TxtKpiDownPaymentsUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="#047857" Margin="0,2,0,0" />
+                        <TextBlock Text="Cobrado en mostrador" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- KPI 3: Pendiente por Liquidar de Cashea -->
+                <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,10,0" MinWidth="160">
+                    <StackPanel>
+                        <TextBlock Text="POR COBRAR A CASHEA" FontSize="10" FontWeight="Bold" Foreground="#D97706" />
+                        <TextBlock x:Name="TxtKpiPendingUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="#D97706" Margin="0,2,0,0" />
+                        <TextBlock Text="Liquidación estimada 3-7d" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- KPI 4: Liquidado en Banco -->
+                <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" MinWidth="150">
+                    <StackPanel>
+                        <TextBlock Text="LIQUIDADO EN BANCO" FontSize="10" FontWeight="Bold" Foreground="#2563EB" />
+                        <TextBlock x:Name="TxtKpiSettledUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="#2563EB" Margin="0,2,0,0" />
+                        <TextBlock Text="Transferido a cuenta" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- ============================================== -->
+        <!--  FILA 1: BARRA DE BÚSQUEDA Y ACCIONES          -->
+        <!-- ============================================== -->
+        <Border Grid.Row="1" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="260" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="180" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Buscador -->
+                <Grid Grid.Column="0">
+                    <TextBox x:Name="TxtSearch" Padding="28,7,10,7" VerticalContentAlignment="Center" TextChanged="TxtSearch_TextChanged">
+                        <TextBox.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </TextBox.Resources>
+                    </TextBox>
+                    <fluentIcons:SymbolIcon Symbol="Search" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Left" Margin="8,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" />
+                    <TextBlock Text="Buscar por N° Orden, Cédula o Cliente..." FontSize="12" Foreground="#9CA3AF" Margin="28,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=TxtSearch}" Value="">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+
+                <!-- Filtro por Estado -->
+                <ComboBox x:Name="CmbStatusFilter" Grid.Column="2" SelectedIndex="0" SelectionChanged="CmbStatusFilter_SelectionChanged" VerticalContentAlignment="Center">
+                    <ComboBoxItem Content="Todos los Estados" Tag="All" />
+                    <ComboBoxItem Content="Por Liquidar en Banco" Tag="PorLiquidar" />
+                    <ComboBoxItem Content="Liquidada en Banco" Tag="LiquidadaEnBanco" />
+                    <ComboBoxItem Content="Aprobada" Tag="Aprobada" />
+                </ComboBox>
+
+                <!-- Botones de Acción -->
+                <StackPanel Grid.Column="5" Orientation="Horizontal">
+
+                    <!-- Botón Simulador de Cuotas -->
+                    <Button Click="BtnOpenSimulator_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="14,7" Cursor="Hand" Margin="0,0,8,0">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="Calculator" FontSize="15" Foreground="#0284C7" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Simulador de Cuotas" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Botón Conciliar / Marcar Liquidada -->
+                    <Button x:Name="BtnSettleOrder" Click="BtnSettleOrder_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0" Padding="14,7" Cursor="Hand" Margin="0,0,8,0" IsEnabled="False">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon Symbol="CheckmarkCircle" FontSize="15" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Registrar Liquidación Bancaria" FontWeight="Bold" FontSize="12.5" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Refrescar -->
+                    <Button Click="BtnRefresh_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="10,7" Cursor="Hand" ToolTip="Actualizar lista">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6" />
+                            </Style>
+                        </Button.Resources>
+                        <fluentIcons:SymbolIcon Symbol="ArrowSync" FontSize="14" Foreground="{StaticResource PrimaryBrandBrush}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ============================================== -->
+        <!--  FILA 2: TABLA DE ÓRDENES Y TRANSACCIONES CASHEA -->
+        <!-- ============================================== -->
+        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8">
+            <DataGrid x:Name="GridCasheaOrders" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E1E4E8"
+                      Background="White" BorderThickness="0" RowHeight="38" SelectionMode="Single"
+                      SelectionChanged="GridCasheaOrders_SelectionChanged">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="N° Orden Cashea" Binding="{Binding OrderNumber}" FontWeight="Bold" Width="130" />
+                    <DataGridTextColumn Header="Fecha Emisión" Binding="{Binding CreatedAt, StringFormat={}{0:dd/MM/yyyy HH:mm}}" Width="120" />
+                    <DataGridTextColumn Header="Cédula" Binding="{Binding CustomerDocument}" Width="95" />
+                    <DataGridTextColumn Header="Cliente" Binding="{Binding CustomerName}" Width="*" />
+                    <DataGridTemplateColumn Header="Nivel" Width="85">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="#E0F2FE" CornerRadius="6" Padding="6,2" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding CasheaLevelDisplay}" Foreground="#0284C7" FontSize="11" FontWeight="Bold" />
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Total Venta ($)" Binding="{Binding TotalSaleUSD, StringFormat={}{0:C2}}" FontWeight="Bold" Width="105" />
+                    <DataGridTextColumn Header="Inicial ($)" Binding="{Binding DownPaymentAmountUSD, StringFormat={}{0:C2}}" Foreground="#047857" FontWeight="SemiBold" Width="95" />
+                    <DataGridTextColumn Header="Financiado ($)" Binding="{Binding FinancedAmountUSD, StringFormat={}{0:C2}}" Foreground="#1D4ED8" FontWeight="SemiBold" Width="105" />
+                    <DataGridTextColumn Header="3 Cuotas de" Binding="{Binding InstallmentAmountUSD, StringFormat={}{0:C2}}" Width="95" />
+                    <DataGridTextColumn Header="Comisión Est." Binding="{Binding EstimatedCommissionUSD, StringFormat={}{0:C2}}" Foreground="{StaticResource TextSecondaryBrush}" Width="95" />
+                    <DataGridTemplateColumn Header="Estado" Width="130">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Background="{Binding StatusBackground}" CornerRadius="10" Padding="8,3" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding StatusDisplay}" Foreground="{Binding StatusForeground}" FontSize="11" FontWeight="Bold" />
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Ref. Liquidación" Binding="{Binding SettlementBankReference}" Width="120" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>

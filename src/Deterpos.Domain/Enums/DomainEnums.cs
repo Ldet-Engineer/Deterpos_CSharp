@@ -36,7 +36,8 @@ public enum PaymentMethodType
     Zelle,
     EfectivoEUR,
     EfectivoCOP,
-    Credito
+    Credito,
+    Cashea
 }
 
 public enum PaymentCondition
@@ -78,4 +79,12 @@ public enum InventoryMovementType
     AnulacionVenta,
     AnulacionCompra,
     InventarioInicial
+}
+
+public enum CasheaOrderStatus
+{
+    Aprobada,
+    PorLiquidar,
+    LiquidadaEnBanco,
+    Anulada
 }

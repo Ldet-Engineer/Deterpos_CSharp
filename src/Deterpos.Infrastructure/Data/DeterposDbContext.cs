@@ -37,6 +37,7 @@ public class DeterposDbContext : DbContext, IApplicationDbContext
     public DbSet<Quotation> Quotations => Set<Quotation>();
     public DbSet<QuotationDetail> QuotationDetails => Set<QuotationDetail>();
     public DbSet<InventoryMovement> InventoryMovements => Set<InventoryMovement>();
+    public DbSet<CasheaOrder> CasheaOrders => Set<CasheaOrder>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -561,6 +562,30 @@ public class DeterposDbContext : DbContext, IApplicationDbContext
                   .WithMany()
                   .HasForeignKey(e => e.ProductId)
                   .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Cashea BNPL Orders
+        modelBuilder.Entity<CasheaOrder>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.OrderNumber).HasMaxLength(60).IsRequired();
+            entity.Property(e => e.CustomerDocument).HasMaxLength(30).IsRequired();
+            entity.Property(e => e.CustomerName).HasMaxLength(150);
+            entity.Property(e => e.TotalSaleUSD).HasPrecision(18, 2);
+            entity.Property(e => e.DownPaymentAmountUSD).HasPrecision(18, 2);
+            entity.Property(e => e.FinancedAmountUSD).HasPrecision(18, 2);
+            entity.Property(e => e.ExchangeRateApplied).HasPrecision(18, 4);
+            entity.Property(e => e.TotalSaleVES).HasPrecision(18, 2);
+            entity.Property(e => e.DownPaymentAmountVES).HasPrecision(18, 2);
+            entity.Property(e => e.FinancedAmountVES).HasPrecision(18, 2);
+            entity.Property(e => e.InstallmentAmountUSD).HasPrecision(18, 2);
+            entity.Property(e => e.InstallmentAmountVES).HasPrecision(18, 2);
+            entity.Property(e => e.EstimatedCommissionPercentage).HasPrecision(18, 2);
+            entity.Property(e => e.EstimatedCommissionUSD).HasPrecision(18, 2);
+            entity.Property(e => e.DownPaymentReference).HasMaxLength(100);
+            entity.Property(e => e.SettlementBankReference).HasMaxLength(100);
+            entity.HasIndex(e => e.OrderNumber);
+            entity.HasIndex(e => e.CreatedAt);
         });
     }
 }

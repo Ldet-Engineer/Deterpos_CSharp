@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows;
 using Fluent;
 using Deterpos.Application.Interfaces;
+using Deterpos.Infrastructure.Data;
 using Deterpos.Infrastructure.Services;
 using Deterpos.WPF.ViewModels;
 using Microsoft.Win32;
@@ -17,18 +18,21 @@ public partial class MainWindow : RibbonWindow
 {
     private readonly IDatabaseBackupService _backupService;
     private readonly DatabaseConfigurationService _dbConfigService;
+    private readonly CasheaService _casheaService;
 
     public MainWindow()
     {
         InitializeComponent();
         _dbConfigService = new DatabaseConfigurationService();
         _backupService = new DatabaseBackupService(_dbConfigService);
+        _casheaService = new CasheaService(new DeterposDbContextFactory(_dbConfigService));
         Loaded += MainWindow_Loaded;
     }
 
     private void MainWindow_Loaded(object sender, System.Windows.RoutedEventArgs e)
     {
         LoadDatabaseSettingsToUi();
+        LoadCasheaSettingsToUi();
 
         if (DataContext is MainViewModel vm)
         {
@@ -146,6 +150,14 @@ public partial class MainWindow : RibbonWindow
                     }
                     vm.ExpenseActionRequested = string.Empty;
                 }
+                else if (args.PropertyName == nameof(MainViewModel.CasheaActionRequested))
+                {
+                    if (vm.CasheaActionRequested == "Simulator")
+                    {
+                        ViewCasheaBnpl.OpenSimulatorDialog();
+                    }
+                    vm.CasheaActionRequested = string.Empty;
+                }
                 else if (args.PropertyName == nameof(MainViewModel.BackstageTabRequested))
                 {
                     if (!string.IsNullOrEmpty(vm.BackstageTabRequested))
@@ -154,6 +166,10 @@ public partial class MainWindow : RibbonWindow
                         if (vm.BackstageTabRequested == "UsersSecurity")
                         {
                             BackstageTabs.SelectedItem = TabBackstageUsers;
+                        }
+                        else if (vm.BackstageTabRequested == "CasheaSettings")
+                        {
+                            BackstageTabs.SelectedItem = TabBackstageCashea;
                         }
                         vm.BackstageTabRequested = string.Empty;
                     }
@@ -400,6 +416,74 @@ public partial class MainWindow : RibbonWindow
         catch (Exception ex)
         {
             MessageBox.Show($"Error al restaurar respaldo: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    #endregion
+
+    #region Configuración Cashea BNPL
+
+    private void LoadCasheaSettingsToUi()
+    {
+        try
+        {
+            var settings = _casheaService.LoadSettings();
+            ChkCasheaEnabled.IsChecked = settings.IsEnabled;
+            TxtCasheaMerchantCode.Text = settings.MerchantCode;
+            TxtCasheaMerchantName.Text = settings.MerchantName;
+            TxtCasheaQrCode.Text = settings.StoreQrIdentifier;
+            TxtCasheaCommission.Text = settings.DefaultCommissionPercentage.ToString("F1");
+            TxtCasheaSettlementDays.Text = settings.EstimatedSettlementDays.ToString();
+            TxtCasheaMinAmount.Text = settings.MinimumSaleAmountUSD.ToString("F2");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[CasheaSettings] Error cargando configuración: {ex.Message}");
+        }
+    }
+
+    private void BtnSaveCasheaSettings_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            decimal.TryParse(TxtCasheaCommission.Text.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var comm);
+            int.TryParse(TxtCasheaSettlementDays.Text, out var days);
+            decimal.TryParse(TxtCasheaMinAmount.Text.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var min);
+
+            var settings = new CasheaSettings
+            {
+                IsEnabled = ChkCasheaEnabled.IsChecked ?? false,
+                MerchantCode = TxtCasheaMerchantCode.Text.Trim(),
+                MerchantName = TxtCasheaMerchantName.Text.Trim(),
+                StoreQrIdentifier = TxtCasheaQrCode.Text.Trim(),
+                DefaultCommissionPercentage = comm > 0 ? comm : 5.0m,
+                EstimatedSettlementDays = days > 0 ? days : 5,
+                MinimumSaleAmountUSD = min > 0 ? min : 15.0m
+            };
+
+            _casheaService.SaveSettings(settings);
+
+            if (DataContext is MainViewModel vm)
+            {
+                vm.IsCasheaIntegrationEnabled = settings.IsEnabled;
+            }
+
+            TxtCasheaSettingsStatus.Visibility = Visibility.Visible;
+            TxtCasheaSettingsStatus.Text = settings.IsEnabled
+                ? "Módulo Cashea BNPL Activado correctamente. Ya está disponible en el Ribbon y en el POS."
+                : "Módulo Cashea BNPL Desactivado. La pestaña y opciones en POS han sido ocultadas.";
+            TxtCasheaSettingsStatus.Foreground = settings.IsEnabled ? System.Windows.Media.Brushes.Green : System.Windows.Media.Brushes.DarkOrange;
+
+            MessageBox.Show(
+                $"Configuración de Cashea guardada correctamente.\n\nEstado: {(settings.IsEnabled ? "ACTIVADO" : "DESACTIVADO")}\n\n{(settings.IsEnabled ? "El módulo y el botón en el punto de venta están ahora activos." : "El módulo se ha ocultado del Ribbon.")}",
+                "Cashea BNPL",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error al guardar configuración de Cashea: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

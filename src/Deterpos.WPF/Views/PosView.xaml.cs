@@ -75,6 +75,7 @@ public partial class PosView : UserControl
     private readonly CashRegisterService _cashService;
     private readonly CustomerService _customerService;
     private readonly QuotationService _quotationService;
+    private readonly CasheaService _casheaService;
 
     private readonly List<Product> _allProducts = new();
     private readonly ObservableCollection<CatalogItemDisplay> _displayedCatalog = new();
@@ -97,6 +98,7 @@ public partial class PosView : UserControl
         _cashService = new CashRegisterService(factory);
         _customerService = new CustomerService(factory);
         _quotationService = new QuotationService(factory);
+        _casheaService = new CasheaService(factory);
 
         DgCatalog.ItemsSource = _displayedCatalog;
         DgCart.ItemsSource = _cartItems;
@@ -113,6 +115,9 @@ public partial class PosView : UserControl
     {
         await InitializePosAsync();
         UpdateHoldTicketsBadge();
+
+        var cSettings = _casheaService.LoadSettings();
+        BtnCasheaCheckout.Visibility = cSettings.IsEnabled ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private async void PosView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -497,6 +502,7 @@ public partial class PosView : UserControl
         TxtItemsCountSubtitle.Text = count == 1 ? "1 artículo en el carrito" : $"{count} artículos en el carrito";
 
         BtnCheckout.IsEnabled = count > 0 && _activeShift != null;
+        BtnCasheaCheckout.IsEnabled = count > 0 && _activeShift != null;
     }
 
     private void BtnChangeCustomer_Click(object sender, RoutedEventArgs e)
@@ -616,6 +622,135 @@ public partial class PosView : UserControl
         }
     }
 
+    private async void BtnCasheaCheckout_Click(object sender, RoutedEventArgs e)
+    {
+        if (_cartItems.Count == 0)
+        {
+            MessageBox.Show("No hay artículos en la lista para facturar.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (_activeShift == null)
+        {
+            MessageBox.Show("No hay un turno de caja activo para procesar el cobro. Realice la apertura en 'Control de Caja'.", "Caja Cerrada", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var bcv = ViewModel?.BcvRate ?? 55.40m;
+        bool isSpecial = ViewModel?.IsSpecialTaxpayer ?? true;
+
+        decimal totalBaseSaleUSD = _cartItems.Sum(i => i.TotalPriceUSD) +
+                                  _cartItems.Where(i => i.VatRate == VatRateType.General16).Sum(i => decimal.Round(i.TotalPriceUSD * 0.16m, 4)) +
+                                  _cartItems.Where(i => i.VatRate == VatRateType.Reducida8).Sum(i => decimal.Round(i.TotalPriceUSD * 0.08m, 4));
+
+        var casheaDialog = new CasheaPaymentAssistantDialog(
+            totalBaseSaleUSD,
+            bcv,
+            _casheaService,
+            _activeCustomer?.DocumentNumber,
+            _activeCustomer?.FullName
+        )
+        {
+            Owner = Window.GetWindow(this)
+        };
+
+        if (casheaDialog.ShowDialog() == true && casheaDialog.IsConfirmed && casheaDialog.CreatedCasheaOrder != null)
+        {
+            try
+            {
+                var order = casheaDialog.CreatedCasheaOrder;
+                var payments = new List<SalePayment>();
+
+                // Línea 1: Pago de la Inicial en caja
+                if (order.DownPaymentAmountUSD > 0)
+                {
+                    bool isForeign = order.DownPaymentMethod == PaymentMethodType.EfectivoUSD || order.DownPaymentMethod == PaymentMethodType.Zelle;
+                    payments.Add(new SalePayment
+                    {
+                        Method = order.DownPaymentMethod,
+                        CurrencyCode = isForeign ? "USD" : "VES",
+                        AmountOriginal = isForeign ? order.DownPaymentAmountUSD : order.DownPaymentAmountVES,
+                        ExchangeRateApplied = isForeign ? 1.0000m : bcv,
+                        AmountEquivalentUSD = order.DownPaymentAmountUSD,
+                        ReferenceNumber = order.DownPaymentReference
+                    });
+                }
+
+                // Línea 2: Saldo Financiado por Cashea
+                if (order.FinancedAmountUSD > 0)
+                {
+                    payments.Add(new SalePayment
+                    {
+                        Method = PaymentMethodType.Cashea,
+                        CurrencyCode = "USD",
+                        AmountOriginal = order.FinancedAmountUSD,
+                        ExchangeRateApplied = 1.0000m,
+                        AmountEquivalentUSD = order.FinancedAmountUSD,
+                        ReferenceNumber = order.OrderNumber
+                    });
+                }
+
+                var saleDraft = new Sale
+                {
+                    CashRegisterId = _currentRegister?.Id ?? 1,
+                    CashShiftId = _activeShift.Id,
+                    CashierUsername = _activeShift.CashierUsername,
+                    CustomerId = _activeCustomer?.Id,
+                    FiscalPrinterSerial = ViewModel?.FiscalSerial ?? "Z4A9876543",
+                    Notes = $"Venta Cashea BNPL - Orden {order.OrderNumber} (Inicial: ${order.DownPaymentAmountUSD:N2} | Financiado: ${order.FinancedAmountUSD:N2})"
+                };
+
+                var details = _cartItems.Select(i => new SaleDetail
+                {
+                    ProductId = i.ProductId,
+                    ProductCode = i.ProductCode,
+                    ProductName = i.ProductName,
+                    Quantity = i.Quantity,
+                    UnitCostUSD = i.UnitCostUSD,
+                    UnitPriceUSD = i.UnitPriceUSD,
+                    VatRate = i.VatRate
+                }).ToList();
+
+                var completedSale = await _saleService.ProcessSaleAsync(saleDraft, details, payments, bcv, isSpecial);
+                completedSale.Customer = _activeCustomer;
+
+                // Vincular orden Cashea con la venta generada
+                order.SaleId = completedSale.Id;
+                await _casheaService.RegisterOrderAsync(order);
+
+                // Mostrar Comprobante Fiscal SENIAT
+                var ticketDialog = new InvoiceTicketDialog(completedSale)
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                ticketDialog.ShowDialog();
+
+                // Vaciar Carrito y Notificar
+                _cartItems.Clear();
+                RecalculateCartTotals();
+                FocusBarcodeInput();
+
+                // Recargar catálogo para actualizar existencias descontadas
+                var updatedProds = await _productService.GetAllProductsAsync();
+                _allProducts.Clear();
+                _allProducts.AddRange(updatedProds);
+                ApplyCatalogFilter();
+
+                // Actualizar contadores del ViewModel
+                if (ViewModel != null)
+                {
+                    ViewModel.TodaySalesUSD += completedSale.TotalUSD;
+                    ViewModel.TodayInvoicesCount++;
+                }
+            }
+            catch (Exception ex)
+            {
+                string detail = ex.InnerException != null ? $"\n\nDetalle técnico: {ex.InnerException.Message}" : "";
+                MessageBox.Show($"Error al procesar la venta con Cashea: {ex.Message}{detail}", "Error en Facturación", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
     private async void BtnRecentSales_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -676,6 +811,14 @@ public partial class PosView : UserControl
         {
             e.Handled = true;
             BtnRecentSales_Click(this, new RoutedEventArgs());
+        }
+        else if (e.Key == Key.F10)
+        {
+            if (BtnCasheaCheckout.IsEnabled && BtnCasheaCheckout.Visibility == Visibility.Visible)
+            {
+                e.Handled = true;
+                BtnCasheaCheckout_Click(BtnCasheaCheckout, new RoutedEventArgs());
+            }
         }
     }
 

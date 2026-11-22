@@ -23,7 +23,8 @@ public enum ActiveViewModule
     CreditManagement,
     OperatingExpenses,
     FiscalReports,
-    UsersSecurity
+    UsersSecurity,
+    Cashea
 }
 
 public class CurrencyDisplayItem : ViewModelBase
@@ -82,6 +83,7 @@ public class MainViewModel : ViewModelBase
     private readonly CurrencyService _currencyService;
     private readonly DashboardService _dashboardService;
     private readonly ISaleService _saleService;
+    private readonly CasheaService _casheaService;
 
     private string _activeViewTitle = "Panel Principal (Dashboard)";
     private string _currentUserName = "Administrador";
@@ -139,6 +141,7 @@ public class MainViewModel : ViewModelBase
                 OnPropertyChanged(nameof(IsExpensesViewActive));
                 OnPropertyChanged(nameof(IsFiscalReportsViewActive));
                 OnPropertyChanged(nameof(IsUsersViewActive));
+                OnPropertyChanged(nameof(IsCasheaViewActive));
 
                 if (value == ActiveViewModule.Dashboard)
                 {
@@ -160,6 +163,22 @@ public class MainViewModel : ViewModelBase
     public bool IsExpensesViewActive => _currentModule == ActiveViewModule.OperatingExpenses;
     public bool IsFiscalReportsViewActive => _currentModule == ActiveViewModule.FiscalReports;
     public bool IsUsersViewActive => _currentModule == ActiveViewModule.UsersSecurity;
+    public bool IsCasheaViewActive => _currentModule == ActiveViewModule.Cashea;
+
+    // Estado de Integración Opcional Cashea BNPL
+    private bool _isCasheaIntegrationEnabled = false;
+    public bool IsCasheaIntegrationEnabled
+    {
+        get => _isCasheaIntegrationEnabled;
+        set => SetProperty(ref _isCasheaIntegrationEnabled, value);
+    }
+
+    private string _casheaActionRequested = string.Empty;
+    public string CasheaActionRequested
+    {
+        get => _casheaActionRequested;
+        set => SetProperty(ref _casheaActionRequested, value);
+    }
 
     // Disparador para abrir pestaña del Backstage (Menú Archivo)
     private string _backstageTabRequested = string.Empty;
@@ -451,6 +470,10 @@ public class MainViewModel : ViewModelBase
         _currencyService = new CurrencyService(factory);
         _dashboardService = new DashboardService(factory);
         _saleService = new SaleService(factory);
+        _casheaService = new CasheaService(factory);
+
+        var cSettings = _casheaService.LoadSettings();
+        IsCasheaIntegrationEnabled = cSettings.IsEnabled;
 
         RefreshDashboardCommand = new RelayCommand(async _ => await LoadDashboardLiveMetricsAsync());
 
@@ -647,6 +670,26 @@ public class MainViewModel : ViewModelBase
                     case "Estado de Resultados":
                         CurrentModule = ActiveViewModule.FiscalReports;
                         FiscalReportTabRequested = 3;
+                        break;
+
+                    // CASHEA BNPL (COMPRA AHORA, PAGA DESPUÉS)
+                    case "Cashea BNPL":
+                    case "Órdenes Cashea":
+                    case "Cashea":
+                        CurrentModule = ActiveViewModule.Cashea;
+                        break;
+                    case "Simulador Cashea":
+                    case "Calculadora Cashea":
+                        CurrentModule = ActiveViewModule.Cashea;
+                        CasheaActionRequested = "Simulator";
+                        break;
+                    case "Conciliación Cashea":
+                    case "Liquidaciones Cashea":
+                        CurrentModule = ActiveViewModule.Cashea;
+                        CasheaActionRequested = "Reconcile";
+                        break;
+                    case "Configuración Cashea":
+                        BackstageTabRequested = "CasheaSettings";
                         break;
 
                     // SEGURIDAD Y USUARIOS (En Menú Archivo / Backstage)
@@ -951,5 +994,11 @@ public class MainViewModel : ViewModelBase
         {
             System.Diagnostics.Debug.WriteLine($"Error al actualizar métricas del dashboard: {ex.Message}");
         }
+    }
+
+    public void RefreshCasheaSettings()
+    {
+        var settings = _casheaService.LoadSettings();
+        IsCasheaIntegrationEnabled = settings.IsEnabled;
     }
 }
