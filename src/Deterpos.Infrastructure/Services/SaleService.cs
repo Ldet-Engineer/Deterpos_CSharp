@@ -146,6 +146,14 @@ public class SaleService : ISaleService
             var product = await context.Products.FindAsync(item.ProductId);
             if (product != null)
             {
+                if (product.CurrentStock < item.Quantity)
+                {
+                    throw new InvalidOperationException(
+                        $"Stock insuficiente para el artículo '{product.Name}' ({product.Code}). " +
+                        $"Existencia disponible en inventario: {product.CurrentStock:G29}, solicitada para facturar: {item.Quantity:G29}. " +
+                        "No es posible facturar más cantidad que las existencias del inventario.");
+                }
+
                 product.CurrentStock -= item.Quantity;
 
                 context.InventoryMovements.Add(new InventoryMovement

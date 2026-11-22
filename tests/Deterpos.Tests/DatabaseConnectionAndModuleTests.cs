@@ -854,4 +854,74 @@ public class DatabaseConnectionAndModuleTests
         Assert.Equal(down, found.DownPaymentAmountUSD);
         _output.WriteLine($"Orden POS #{found.OrderNumber} verificada con éxito: Venta #{found.SaleId}, Financiado: ${found.FinancedAmountUSD:N2}, Inicial: ${found.DownPaymentAmountUSD:N2}");
     }
+
+    [Fact]
+    public async Task Test19_Sale_Fails_When_Quantity_Exceeds_Stock()
+    {
+        var config = new DatabaseConfigurationService();
+        await config.InitializeDatabaseAsync();
+        var factory = new DeterposDbContextFactory(config);
+        var saleService = new SaleService(factory);
+
+        await using var ctx = factory.CreateDbContext();
+        var prod = await ctx.Products.FirstAsync(p => p.IsActive);
+        var shift = await ctx.CashShifts.FirstAsync(s => s.Status == CashShiftStatus.Abierta);
+
+        decimal stockBefore = prod.CurrentStock;
+        decimal excessQuantity = stockBefore + 15.00m; // Excede intencionalmente el stock disponible
+        decimal bcv = 55.40m;
+
+        var saleDraft = new Sale
+        {
+            CashRegisterId = 1,
+            CashShiftId = shift.Id,
+            CashierUsername = "TestCashier",
+            FiscalPrinterSerial = "TESTFISCAL02",
+            Notes = "Intento de venta con exceso de stock"
+        };
+
+        var details = new List<SaleDetail>
+        {
+            new SaleDetail
+            {
+                ProductId = prod.Id,
+                ProductCode = prod.Code,
+                ProductName = prod.Name,
+                Quantity = excessQuantity,
+                UnitPriceUSD = prod.PriceUSD,
+                UnitCostUSD = prod.CostUSD,
+                VatRate = prod.VatRate
+            }
+        };
+
+        decimal totalUSD = excessQuantity * prod.PriceUSD;
+        var payments = new List<SalePayment>
+        {
+            new SalePayment
+            {
+                Method = PaymentMethodType.EfectivoUSD,
+                CurrencyCode = "USD",
+                AmountOriginal = totalUSD,
+                ExchangeRateApplied = 1.0m,
+                AmountEquivalentUSD = totalUSD,
+                ReferenceNumber = "TEST-EXCESS"
+            }
+        };
+
+        // 1. Debe arrojar InvalidOperationException por stock insuficiente
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await saleService.ProcessSaleAsync(saleDraft, details, payments, bcv, false);
+        });
+
+        _output.WriteLine($"Excepción capturada correctamente: {ex.Message}");
+        Assert.Contains("Stock insuficiente", ex.Message, StringComparison.OrdinalIgnoreCase);
+
+        // 2. Verificar que en la base de datos el stock no fue modificado
+        await using var verifyCtx = factory.CreateDbContext();
+        var prodAfter = await verifyCtx.Products.FindAsync(prod.Id);
+        Assert.NotNull(prodAfter);
+        Assert.Equal(stockBefore, prodAfter.CurrentStock);
+        _output.WriteLine($"Stock verificado inalterado en base de datos: {prodAfter.CurrentStock:G29} unidades.");
+    }
 }

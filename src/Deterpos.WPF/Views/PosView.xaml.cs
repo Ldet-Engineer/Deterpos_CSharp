@@ -34,16 +34,20 @@ public class CatalogItemDisplay
 
     public string PriceUSDDisplay => $"$ {PriceUSD:N2}";
     public string PriceVESDisplay => $"{(PriceUSD * BcvRate):N2} Bs.";
-    public string StockDisplay => $"{CurrentStock:G29} disp.";
+    public string StockDisplay => CurrentStock <= 0 ? "AGOTADO" : $"{CurrentStock:G29} disp.";
     public string VatDisplay => VatRate == VatRateType.General16 ? "16%" : (VatRate == VatRateType.Reducida8 ? "8%" : "Exento");
 
-    public Brush StockBadgeBackground => CurrentStock <= Source.MinimumStock
-        ? new SolidColorBrush(Color.FromRgb(254, 243, 235))
-        : new SolidColorBrush(Color.FromRgb(230, 244, 234));
+    public Brush StockBadgeBackground => CurrentStock <= 0
+        ? new SolidColorBrush(Color.FromRgb(254, 226, 226)) // Fondo rojo
+        : (CurrentStock <= Source.MinimumStock
+            ? new SolidColorBrush(Color.FromRgb(254, 243, 235)) // Fondo ámbar
+            : new SolidColorBrush(Color.FromRgb(230, 244, 234))); // Fondo verde
 
-    public Brush StockBadgeForeground => CurrentStock <= Source.MinimumStock
-        ? new SolidColorBrush(Color.FromRgb(216, 59, 1))
-        : new SolidColorBrush(Color.FromRgb(16, 124, 65));
+    public Brush StockBadgeForeground => CurrentStock <= 0
+        ? new SolidColorBrush(Color.FromRgb(185, 28, 28)) // Texto rojo oscuro
+        : (CurrentStock <= Source.MinimumStock
+            ? new SolidColorBrush(Color.FromRgb(216, 59, 1)) // Texto ámbar
+            : new SolidColorBrush(Color.FromRgb(16, 124, 65))); // Texto verde
 }
 
 public class PosCartItem
@@ -57,6 +61,7 @@ public class PosCartItem
     public decimal UnitCostUSD { get; set; }
     public decimal UnitPriceUSD { get; set; }
     public decimal Quantity { get; set; } = 1.00m;
+    public decimal AvailableStock { get; set; }
     public decimal BcvRate { get; set; } = 55.40m;
 
     public decimal TotalPriceUSD => Quantity * UnitPriceUSD;
@@ -390,26 +395,66 @@ public partial class PosView : UserControl
 
     public void AddItemToCart(Product product, decimal quantity = 1.00m)
     {
+        // 1. Obtener la referencia más actualizada del producto desde _allProducts o el propio objeto
+        var currentProduct = _allProducts.FirstOrDefault(p => p.Id == product.Id) ?? product;
+        decimal availableStock = currentProduct.CurrentStock;
+
+        // 2. Si el producto no tiene existencias disponibles (stock <= 0)
+        if (availableStock <= 0)
+        {
+            MessageBox.Show(
+                $"El artículo '{currentProduct.Name}' ({currentProduct.Code}) está AGOTADO en inventario.\n\n" +
+                $"• Existencia disponible: {availableStock:G29} unidades.\n\n" +
+                "No es posible agregarlo al carrito de venta sin existencias disponibles.",
+                "Artículo Agotado",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
         var bcv = ViewModel?.BcvRate ?? 55.40m;
-        var existing = _cartItems.FirstOrDefault(i => i.ProductId == product.Id);
+        var existing = _cartItems.FirstOrDefault(i => i.ProductId == currentProduct.Id);
+        decimal currentCartQty = existing?.Quantity ?? 0m;
+        decimal targetQty = currentCartQty + quantity;
+
+        // 3. Si la cantidad total requerida excede el stock disponible
+        if (targetQty > availableStock)
+        {
+            decimal remainingAvailable = Math.Max(0m, availableStock - currentCartQty);
+            string extraMsg = currentCartQty > 0
+                ? $"Ya tiene {currentCartQty:G29} unidad(es) en el carrito.\nSolo puede agregar hasta {remainingAvailable:G29} unidad(es) más."
+                : $"Stock máximo disponible para facturar: {availableStock:G29} unidades.";
+
+            MessageBox.Show(
+                $"Stock insuficiente para '{currentProduct.Name}'.\n\n" +
+                $"• Cantidad requerida: {quantity:G29}\n" +
+                $"• Stock en inventario: {availableStock:G29}\n\n" +
+                $"{extraMsg}",
+                "Stock Insuficiente",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
 
         if (existing != null)
         {
-            existing.Quantity += quantity;
+            existing.Quantity = targetQty;
+            existing.AvailableStock = availableStock;
         }
         else
         {
             _cartItems.Add(new PosCartItem
             {
                 ItemIndex = _cartItems.Count + 1,
-                ProductId = product.Id,
-                ProductCode = product.Code,
-                ProductName = product.Name,
-                CategoryName = product.CategoryName,
-                VatRate = product.VatRate,
-                UnitCostUSD = product.CostUSD,
-                UnitPriceUSD = product.PriceUSD,
+                ProductId = currentProduct.Id,
+                ProductCode = currentProduct.Code,
+                ProductName = currentProduct.Name,
+                CategoryName = currentProduct.CategoryName,
+                VatRate = currentProduct.VatRate,
+                UnitCostUSD = currentProduct.CostUSD,
+                UnitPriceUSD = currentProduct.PriceUSD,
                 Quantity = quantity,
+                AvailableStock = availableStock,
                 BcvRate = bcv
             });
         }
@@ -428,7 +473,22 @@ public partial class PosView : UserControl
     {
         if (sender is Button btn && btn.DataContext is PosCartItem item)
         {
+            var currentProduct = _allProducts.FirstOrDefault(p => p.Id == item.ProductId);
+            decimal availableStock = currentProduct?.CurrentStock ?? item.AvailableStock;
+
+            if (item.Quantity + 1.00m > availableStock)
+            {
+                MessageBox.Show(
+                    $"No es posible aumentar la cantidad para '{item.ProductName}'.\n\n" +
+                    $"• Ha alcanzado el límite de existencias disponibles en inventario: {availableStock:G29} unidades.",
+                    "Límite de Stock Alcanzado",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
             item.Quantity += 1.00m;
+            item.AvailableStock = availableStock;
             DgCart.Items.Refresh();
             RecalculateCartTotals();
         }
@@ -535,6 +595,41 @@ public partial class PosView : UserControl
         }
     }
 
+    private async Task<bool> ValidateCartStockAsync()
+    {
+        if (_cartItems.Count == 0) return false;
+
+        var stockDeficits = new List<string>();
+        foreach (var item in _cartItems)
+        {
+            var freshProduct = await _productService.GetProductByIdAsync(item.ProductId);
+            if (freshProduct == null)
+            {
+                stockDeficits.Add($"• '{item.ProductName}' ({item.ProductCode}): El producto no existe en el catálogo.");
+            }
+            else if (item.Quantity > freshProduct.CurrentStock)
+            {
+                stockDeficits.Add(
+                    $"• '{freshProduct.Name}' ({freshProduct.Code}): " +
+                    $"En carrito: {item.Quantity:G29} | Stock disponible: {freshProduct.CurrentStock:G29}");
+            }
+        }
+
+        if (stockDeficits.Count > 0)
+        {
+            MessageBox.Show(
+                "No se puede proceder con la facturación debido a existencias insuficientes en inventario:\n\n" +
+                string.Join("\n", stockDeficits) +
+                "\n\nPor favor ajuste o elimine las cantidades en el carrito antes de facturar.",
+                "Stock Insuficiente para Facturar",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return false;
+        }
+
+        return true;
+    }
+
     private async void BtnCheckout_Click(object sender, RoutedEventArgs e)
     {
         if (_cartItems.Count == 0)
@@ -546,6 +641,12 @@ public partial class PosView : UserControl
         if (_activeShift == null)
         {
             MessageBox.Show("No hay un turno de caja activo para procesar el cobro. Realice la apertura en 'Control de Caja'.", "Caja Cerrada", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        // 1. Verificación estricta de existencias en inventario en tiempo real
+        if (!await ValidateCartStockAsync())
+        {
             return;
         }
 
@@ -682,6 +783,12 @@ public partial class PosView : UserControl
         if (_activeShift == null)
         {
             MessageBox.Show("No hay un turno de caja activo para procesar el cobro. Realice la apertura en 'Control de Caja'.", "Caja Cerrada", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        // 1. Verificación estricta de existencias en inventario en tiempo real
+        if (!await ValidateCartStockAsync())
+        {
             return;
         }
 
@@ -1066,6 +1173,8 @@ public partial class PosView : UserControl
 
         foreach (var d in quotation.Details)
         {
+            var pMatch = _allProducts.FirstOrDefault(p => p.Id == d.ProductId);
+            decimal avail = pMatch?.CurrentStock ?? 0m;
             _cartItems.Add(new PosCartItem
             {
                 ItemIndex = _cartItems.Count + 1,
@@ -1075,6 +1184,7 @@ public partial class PosView : UserControl
                 UnitCostUSD = d.UnitCostUSD,
                 UnitPriceUSD = d.UnitPriceUSD,
                 Quantity = d.Quantity,
+                AvailableStock = avail,
                 VatRate = d.VatRate,
                 BcvRate = bcv
             });
