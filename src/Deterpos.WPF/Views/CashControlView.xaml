@@ -34,7 +34,7 @@
 
                 <!-- Barra de Acciones de Caja -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="BtnOpenShift" Click="BtnOpenShift_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0"
+                    <Button x:Name="BtnOpenShift" Click="BtnOpenShift_Click" Style="{StaticResource ModernGreenActionButtonStyle}" BorderThickness="1"
                             Padding="16,8" Margin="0,0,10,0" Cursor="Hand">
                         <Button.Resources>
                             <Style TargetType="Border">
@@ -42,7 +42,7 @@
                             </Style>
                         </Button.Resources>
                         <StackPanel Orientation="Horizontal">
-                            <fluentIcons:SymbolIcon Symbol="LockOpen" FontSize="16" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <fluentIcons:SymbolIcon Symbol="LockOpen" FontSize="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Margin="0,0,8,0" VerticalAlignment="Center" />
                             <TextBlock Text="Apertura Caja" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
@@ -73,7 +73,7 @@
                         </StackPanel>
                     </Button>
 
-                    <Button x:Name="BtnCloseShift" Click="BtnCloseShift_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                    <Button x:Name="BtnCloseShift" Click="BtnCloseShift_Click" Style="{StaticResource ModernPrimaryActionButtonStyle}" BorderThickness="1"
                             Padding="18,8" Cursor="Hand">
                         <Button.Resources>
                             <Style TargetType="Border">
@@ -81,7 +81,7 @@
                             </Style>
                         </Button.Resources>
                         <StackPanel Orientation="Horizontal">
-                            <fluentIcons:SymbolIcon Symbol="ClipboardCheckmark" FontSize="16" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <fluentIcons:SymbolIcon Symbol="ClipboardCheckmark" FontSize="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Margin="0,0,8,0" VerticalAlignment="Center" />
                             <TextBlock Text="Cierre / Arqueo Ciego" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>

@@ -149,7 +149,7 @@
                         <TextBlock Text="Cancelar" Foreground="{StaticResource TextSecondaryBrush}" />
                     </Button>
 
-                    <Button x:Name="BtnSelect" Grid.Column="4" Click="BtnSelect_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0" Padding="22,8" Cursor="Hand" FontWeight="SemiBold" IsEnabled="False">
+                    <Button x:Name="BtnSelect" Grid.Column="4" Click="BtnSelect_Click" Style="{StaticResource ModernPrimaryActionButtonStyle}" BorderThickness="1" Padding="22,8" Cursor="Hand" FontWeight="SemiBold" IsEnabled="False">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="6" />

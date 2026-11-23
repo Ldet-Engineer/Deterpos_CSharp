@@ -390,7 +390,7 @@
                         </Border>
 
                         <!-- Botones de Cobro / Facturación -->
-                        <Button x:Name="BtnCheckout" Click="BtnCheckout_Click" Background="{StaticResource AccentGreenBrush}" Foreground="White" BorderThickness="0"
+                        <Button x:Name="BtnCheckout" Click="BtnCheckout_Click" Style="{StaticResource ModernGreenActionButtonStyle}" BorderThickness="1"
                                 Padding="14,12" Cursor="Hand" Margin="0,0,0,8" IsEnabled="False">
                             <Button.Resources>
                                 <Style TargetType="Border">
@@ -398,12 +398,12 @@
                                 </Style>
                             </Button.Resources>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <fluentIcons:SymbolIcon Symbol="Payment" FontSize="20" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <fluentIcons:SymbolIcon Symbol="Payment" FontSize="20" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Margin="0,0,8,0" VerticalAlignment="Center" />
                                 <TextBlock Text="[F12] COBRAR VENTA" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
 
-                        <Button x:Name="BtnCasheaCheckout" Click="BtnCasheaCheckout_Click" Background="#0284C7" Foreground="White" BorderThickness="0"
+                        <Button x:Name="BtnCasheaCheckout" Click="BtnCasheaCheckout_Click" Style="{StaticResource ModernSkyActionButtonStyle}" BorderThickness="1"
                                 Padding="14,10" Cursor="Hand" Margin="0,0,0,8" IsEnabled="False"
                                 Visibility="{Binding IsCasheaIntegrationEnabled, Converter={StaticResource BoolToVisConverter}}"
                                 ToolTip="Procesar venta con inicial en caja y 3 cuotas quincenales sin interés [F10]">
@@ -413,7 +413,7 @@
                                 </Style>
                             </Button.Resources>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <fluentIcons:SymbolIcon Symbol="BarcodeScanner" FontSize="18" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <fluentIcons:SymbolIcon Symbol="BarcodeScanner" FontSize="18" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Margin="0,0,8,0" VerticalAlignment="Center" />
                                 <TextBlock Text="[F10] COBRAR CON CASHEA" FontSize="13.5" FontWeight="Bold" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>

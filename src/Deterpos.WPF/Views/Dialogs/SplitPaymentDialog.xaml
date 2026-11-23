@@ -293,7 +293,7 @@
                         <TextBlock Text="Cancelar" Foreground="{StaticResource TextSecondaryBrush}" />
                     </Button>
 
-                    <Button x:Name="BtnConfirmSale" Grid.Column="3" Click="BtnConfirmSale_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                    <Button x:Name="BtnConfirmSale" Grid.Column="3" Click="BtnConfirmSale_Click" Style="{StaticResource ModernPrimaryActionButtonStyle}" BorderThickness="1"
                             Padding="24,9" Cursor="Hand" FontWeight="Bold" IsEnabled="False">
                         <Button.Resources>
                             <Style TargetType="Border">
@@ -301,7 +301,7 @@
                             </Style>
                         </Button.Resources>
                         <StackPanel Orientation="Horizontal">
-                            <fluentIcons:SymbolIcon Symbol="ReceiptMoney" FontSize="18" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <fluentIcons:SymbolIcon Symbol="ReceiptMoney" FontSize="18" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Margin="0,0,8,0" VerticalAlignment="Center" />
                             <TextBlock Text="Confirmar y Facturar [F12]" FontSize="13" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>

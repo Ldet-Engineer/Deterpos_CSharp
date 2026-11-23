@@ -16,6 +16,111 @@
     <SolidColorBrush x:Key="ModernItemBackgroundHover" Color="#EBF3FB" />
     <SolidColorBrush x:Key="ModernItemSelectedBackground" Color="#0067B8" />
     <SolidColorBrush x:Key="ModernItemSelectedText" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="AccentGreenBrush" Color="#107C41" />
+    <SolidColorBrush x:Key="CardBorderBrush" Color="#E0E4E8" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1F2328" />
+
+    <!-- ============================================== -->
+    <!--  ESTILOS MODERNOS PARA BOTONES DE ACCIÓN       -->
+    <!-- ============================================== -->
+    <!-- Botón de Éxito / Cobro (Verde) -->
+    <Style x:Key="ModernGreenActionButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource AccentGreenBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentGreenBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Variable Text, Arial" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Opacity" Value="0.9" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="#F1F5F9" />
+                <Setter Property="Foreground" Value="#0F172A" />
+                <Setter Property="BorderBrush" Value="#CBD5E1" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Botón Primario Corporativo (Azul Marca) -->
+    <Style x:Key="ModernPrimaryActionButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrandBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrandBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Variable Text, Arial" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Opacity" Value="0.9" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="#F1F5F9" />
+                <Setter Property="Foreground" Value="#0F172A" />
+                <Setter Property="BorderBrush" Value="#CBD5E1" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Botón Secundario Cashea / Celeste (Azul Cielo) -->
+    <Style x:Key="ModernSkyActionButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="#0284C7" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderBrush" Value="#0284C7" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Variable Text, Arial" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Opacity" Value="0.9" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="#F1F5F9" />
+                <Setter Property="Foreground" Value="#0F172A" />
+                <Setter Property="BorderBrush" Value="#CBD5E1" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Botón Bordeado / Esquema (Blanco) -->
+    <Style x:Key="ModernOutlineActionButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Variable Text, Arial" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#F8FAFC" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="#F1F5F9" />
+                <Setter Property="Foreground" Value="#0F172A" />
+                <Setter Property="BorderBrush" Value="#CBD5E1" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Estilo Global Implícito para todos los botones estándar -->
+    <Style TargetType="Button">
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="FontFamily" Value="Segoe UI, Segoe UI Variable Text, Arial" />
+        <Setter Property="Foreground" Value="#0F172A" />
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="#F1F5F9" />
+                <Setter Property="Foreground" Value="#0F172A" />
+                <Setter Property="BorderBrush" Value="#CBD5E1" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
 
     <!-- ============================================== -->
     <!--  ESTILO MODERNO PARA TEXTBOX                   -->

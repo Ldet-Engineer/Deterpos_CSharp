@@ -401,7 +401,7 @@
 
                                             <!-- Botones Probar y Guardar -->
                                             <StackPanel Orientation="Horizontal">
-                                                <Button x:Name="BtnTestDbConnection" Click="BtnTestDbConnection_Click" Content="Probar Conexión PostgreSQL" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" 
+                                                <Button x:Name="BtnTestDbConnection" Click="BtnTestDbConnection_Click" Content="Probar Conexión PostgreSQL" Style="{StaticResource ModernPrimaryActionButtonStyle}" BorderThickness="1" 
                                                         Padding="16,8" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,12,0">
                                                     <Button.Resources>
                                                         <Style TargetType="Border">

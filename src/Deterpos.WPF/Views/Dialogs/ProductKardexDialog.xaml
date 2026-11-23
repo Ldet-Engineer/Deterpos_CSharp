@@ -220,14 +220,14 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button x:Name="BtnAdjustStock" Click="BtnAdjustStock_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0" Padding="14,7" Cursor="Hand" Margin="0,0,10,0">
+                        <Button x:Name="BtnAdjustStock" Click="BtnAdjustStock_Click" Style="{StaticResource ModernPrimaryActionButtonStyle}" BorderThickness="1" Padding="14,7" Cursor="Hand" Margin="0,0,10,0">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="6" />
                                 </Style>
                             </Button.Resources>
                             <StackPanel Orientation="Horizontal">
-                                <fluentIcons:SymbolIcon Symbol="ArrowTrendingLines" FontSize="14" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <fluentIcons:SymbolIcon Symbol="ArrowTrendingLines" FontSize="14" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Margin="0,0,6,0" VerticalAlignment="Center" />
                                 <TextBlock Text="Ajustar Stock de este Producto" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>

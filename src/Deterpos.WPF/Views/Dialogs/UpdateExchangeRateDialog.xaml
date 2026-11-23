@@ -60,15 +60,15 @@
                     <!-- BOTÓN DE SINCRONIZACIÓN EN LÍNEA BCV -->
                     <Border Background="#F8FAFD" BorderBrush="#D0DFEE" BorderThickness="1" CornerRadius="8" Padding="14,12" Margin="0,0,0,16">
                         <StackPanel>
-                            <Button x:Name="BtnFetchOnline" Click="BtnFetchOnline_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White"
-                                    BorderThickness="0" Padding="14,8" Cursor="Hand" FontWeight="SemiBold" HorizontalAlignment="Stretch">
+                            <Button x:Name="BtnFetchOnline" Click="BtnFetchOnline_Click" Style="{StaticResource ModernPrimaryActionButtonStyle}"
+                                    BorderThickness="1" Padding="14,8" Cursor="Hand" FontWeight="SemiBold" HorizontalAlignment="Stretch">
                                 <Button.Resources>
                                     <Style TargetType="Border">
                                         <Setter Property="CornerRadius" Value="6" />
                                     </Style>
                                 </Button.Resources>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <fluentIcons:SymbolIcon x:Name="IconFetchSync" Symbol="ArrowSync" FontSize="16" Foreground="White" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                    <fluentIcons:SymbolIcon x:Name="IconFetchSync" Symbol="ArrowSync" FontSize="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Margin="0,0,8,0" VerticalAlignment="Center" />
                                     <TextBlock Text="Sincronizar Tasa Oficial BCV en Línea" FontSize="13" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
