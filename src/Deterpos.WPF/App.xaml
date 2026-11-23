@@ -11,6 +11,12 @@
                 <ResourceDictionary Source="Styles/ModernControls.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+            <!-- Anulación Global de Pinceles de Selección del Sistema (Elimina texto blanco invisible en tablas) -->
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#E0F2FE" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#0F172A" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#F1F5F9" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#0F172A" />
+
             <!-- Conversores de Visibilidad -->
             <conv:BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
             <conv:InverseBooleanToVisibilityConverter x:Key="InvBoolToVisConverter" />

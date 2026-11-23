@@ -286,11 +286,120 @@
         </Setter>
     </Style>
 
+    <!-- ======================================================= -->
+    <!--  ESTILO MODERNO Y FINITO PARA BARRAS DE SCROLL (GLOBAL) -->
+    <!-- ======================================================= -->
+    <!-- Pista invisible para desplazamiento por clic de página -->
+    <Style x:Key="ModernScrollBarPageButtonStyle" TargetType="{x:Type RepeatButton}">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RepeatButton}">
+                    <Rectangle Fill="{TemplateBinding Background}" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Píldora (Thumb) arrastrable finita y redondeada -->
+    <Style x:Key="ModernScrollBarThumbStyle" TargetType="{x:Type Thumb}">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Thumb}">
+                    <Border x:Name="thumbBorder"
+                            Background="#CBD5E1"
+                            CornerRadius="3"
+                            SnapsToDevicePixels="True" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="thumbBorder" Property="Background" Value="#94A3B8" />
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="thumbBorder" Property="Background" Value="#64748B" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Estilo Global Implícito para todos los ScrollBars del sistema -->
+    <Style TargetType="{x:Type ScrollBar}">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Vertical">
+                <Setter Property="Width" Value="7" />
+                <Setter Property="MinWidth" Value="7" />
+                <Setter Property="MaxWidth" Value="7" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ScrollBar}">
+                            <Grid x:Name="Bg" SnapsToDevicePixels="True" Background="{TemplateBinding Background}">
+                                <Track x:Name="PART_Track" IsDirectionReversed="True" HorizontalAlignment="Center">
+                                    <Track.DecreaseRepeatButton>
+                                        <RepeatButton Style="{StaticResource ModernScrollBarPageButtonStyle}" Command="ScrollBar.PageUpCommand" />
+                                    </Track.DecreaseRepeatButton>
+                                    <Track.Thumb>
+                                        <Thumb Style="{StaticResource ModernScrollBarThumbStyle}" Width="6" />
+                                    </Track.Thumb>
+                                    <Track.IncreaseRepeatButton>
+                                        <RepeatButton Style="{StaticResource ModernScrollBarPageButtonStyle}" Command="ScrollBar.PageDownCommand" />
+                                    </Track.IncreaseRepeatButton>
+                                </Track>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+            <Trigger Property="Orientation" Value="Horizontal">
+                <Setter Property="Height" Value="7" />
+                <Setter Property="MinHeight" Value="7" />
+                <Setter Property="MaxHeight" Value="7" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ScrollBar}">
+                            <Grid x:Name="Bg" SnapsToDevicePixels="True" Background="{TemplateBinding Background}">
+                                <Track x:Name="PART_Track" IsDirectionReversed="False" VerticalAlignment="Center">
+                                    <Track.DecreaseRepeatButton>
+                                        <RepeatButton Style="{StaticResource ModernScrollBarPageButtonStyle}" Command="ScrollBar.PageLeftCommand" />
+                                    </Track.DecreaseRepeatButton>
+                                    <Track.Thumb>
+                                        <Thumb Style="{StaticResource ModernScrollBarThumbStyle}" Height="6" />
+                                    </Track.Thumb>
+                                    <Track.IncreaseRepeatButton>
+                                        <RepeatButton Style="{StaticResource ModernScrollBarPageButtonStyle}" Command="ScrollBar.PageRightCommand" />
+                                    </Track.IncreaseRepeatButton>
+                                </Track>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- ============================================== -->
     <!--  ESTILO PLANO PARA CELDAS Y FILAS DE DATAGRID  -->
     <!-- ============================================== -->
     <Style TargetType="DataGridCell">
+        <Style.Resources>
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#0F172A" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#0F172A" />
+        </Style.Resources>
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#0F172A" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="12,6" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -313,10 +422,35 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="#0F172A" />
+            </Trigger>
+            <Trigger Property="IsFocused" Value="True">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="#0F172A" />
+            </Trigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsSelected" Value="True" />
+                    <Condition Property="Selector.IsSelectionActive" Value="False" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="#0F172A" />
+            </MultiTrigger>
+        </Style.Triggers>
     </Style>
 
     <Style TargetType="DataGridRow">
+        <Style.Resources>
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#E0F2FE" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#0F172A" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#F1F5F9" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#0F172A" />
+        </Style.Resources>
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#0F172A" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="BorderBrush" Value="#F1F5F9" />
         <Setter Property="MinHeight" Value="40" />
@@ -330,15 +464,30 @@
                 <Setter Property="Background" Value="#F8FAFC" />
             </Trigger>
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="#EFF6FC" />
+                <Setter Property="Background" Value="#E0F2FE" />
                 <Setter Property="Foreground" Value="#0F172A" />
             </Trigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsSelected" Value="True" />
+                    <Condition Property="Selector.IsSelectionActive" Value="False" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="#F1F5F9" />
+                <Setter Property="Foreground" Value="#0F172A" />
+            </MultiTrigger>
         </Style.Triggers>
     </Style>
 
     <!-- Estilo Global por Defecto para DataGrid -->
     <Style TargetType="DataGrid">
+        <Style.Resources>
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#E0F2FE" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#0F172A" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#F1F5F9" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#0F172A" />
+        </Style.Resources>
         <Setter Property="Background" Value="#FFFFFF" />
+        <Setter Property="Foreground" Value="#0F172A" />
         <Setter Property="BorderBrush" Value="#E2E8F0" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="RowHeaderWidth" Value="0" />
