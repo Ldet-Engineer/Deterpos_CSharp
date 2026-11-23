@@ -18,6 +18,7 @@ public partial class CustomerFormDialog : Window
 
         if (_editingCustomer != null)
         {
+            Title = "Editar Cliente - Deterpos";
             TxtModalTitle.Text = "Editar Cliente";
             ParseAndSetDocument(_editingCustomer.DocumentNumber);
             TxtFullName.Text = _editingCustomer.FullName;
@@ -25,6 +26,10 @@ public partial class CustomerFormDialog : Window
             TxtEmail.Text = _editingCustomer.Email;
             TxtAddress.Text = _editingCustomer.Address;
             TxtCreditLimitUSD.Text = _editingCustomer.CreditLimitUSD.ToString("F2", CultureInfo.InvariantCulture);
+        }
+        else
+        {
+            Title = "Nuevo Cliente - Deterpos";
         }
     }
 

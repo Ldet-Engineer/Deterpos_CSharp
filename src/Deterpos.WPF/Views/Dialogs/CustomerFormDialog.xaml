@@ -3,140 +3,127 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
         Title="Formulario de Cliente" 
-        Height="580" Width="520"
-        WindowStyle="None" 
-        AllowsTransparency="True" 
-        Background="Transparent"
+        Height="610" Width="520"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Background="#FFFFFF"
         FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
 
-    <!-- Sombra Perimetral Moderna -->
-    <Border Margin="15" Background="White" CornerRadius="12" BorderBrush="#D0D7DE" BorderThickness="1">
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="28" Direction="270" ShadowDepth="4" Opacity="0.22" Color="#000000" />
-        </Border.Effect>
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+        <!-- Encabezado Modal -->
+        <Border Grid.Row="0" Background="#F6F8FA" Padding="22,14" BorderBrush="#E1E4E8" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
 
-            <!-- Encabezado Modal -->
-            <Border Grid.Row="0" Background="#F6F8FA" CornerRadius="12,12,0,0" Padding="22,16" BorderBrush="#E1E4E8" BorderThickness="0,0,0,1">
-                <Grid>
+                <fluentIcons:SymbolIcon Grid.Column="0" Symbol="PersonAdd" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtModalTitle" Text="Nuevo Cliente" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                    <TextBlock Text="Datos fiscales para facturación SENIAT y créditos comerciales" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Formulario -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,18">
+            <StackPanel>
+
+                <!-- Identificación Fiscal (RIF / Cédula) -->
+                <TextBlock Text="Documento de Identidad / RIF Fiscal *" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                <Grid Margin="0,0,0,14">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="90" />
+                        <ColumnDefinition Width="10" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <!-- ComboBox Moderno de Prefijo -->
+                    <ComboBox x:Name="CmbDocPrefix" Grid.Column="0" SelectedIndex="0">
+                        <ComboBoxItem Content="V-" Tag="V-" />
+                        <ComboBoxItem Content="J-" Tag="J-" />
+                        <ComboBoxItem Content="E-" Tag="E-" />
+                        <ComboBoxItem Content="G-" Tag="G-" />
+                    </ComboBox>
+                    <TextBox x:Name="TxtDocNumber" Grid.Column="2" Text="" VerticalContentAlignment="Center" />
+                </Grid>
+
+                <!-- Nombre Completo / Razón Social -->
+                <TextBlock Text="Nombre Completo o Razón Social *" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                <TextBox x:Name="TxtFullName" Text="" Margin="0,0,0,14" />
+
+                <!-- Teléfono y Correo -->
+                <Grid Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="14" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <fluentIcons:SymbolIcon Grid.Column="0" Symbol="PersonAdd" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
-
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtModalTitle" Text="Nuevo Cliente" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                        <TextBlock Text="Datos fiscales para facturación SENIAT y créditos comerciales" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Teléfono de Contacto" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                        <TextBox x:Name="TxtPhone" Text="" />
                     </StackPanel>
 
-                    <Button Grid.Column="2" Click="BtnCancel_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6" VerticalAlignment="Center">
-                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
-                    </Button>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Correo Electrónico" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                        <TextBox x:Name="TxtEmail" Text="" />
+                    </StackPanel>
                 </Grid>
-            </Border>
 
-            <!-- Formulario -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,18">
-                <StackPanel>
+                <!-- Dirección Fiscal SENIAT -->
+                <TextBlock Text="Dirección Fiscal (Requisito SENIAT) *" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
+                <TextBox x:Name="TxtAddress" Text="" Margin="0,0,0,14" Height="50" AcceptsReturn="True" TextWrapping="Wrap" />
 
-                    <!-- Identificación Fiscal (RIF / Cédula) -->
-                    <TextBlock Text="Documento de Identidad / RIF Fiscal *" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
-                    <Grid Margin="0,0,0,14">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="90" />
-                            <ColumnDefinition Width="10" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <!-- ComboBox Moderno de Prefijo -->
-                        <ComboBox x:Name="CmbDocPrefix" Grid.Column="0" SelectedIndex="0">
-                            <ComboBoxItem Content="V-" Tag="V-" />
-                            <ComboBoxItem Content="J-" Tag="J-" />
-                            <ComboBoxItem Content="E-" Tag="E-" />
-                            <ComboBoxItem Content="G-" Tag="G-" />
-                        </ComboBox>
-                        <TextBox x:Name="TxtDocNumber" Grid.Column="2" Text="" VerticalContentAlignment="Center" />
-                    </Grid>
-
-                    <!-- Nombre Completo / Razón Social -->
-                    <TextBlock Text="Nombre Completo o Razón Social *" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
-                    <TextBox x:Name="TxtFullName" Text="" Margin="0,0,0,14" />
-
-                    <!-- Teléfono y Correo -->
-                    <Grid Margin="0,0,0,14">
+                <!-- Límite de Crédito en USD -->
+                <Border Background="#F9FAFB" BorderBrush="#E1E4E8" BorderThickness="1" CornerRadius="8" Padding="14">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="14" />
-                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="140" />
                         </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="Teléfono de Contacto" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
-                            <TextBox x:Name="TxtPhone" Text="" />
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Límite de Crédito Comercial ($ USD):" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBlock Text="Monto máximo que el cliente puede adeudar" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
                         </StackPanel>
-
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Text="Correo Electrónico" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
-                            <TextBox x:Name="TxtEmail" Text="" />
-                        </StackPanel>
+                        <TextBox x:Name="TxtCreditLimitUSD" Grid.Column="1" Text="0.00" FontWeight="Bold" FontSize="15" VerticalAlignment="Center" />
                     </Grid>
+                </Border>
 
-                    <!-- Dirección Fiscal SENIAT -->
-                    <TextBlock Text="Dirección Fiscal (Requisito SENIAT) *" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,4" />
-                    <TextBox x:Name="TxtAddress" Text="" Margin="0,0,0,14" Height="50" AcceptsReturn="True" TextWrapping="Wrap" />
+            </StackPanel>
+        </ScrollViewer>
 
-                    <!-- Límite de Crédito en USD -->
-                    <Border Background="#F9FAFB" BorderBrush="#E1E4E8" BorderThickness="1" CornerRadius="8" Padding="14">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="140" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Límite de Crédito Comercial ($ USD):" FontWeight="SemiBold" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" />
-                                <TextBlock Text="Monto máximo que el cliente puede adeudar" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                            </StackPanel>
-                            <TextBox x:Name="TxtCreditLimitUSD" Grid.Column="1" Text="0.00" FontWeight="Bold" FontSize="15" VerticalAlignment="Center" />
-                        </Grid>
-                    </Border>
+        <!-- Acciones Inferiores -->
+        <Border Grid.Row="2" Background="#F6F8FA" Padding="22,14" BorderBrush="#E1E4E8" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Click="BtnCancel_Click" Content="Cancelar" Style="{StaticResource ModernOutlineActionButtonStyle}"
+                        Padding="16,8" Margin="0,0,10,0" FontWeight="SemiBold" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6" />
+                        </Style>
+                    </Button.Resources>
+                </Button>
 
-                </StackPanel>
-            </ScrollViewer>
+                <Button Click="BtnSave_Click" Content="Guardar Cliente" Style="{StaticResource ModernPrimaryActionButtonStyle}"
+                        Padding="22,8" FontWeight="SemiBold" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6" />
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+        </Border>
 
-            <!-- Acciones Inferiores -->
-            <Border Grid.Row="2" Background="#F6F8FA" CornerRadius="0,0,12,12" Padding="22,14" BorderBrush="#E1E4E8" BorderThickness="0,1,0,0">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Click="BtnCancel_Click" Content="Cancelar" Style="{StaticResource ModernOutlineActionButtonStyle}"
-                            Padding="16,8" Margin="0,0,10,0" FontWeight="SemiBold" Cursor="Hand">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6" />
-                            </Style>
-                        </Button.Resources>
-                    </Button>
-
-                    <Button Click="BtnSave_Click" Content="Guardar Cliente" Style="{StaticResource ModernPrimaryActionButtonStyle}"
-                            Padding="22,8" FontWeight="SemiBold" Cursor="Hand">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6" />
-                            </Style>
-                        </Button.Resources>
-                    </Button>
-                </StackPanel>
-            </Border>
-
-        </Grid>
-    </Border>
+    </Grid>
 </Window>
 
