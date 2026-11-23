@@ -67,27 +67,30 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- Total Factura (USD) -->
+                    <!-- Total Venta Base (con IVA) -->
                     <Border Grid.Column="0" Background="#F8FAFD" BorderBrush="#D0DFEE" BorderThickness="1" CornerRadius="6" Padding="12">
                         <StackPanel>
-                            <TextBlock Text="TOTAL FACTURA (USD)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
-                            <TextBlock x:Name="TxtTotalSaleUSD" Text="$ 0.00" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,4,0,0" />
+                            <TextBlock Text="VENTA BASE (CON IVA)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                            <TextBlock x:Name="TxtBaseSaleUSD" Text="$ 0.00" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,4,0,0" />
+                            <TextBlock x:Name="TxtBaseSaleVES" Text="0.00 Bs." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                         </StackPanel>
                     </Border>
 
-                    <!-- Total Factura (VES) -->
-                    <Border Grid.Column="2" Background="#F8FAFD" BorderBrush="#D0DFEE" BorderThickness="1" CornerRadius="6" Padding="12">
-                        <StackPanel>
-                            <TextBlock Text="TOTAL FACTURA (VES)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
-                            <TextBlock x:Name="TxtTotalSaleVES" Text="0.00 Bs." FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,4,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <!-- IGTF 3% Percibido -->
-                    <Border Grid.Column="4" Background="#FFF9F5" BorderBrush="#F8D7C2" BorderThickness="1" CornerRadius="6" Padding="12">
+                    <!-- IGTF 3% Divisas -->
+                    <Border Grid.Column="2" Background="#FFF9F5" BorderBrush="#F8D7C2" BorderThickness="1" CornerRadius="6" Padding="12">
                         <StackPanel>
                             <TextBlock Text="IGTF 3% (DIVISAS)" FontSize="10" FontWeight="Bold" Foreground="#D83B01" />
                             <TextBlock x:Name="TxtIgtfAmountUSD" Text="$ 0.00" FontSize="18" FontWeight="Bold" Foreground="#D83B01" Margin="0,4,0,0" />
+                            <TextBlock x:Name="TxtIgtfBaseNotice" Text="Base gravable: $ 0.00" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Total Factura a Cobrar -->
+                    <Border Grid.Column="4" Background="#F8FAFD" BorderBrush="#D0DFEE" BorderThickness="1" CornerRadius="6" Padding="12">
+                        <StackPanel>
+                            <TextBlock Text="TOTAL FACTURA A COBRAR" FontSize="10" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" />
+                            <TextBlock x:Name="TxtTotalSaleUSD" Text="$ 0.00" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,4,0,0" />
+                            <TextBlock x:Name="TxtTotalSaleVES" Text="0.00 Bs." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                         </StackPanel>
                     </Border>
 
@@ -96,6 +99,7 @@
                         <StackPanel>
                             <TextBlock x:Name="TxtBalanceTitle" Text="POR COBRAR (RESTANTE)" FontSize="10" FontWeight="Bold" Foreground="#DC3545" />
                             <TextBlock x:Name="TxtRemainingUSD" Text="$ 0.00" FontSize="18" FontWeight="Bold" Foreground="#DC3545" Margin="0,4,0,0" />
+                            <TextBlock x:Name="TxtBalanceSubtitle" Text="Faltante por liquidar" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -104,6 +108,7 @@
                 <Border Grid.Row="1" Background="#F6F8FA" BorderBrush="#E1E4E8" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,14">
                     <Grid>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
@@ -174,7 +179,59 @@
                             </StackPanel>
                         </Grid>
 
+                        <!-- Fila 1: Texto de Ayuda / Desglose de Cálculo -->
                         <TextBlock x:Name="TxtPaymentHelper" Grid.Row="1" Text="• Equivalente en moneda base: $ 0.00 USD" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0" />
+
+                        <!-- Fila 2: Atajos de Cobro Rápido (Pago Completo y Billetes Físicos USD) -->
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="Atajos Rápidos:" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+
+                            <!-- Botón Pagar Total Completo -->
+                            <Button x:Name="BtnPayFullAmount" Click="BtnPayFullAmount_Click" Background="#E0F2FE" BorderBrush="#0284C7" BorderThickness="1" Padding="10,4" Cursor="Hand" Margin="0,0,10,0">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="4" />
+                                    </Style>
+                                </Button.Resources>
+                                <StackPanel Orientation="Horizontal">
+                                    <fluentIcons:SymbolIcon Symbol="CheckmarkCircle" FontSize="14" Foreground="#0284C7" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                    <TextBlock x:Name="TxtPayFullAmountLabel" Text="Pagar Total Completo" FontSize="11" FontWeight="Bold" Foreground="#0284C7" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Botones de Billetes Físicos USD -->
+                            <StackPanel x:Name="PanelQuickUsdBills" Orientation="Horizontal" Visibility="Visible">
+                                <TextBlock Text="Billetes USD:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <Button Click="BtnQuickBill_Click" Tag="10" Content="$ 10" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="8,3" FontSize="11" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,4,0">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4" />
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                                <Button Click="BtnQuickBill_Click" Tag="20" Content="$ 20" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="8,3" FontSize="11" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,4,0">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4" />
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                                <Button Click="BtnQuickBill_Click" Tag="50" Content="$ 50" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="8,3" FontSize="11" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,4,0">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4" />
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                                <Button Click="BtnQuickBill_Click" Tag="100" Content="$ 100" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="8,3" FontSize="11" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,4,0">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4" />
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
                     </Grid>
                 </Border>
 

@@ -49,6 +49,7 @@ public partial class SplitPaymentDialog : Window
     private readonly decimal _bcvRate;
     private readonly bool _isSpecialTaxpayer;
     private readonly Customer? _customer;
+    private decimal _currentSuggestedAmount;
 
     public List<SalePayment> ConfirmedPayments { get; } = new();
     private readonly ObservableCollection<SplitPaymentDisplayItem> _displayedPayments = new();
@@ -84,12 +85,9 @@ public partial class SplitPaymentDialog : Window
         TxtClientInfoSubtitle.Text = $"Cliente: {customer?.FullName ?? "Cliente de Contado"} ({customer?.DocumentNumber ?? "V-00000000"}) • Tasa Oficial BCV: {_bcvRate:N4} Bs.";
         DgPayments.ItemsSource = _displayedPayments;
 
-        TxtTotalSaleUSD.Text = $"$ {_baseSaleTotalUSD:N2}";
-        TxtTotalSaleVES.Text = $"{(_baseSaleTotalUSD * _bcvRate):N2} Bs.";
-
         Loaded += (_, _) =>
         {
-            SuggestPaymentAmount();
+            RecalculateTotals();
             TxtPaymentAmount.Focus();
             TxtPaymentAmount.SelectAll();
         };
@@ -107,20 +105,46 @@ public partial class SplitPaymentDialog : Window
 
     private void RecalculateTotals()
     {
-        // 1. Calcular pagos en divisas para base de IGTF
+        // 1. Totalizar pagos confirmados en Divisas y en Moneda Nacional / Crédito
         decimal foreignPaidUSD = ConfirmedPayments
             .Where(p => IsForeign(p.Method))
             .Sum(p => p.AmountEquivalentUSD);
 
-        FinalIgtfUSD = _isSpecialTaxpayer && foreignPaidUSD > 0
-            ? decimal.Round(foreignPaidUSD * 0.03m, 2)
-            : 0m;
+        decimal nonForeignPaidUSD = ConfirmedPayments
+            .Where(p => !IsForeign(p.Method))
+            .Sum(p => p.AmountEquivalentUSD);
+
+        // 2. Determinar base gravable del 3% IGTF (Ley IGTF: Acotada estrictamente a la venta base)
+        decimal foreignBase = 0m;
+        if (_isSpecialTaxpayer && foreignPaidUSD > 0)
+        {
+            if (foreignPaidUSD >= _baseSaleTotalUSD)
+            {
+                foreignBase = _baseSaleTotalUSD;
+            }
+            else
+            {
+                decimal baseRemaining = Math.Max(0m, _baseSaleTotalUSD - nonForeignPaidUSD);
+                foreignBase = Math.Min(baseRemaining, foreignPaidUSD);
+            }
+            FinalIgtfUSD = decimal.Round(foreignBase * 0.03m, 2);
+        }
+        else
+        {
+            FinalIgtfUSD = 0m;
+        }
 
         FinalTotalUSD = _baseSaleTotalUSD + FinalIgtfUSD;
         decimal totalPaidUSD = ConfirmedPayments.Sum(p => p.AmountEquivalentUSD);
         decimal remainingUSD = FinalTotalUSD - totalPaidUSD;
 
+        // Tarjetas informativas
+        TxtBaseSaleUSD.Text = $"$ {_baseSaleTotalUSD:N2}";
+        TxtBaseSaleVES.Text = $"{(_baseSaleTotalUSD * _bcvRate):N2} Bs.";
+
         TxtIgtfAmountUSD.Text = $"$ {FinalIgtfUSD:N2}";
+        TxtIgtfBaseNotice.Text = foreignBase > 0 ? $"Base gravable: $ {foreignBase:N2}" : "Sin IGTF aplicado";
+
         TxtTotalSaleUSD.Text = $"$ {FinalTotalUSD:N2}";
         TxtTotalSaleVES.Text = $"{(FinalTotalUSD * _bcvRate):N2} Bs.";
 
@@ -130,10 +154,12 @@ public partial class SplitPaymentDialog : Window
             ChangeVES = decimal.Round(ChangeUSD * _bcvRate, 2);
 
             CardBalance.Background = new SolidColorBrush(Color.FromRgb(230, 244, 234));
+            CardBalance.BorderBrush = new SolidColorBrush(Color.FromRgb(52, 168, 83));
             TxtBalanceTitle.Text = "TOTAL PAGADO";
             TxtBalanceTitle.Foreground = new SolidColorBrush(Color.FromRgb(16, 124, 65));
             TxtRemainingUSD.Text = "$ 0.00";
             TxtRemainingUSD.Foreground = new SolidColorBrush(Color.FromRgb(16, 124, 65));
+            TxtBalanceSubtitle.Text = "Factura liquidada al 100%";
 
             if (ChangeUSD > 0.01m)
             {
@@ -155,10 +181,12 @@ public partial class SplitPaymentDialog : Window
             PanelChange.Visibility = Visibility.Collapsed;
 
             CardBalance.Background = new SolidColorBrush(Color.FromRgb(253, 243, 242));
+            CardBalance.BorderBrush = new SolidColorBrush(Color.FromRgb(248, 198, 194));
             TxtBalanceTitle.Text = "POR COBRAR (RESTANTE)";
             TxtBalanceTitle.Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69));
             TxtRemainingUSD.Text = $"$ {remainingUSD:N2}";
             TxtRemainingUSD.Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69));
+            TxtBalanceSubtitle.Text = $"Equiv: {(remainingUSD * _bcvRate):N2} Bs.";
 
             BtnConfirmSale.IsEnabled = false;
         }
@@ -169,10 +197,52 @@ public partial class SplitPaymentDialog : Window
     private void SuggestPaymentAmount()
     {
         decimal totalPaidUSD = ConfirmedPayments.Sum(p => p.AmountEquivalentUSD);
-        decimal remainingUSD = Math.Max(0m, FinalTotalUSD - totalPaidUSD);
-
         var selectedTag = (CmbPaymentMethod.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "EfectivoUSD";
-        bool isUSD = selectedTag == "EfectivoUSD" || selectedTag == "Zelle" || selectedTag == "Credito" || selectedTag == "Cashea";
+        var method = Enum.Parse<PaymentMethodType>(selectedTag);
+        bool isUSD = method == PaymentMethodType.EfectivoUSD || method == PaymentMethodType.Zelle || method == PaymentMethodType.Credito || method == PaymentMethodType.Cashea;
+        bool causesIgtf = _isSpecialTaxpayer && IsForeign(method);
+
+        if (PanelQuickUsdBills != null)
+        {
+            PanelQuickUsdBills.Visibility = isUSD && method != PaymentMethodType.Cashea ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        // Si no hay pagos registrados aún:
+        if (ConfirmedPayments.Count == 0)
+        {
+            if (causesIgtf)
+            {
+                // Sugerir el Total Completo con IGTF 3% para liquidar en 1 solo clic
+                _currentSuggestedAmount = decimal.Round(_baseSaleTotalUSD * 1.03m, 2);
+                TxtPaymentAmount.Text = _currentSuggestedAmount.ToString("F2", CultureInfo.InvariantCulture);
+                TxtAmountLabel.Text = "Monto en Dólares (USD $) *";
+                TxtPaymentHelper.Text = $"• Pago Completo con IGTF 3%: $ {_currentSuggestedAmount:N2} USD (Venta base con IVA: $ {_baseSaleTotalUSD:N2} + 3% IGTF: $ {(_currentSuggestedAmount - _baseSaleTotalUSD):N2})";
+                if (TxtPayFullAmountLabel != null) TxtPayFullAmountLabel.Text = $"Pagar Total Completo ($ {_currentSuggestedAmount:N2})";
+                return;
+            }
+            else if (isUSD)
+            {
+                _currentSuggestedAmount = _baseSaleTotalUSD;
+                TxtPaymentAmount.Text = _currentSuggestedAmount.ToString("F2", CultureInfo.InvariantCulture);
+                TxtAmountLabel.Text = "Monto en Dólares (USD $) *";
+                TxtPaymentHelper.Text = $"• Venta base con IVA: $ {_baseSaleTotalUSD:N2} USD";
+                if (TxtPayFullAmountLabel != null) TxtPayFullAmountLabel.Text = $"Pagar Total ($ {_currentSuggestedAmount:N2})";
+                return;
+            }
+            else
+            {
+                decimal fullVES = decimal.Round(_baseSaleTotalUSD * _bcvRate, 2);
+                _currentSuggestedAmount = fullVES;
+                TxtPaymentAmount.Text = fullVES.ToString("F2", CultureInfo.InvariantCulture);
+                TxtAmountLabel.Text = "Monto en Bolívares (VES Bs.) *";
+                TxtPaymentHelper.Text = $"• Total a cobrar en Bs.: {fullVES:N2} Bs. (Sin IGTF, Tasa BCV: {_bcvRate:N4})";
+                if (TxtPayFullAmountLabel != null) TxtPayFullAmountLabel.Text = $"Pagar Total ({fullVES:N2} Bs.)";
+                return;
+            }
+        }
+
+        // Si ya hay pagos parciales registrados:
+        decimal remainingUSD = Math.Max(0m, FinalTotalUSD - totalPaidUSD);
 
         if (selectedTag == "Cashea")
         {
@@ -180,9 +250,11 @@ public partial class SplitPaymentDialog : Window
             decimal downUSD = remainingUSD - financedUSD;
             decimal quotaUSD = decimal.Round(financedUSD / 3m, 2);
 
+            _currentSuggestedAmount = financedUSD;
             TxtPaymentAmount.Text = financedUSD.ToString("F2", CultureInfo.InvariantCulture);
             TxtAmountLabel.Text = "Saldo Financiado Cashea ($) *";
-            TxtPaymentHelper.Text = $"• Cashea financia 60% ($ {financedUSD:N2}) en 3 cuotas de $ {quotaUSD:N2}. Cobre la inicial de 40% ($ {downUSD:N2}) en efectivo o punto.";
+            TxtPaymentHelper.Text = $"• Cashea financia 60% ($ {financedUSD:N2}) en 3 cuotas de $ {quotaUSD:N2}. Cobre la inicial de 40% ($ {downUSD:N2}) en caja.";
+            if (TxtPayFullAmountLabel != null) TxtPayFullAmountLabel.Text = $"Financiar Cashea ($ {financedUSD:N2})";
             if (string.IsNullOrWhiteSpace(TxtReferenceNumber.Text))
             {
                 TxtReferenceNumber.Text = $"CSH-{new Random().Next(10000, 99999)}";
@@ -190,16 +262,52 @@ public partial class SplitPaymentDialog : Window
         }
         else if (isUSD)
         {
-            TxtPaymentAmount.Text = remainingUSD.ToString("F2", CultureInfo.InvariantCulture);
+            decimal nonForeignPaidUSD = ConfirmedPayments.Where(p => !IsForeign(p.Method)).Sum(p => p.AmountEquivalentUSD);
+            decimal foreignPaidUSD = ConfirmedPayments.Where(p => IsForeign(p.Method)).Sum(p => p.AmountEquivalentUSD);
+            decimal unpaidBase = Math.Max(0m, _baseSaleTotalUSD - nonForeignPaidUSD - foreignPaidUSD);
+
+            if (causesIgtf && unpaidBase > 0)
+            {
+                _currentSuggestedAmount = decimal.Round(remainingUSD + (unpaidBase * 0.03m), 2);
+            }
+            else
+            {
+                _currentSuggestedAmount = remainingUSD;
+            }
+
+            TxtPaymentAmount.Text = _currentSuggestedAmount.ToString("F2", CultureInfo.InvariantCulture);
             TxtAmountLabel.Text = "Monto en Dólares (USD $) *";
-            TxtPaymentHelper.Text = $"• Equivalente en moneda base: $ {remainingUSD:N2} USD";
+            TxtPaymentHelper.Text = $"• Restante para liquidar: $ {_currentSuggestedAmount:N2} USD";
+            if (TxtPayFullAmountLabel != null) TxtPayFullAmountLabel.Text = $"Pagar Restante ($ {_currentSuggestedAmount:N2})";
         }
         else
         {
             decimal remainingVES = decimal.Round(remainingUSD * _bcvRate, 2);
+            _currentSuggestedAmount = remainingVES;
             TxtPaymentAmount.Text = remainingVES.ToString("F2", CultureInfo.InvariantCulture);
             TxtAmountLabel.Text = "Monto en Bolívares (VES Bs.) *";
-            TxtPaymentHelper.Text = $"• Equivalente en moneda base: $ {remainingUSD:N2} USD (Tasa BCV: {_bcvRate:N4})";
+            TxtPaymentHelper.Text = $"• Restante en Bs.: {remainingVES:N2} Bs. (Sin IGTF, Tasa BCV: {_bcvRate:N4})";
+            if (TxtPayFullAmountLabel != null) TxtPayFullAmountLabel.Text = $"Pagar Restante ({remainingVES:N2} Bs.)";
+        }
+    }
+
+    private void BtnPayFullAmount_Click(object sender, RoutedEventArgs e)
+    {
+        if (_currentSuggestedAmount > 0)
+        {
+            TxtPaymentAmount.Text = _currentSuggestedAmount.ToString("F2", CultureInfo.InvariantCulture);
+            TxtPaymentAmount.Focus();
+            TxtPaymentAmount.SelectAll();
+        }
+    }
+
+    private void BtnQuickBill_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && decimal.TryParse(btn.Tag?.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var bill))
+        {
+            TxtPaymentAmount.Text = bill.ToString("F2", CultureInfo.InvariantCulture);
+            TxtPaymentAmount.Focus();
+            TxtPaymentAmount.SelectAll();
         }
     }
 

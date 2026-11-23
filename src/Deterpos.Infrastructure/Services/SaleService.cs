@@ -186,6 +186,7 @@ public class SaleService : ISaleService
 
         // 5. Pagos y Percepción del 3% IGTF
         decimal foreignPaymentsUSD = 0m;
+        decimal nonForeignPaymentsUSD = 0m;
         decimal cashUsdToRegister = 0m;
         decimal cashVesToRegister = 0m;
 
@@ -199,6 +200,10 @@ public class SaleService : ISaleService
             {
                 foreignPaymentsUSD += p.AmountEquivalentUSD;
             }
+            else
+            {
+                nonForeignPaymentsUSD += p.AmountEquivalentUSD;
+            }
 
             if (p.Method == PaymentMethodType.EfectivoUSD)
             {
@@ -210,13 +215,27 @@ public class SaleService : ISaleService
             }
         }
 
-        sale.BaseIgtfUSD = foreignPaymentsUSD;
+        decimal saleBaseWithVat = sale.SubtotalUSD + sale.TaxAmountUSD;
+
         if (isSpecialTaxpayer && foreignPaymentsUSD > 0)
         {
-            sale.IgtfAmountUSD = decimal.Round(foreignPaymentsUSD * 0.03m, 2);
+            decimal foreignBase;
+            if (foreignPaymentsUSD >= saleBaseWithVat)
+            {
+                foreignBase = saleBaseWithVat;
+            }
+            else
+            {
+                decimal baseRemaining = Math.Max(0m, saleBaseWithVat - nonForeignPaymentsUSD);
+                foreignBase = Math.Min(baseRemaining, foreignPaymentsUSD);
+            }
+
+            sale.BaseIgtfUSD = decimal.Round(foreignBase, 2);
+            sale.IgtfAmountUSD = decimal.Round(sale.BaseIgtfUSD * 0.03m, 2);
         }
         else
         {
+            sale.BaseIgtfUSD = 0.00m;
             sale.IgtfAmountUSD = 0.00m;
         }
 
