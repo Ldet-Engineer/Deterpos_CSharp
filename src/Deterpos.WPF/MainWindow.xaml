@@ -943,6 +943,15 @@
                         </Fluent:Button.LargeIcon>
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
+
+                <Fluent:RibbonGroupBox Header="Rentabilidad Empresarial">
+                    <Fluent:Button Header="Rentabilidad&#x0a;y P&amp;L" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Ganancias y Pérdidas">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="ArrowTrendingLines" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+                </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
 
             <!-- ============================================== -->

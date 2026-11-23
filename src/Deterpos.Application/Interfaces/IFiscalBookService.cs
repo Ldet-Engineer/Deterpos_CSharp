@@ -128,6 +128,29 @@ public class SalesAnalyticsDto
 
     public List<TopProductAnalyticsDto> TopProducts { get; set; } = new();
     public List<PaymentMethodDistributionDto> PaymentMethods { get; set; } = new();
+
+    // Desglose Cronológico de Ganancias (Día a Día y Semana a Semana)
+    public List<ProfitBreakdownRowDto> DailyBreakdown { get; set; } = new();
+    public List<ProfitBreakdownRowDto> WeeklyBreakdown { get; set; } = new();
+}
+
+public class ProfitBreakdownRowDto
+{
+    public string PeriodLabel { get; set; } = string.Empty;
+    public DateTime Date { get; set; }
+    public int InvoicesCount { get; set; }
+    public decimal TotalSalesUSD { get; set; }
+    public decimal TotalSalesVES { get; set; }
+    public decimal CostOfGoodsSoldUSD { get; set; }
+    public decimal GrossProfitUSD => TotalSalesUSD - CostOfGoodsSoldUSD;
+    public decimal GrossMarginPercentage => TotalSalesUSD > 0 ? decimal.Round((GrossProfitUSD / TotalSalesUSD) * 100m, 2) : 0m;
+    public decimal OperatingExpensesUSD { get; set; }
+    public decimal InventoryShrinkageUSD { get; set; }
+    public decimal NetProfitUSD => GrossProfitUSD - OperatingExpensesUSD - InventoryShrinkageUSD;
+    public decimal NetMarginPercentage => TotalSalesUSD > 0 ? decimal.Round((NetProfitUSD / TotalSalesUSD) * 100m, 2) : 0m;
+    public decimal AverageTicketUSD => InvoicesCount > 0 ? decimal.Round(TotalSalesUSD / InvoicesCount, 2) : 0m;
+    public bool IsProfitable => NetProfitUSD >= 0m;
+    public string StatusText => NetProfitUSD >= 0m ? "Rentable" : "Déficit";
 }
 
 public interface IFiscalBookService
@@ -140,4 +163,5 @@ public interface IFiscalBookService
     Task<string> ExportSalesBookToCsvAsync(int year, int month, string targetFilePath, CompanyFiscalProfile? company = null);
     Task<string> ExportPurchasesBookToCsvAsync(int year, int month, string targetFilePath, CompanyFiscalProfile? company = null);
     Task<string> ExportTaxSummaryToCsvAsync(int year, int month, string targetFilePath, CompanyFiscalProfile? company = null);
+    Task<string> ExportProfitBreakdownToCsvAsync(List<ProfitBreakdownRowDto> rows, string targetFilePath, string periodTitle);
 }

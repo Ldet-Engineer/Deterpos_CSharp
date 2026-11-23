@@ -924,4 +924,52 @@ public class DatabaseConnectionAndModuleTests
         Assert.Equal(stockBefore, prodAfter.CurrentStock);
         _output.WriteLine($"Stock verificado inalterado en base de datos: {prodAfter.CurrentStock:G29} unidades.");
     }
+
+    [Fact]
+    public async Task Test20_FiscalBookService_Calculates_Daily_And_Weekly_Profit_Breakdown()
+    {
+        var config = new DatabaseConfigurationService();
+        await config.InitializeDatabaseAsync();
+        var factory = new DeterposDbContextFactory(config);
+        var fiscalService = new FiscalBookService(factory);
+
+        var start = new DateTime(2026, 11, 1);
+        var end = new DateTime(2026, 11, 30);
+
+        var analytics = await fiscalService.GetSalesAnalyticsAsync(start, end);
+
+        Assert.NotNull(analytics);
+        Assert.NotNull(analytics.DailyBreakdown);
+        Assert.NotNull(analytics.WeeklyBreakdown);
+
+        _output.WriteLine($"Desglose diario calculado: {analytics.DailyBreakdown.Count} días con actividad.");
+        _output.WriteLine($"Desglose semanal calculado: {analytics.WeeklyBreakdown.Count} semanas con actividad.");
+
+        if (analytics.DailyBreakdown.Count > 0)
+        {
+            var firstDay = analytics.DailyBreakdown.First();
+            _output.WriteLine($"Día: {firstDay.PeriodLabel} -> Ventas: ${firstDay.TotalSalesUSD:N2}, Costo: ${firstDay.CostOfGoodsSoldUSD:N2}, U. Bruta: ${firstDay.GrossProfitUSD:N2}, Gastos: ${firstDay.OperatingExpensesUSD:N2}, Mermas: ${firstDay.InventoryShrinkageUSD:N2}, U. Neta: ${firstDay.NetProfitUSD:N2}");
+            Assert.Equal(firstDay.GrossProfitUSD, firstDay.TotalSalesUSD - firstDay.CostOfGoodsSoldUSD);
+            Assert.Equal(firstDay.NetProfitUSD, firstDay.GrossProfitUSD - firstDay.OperatingExpensesUSD - firstDay.InventoryShrinkageUSD);
+        }
+
+        // Probar exportación a archivo CSV temporal
+        string tempCsv = Path.Combine(Path.GetTempPath(), $"test_profit_breakdown_{Guid.NewGuid():N}.csv");
+        try
+        {
+            var generatedPath = await fiscalService.ExportProfitBreakdownToCsvAsync(analytics.DailyBreakdown, tempCsv, "Test Período Noviembre 2026");
+            Assert.True(File.Exists(generatedPath), "El archivo CSV de desglose de ganancias debe crearse.");
+            string content = await File.ReadAllTextAsync(generatedPath);
+            Assert.Contains("ESTADO DE RESULTADOS DESGLOSADO", content);
+            Assert.Contains("TOTALES GENERALES", content);
+            _output.WriteLine($"CSV de desglose exportado exitosamente con tamaño: {new FileInfo(tempCsv).Length} bytes.");
+        }
+        finally
+        {
+            if (File.Exists(tempCsv))
+            {
+                File.Delete(tempCsv);
+            }
+        }
+    }
 }

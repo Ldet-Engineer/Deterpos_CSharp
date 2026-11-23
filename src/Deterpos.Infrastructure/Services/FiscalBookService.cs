@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -233,12 +234,19 @@ public class FiscalBookService : IFiscalBookService
         analytics.TotalCostUSD = totalCost;
 
         // Gastos Operativos del período (para P&L / Estado de Resultados Real)
-        var totalExpenses = await context.OperatingExpenses
+        var expensesList = await context.OperatingExpenses
             .Where(e => e.ExpenseDate >= fromUtc && e.ExpenseDate <= toUtc)
             .AsNoTracking()
-            .SumAsync(e => (decimal?)e.AmountUSD) ?? 0m;
+            .ToListAsync();
 
+        var totalExpenses = expensesList.Sum(e => e.AmountUSD);
         analytics.TotalOperatingExpensesUSD = totalExpenses;
+
+        // Mermas e insumos dañados del período (Ajustes Negativos de Inventario)
+        var shrinkagesList = await context.InventoryMovements
+            .Where(m => m.MovementDate >= fromUtc && m.MovementDate <= toUtc && m.MovementType == InventoryMovementType.AjusteNegativo)
+            .AsNoTracking()
+            .ToListAsync();
 
         // Top 15 productos
         analytics.TopProducts = productAggregates.Values
@@ -280,6 +288,80 @@ public class FiscalBookService : IFiscalBookService
             .ToList();
 
         analytics.PaymentMethods = paymentGroups;
+
+        // Construir Desglose Diario Cronológico (Día a Día)
+        var activeDates = new HashSet<DateTime>();
+        foreach (var s in sales) activeDates.Add(s.CreatedAt.ToLocalTime().Date);
+        foreach (var e in expensesList) activeDates.Add(e.ExpenseDate.ToLocalTime().Date);
+        foreach (var m in shrinkagesList) activeDates.Add(m.MovementDate.ToLocalTime().Date);
+
+        var sortedDates = activeDates.OrderByDescending(d => d).ToList();
+        var culture = new CultureInfo("es-VE");
+
+        var dailyBreakdown = new List<ProfitBreakdownRowDto>();
+        foreach (var date in sortedDates)
+        {
+            var daySales = sales.Where(s => s.CreatedAt.ToLocalTime().Date == date).ToList();
+            var dayExpenses = expensesList.Where(e => e.ExpenseDate.ToLocalTime().Date == date).Sum(e => e.AmountUSD);
+            var dayShrinkages = shrinkagesList.Where(m => m.MovementDate.ToLocalTime().Date == date).Sum(m => m.QuantityOut * m.UnitCostOutUSD);
+
+            decimal dayRevUSD = daySales.Sum(s => s.DocumentType == FiscalDocumentType.NotaDeCredito ? -s.TotalUSD : s.TotalUSD);
+            decimal dayRevVES = daySales.Sum(s => s.DocumentType == FiscalDocumentType.NotaDeCredito ? -s.TotalVES : s.TotalVES);
+
+            decimal dayCostUSD = 0;
+            foreach (var s in daySales)
+            {
+                decimal sign = s.DocumentType == FiscalDocumentType.NotaDeCredito ? -1m : 1m;
+                dayCostUSD += s.Details.Sum(d => sign * d.UnitCostUSD * d.Quantity);
+            }
+
+            int invoices = daySales.Count(s => s.DocumentType == FiscalDocumentType.Factura);
+            string dayName = culture.TextInfo.ToTitleCase(date.ToString("dddd", culture));
+
+            dailyBreakdown.Add(new ProfitBreakdownRowDto
+            {
+                PeriodLabel = $"{date:dd/MM/yyyy} ({dayName})",
+                Date = date,
+                InvoicesCount = invoices,
+                TotalSalesUSD = decimal.Round(dayRevUSD, 2),
+                TotalSalesVES = decimal.Round(dayRevVES, 2),
+                CostOfGoodsSoldUSD = decimal.Round(dayCostUSD, 2),
+                OperatingExpensesUSD = decimal.Round(dayExpenses, 2),
+                InventoryShrinkageUSD = decimal.Round(dayShrinkages, 2)
+            });
+        }
+        analytics.DailyBreakdown = dailyBreakdown;
+
+        // Construir Desglose Semanal (Semana a Semana)
+        var weeklyGroups = dailyBreakdown
+            .GroupBy(d =>
+            {
+                int diff = (7 + (d.Date.DayOfWeek - DayOfWeek.Monday)) % 7;
+                return d.Date.AddDays(-1 * diff).Date;
+            })
+            .OrderByDescending(g => g.Key)
+            .ToList();
+
+        var weeklyBreakdown = new List<ProfitBreakdownRowDto>();
+        foreach (var wg in weeklyGroups)
+        {
+            var startMon = wg.Key;
+            var endSun = startMon.AddDays(6);
+            int weekOfYear = culture.Calendar.GetWeekOfYear(startMon, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+
+            weeklyBreakdown.Add(new ProfitBreakdownRowDto
+            {
+                PeriodLabel = $"Semana {weekOfYear} ({startMon:dd/MM} al {endSun:dd/MM})",
+                Date = startMon,
+                InvoicesCount = wg.Sum(d => d.InvoicesCount),
+                TotalSalesUSD = decimal.Round(wg.Sum(d => d.TotalSalesUSD), 2),
+                TotalSalesVES = decimal.Round(wg.Sum(d => d.TotalSalesVES), 2),
+                CostOfGoodsSoldUSD = decimal.Round(wg.Sum(d => d.CostOfGoodsSoldUSD), 2),
+                OperatingExpensesUSD = decimal.Round(wg.Sum(d => d.OperatingExpensesUSD), 2),
+                InventoryShrinkageUSD = decimal.Round(wg.Sum(d => d.InventoryShrinkageUSD), 2)
+            });
+        }
+        analytics.WeeklyBreakdown = weeklyBreakdown;
 
         return analytics;
     }
@@ -512,6 +594,39 @@ public class FiscalBookService : IFiscalBookService
         sb.AppendLine($"Utilidad Bruta de Operaciones;${analytics.GrossProfitUSD:F2};{(analytics.GrossProfitUSD * 55.40m):F2};{analytics.ProfitMarginPercentage:F1}%");
         sb.AppendLine($"Gastos Operativos y Caja Chica;${analytics.TotalOperatingExpensesUSD:F2};{(analytics.TotalOperatingExpensesUSD * 55.40m):F2};—");
         sb.AppendLine($"UTILIDAD NETA FINAL DEL PERÍODO;${analytics.NetProfitUSD:F2};{(analytics.NetProfitUSD * 55.40m):F2};{analytics.NetMarginPercentage:F1}%");
+
+        var utf8WithBom = new UTF8Encoding(true);
+        await File.WriteAllTextAsync(targetFilePath, sb.ToString(), utf8WithBom);
+        return targetFilePath;
+    }
+
+    public async Task<string> ExportProfitBreakdownToCsvAsync(List<ProfitBreakdownRowDto> rows, string targetFilePath, string periodTitle)
+    {
+        var sb = new StringBuilder();
+
+        sb.AppendLine("\"ESTADO DE RESULTADOS DESGLOSADO - GANANCIAS Y PÉRDIDAS (P&L)\";;;;;;;;;;;");
+        sb.AppendLine($"\"Período: {periodTitle}\";;;;;;;;;;;");
+        sb.AppendLine($"\"Generado el: {DateTime.Now:dd/MM/yyyy HH:mm:ss}\";;;;;;;;;;;");
+        sb.AppendLine();
+
+        sb.AppendLine("Período / Fecha;N° Ventas;Ventas ($);Costo Mercancía ($);Ganancia Bruta ($);Margen Bruto (%);Gastos Operativos ($);Mermas Insumos ($);Ganancia Neta ($);Margen Neto (%);Ticket Promedio ($);Estado");
+
+        foreach (var r in rows)
+        {
+            sb.AppendLine($"\"{r.PeriodLabel}\";{r.InvoicesCount};{r.TotalSalesUSD:F2};{r.CostOfGoodsSoldUSD:F2};{r.GrossProfitUSD:F2};{r.GrossMarginPercentage:F1}%;{r.OperatingExpensesUSD:F2};{r.InventoryShrinkageUSD:F2};{r.NetProfitUSD:F2};{r.NetMarginPercentage:F1}%;{r.AverageTicketUSD:F2};\"{r.StatusText}\"");
+        }
+
+        sb.AppendLine();
+        decimal totSales = rows.Sum(r => r.TotalSalesUSD);
+        decimal totCost = rows.Sum(r => r.CostOfGoodsSoldUSD);
+        decimal totGross = rows.Sum(r => r.GrossProfitUSD);
+        decimal totExp = rows.Sum(r => r.OperatingExpensesUSD);
+        decimal totShrink = rows.Sum(r => r.InventoryShrinkageUSD);
+        decimal totNet = rows.Sum(r => r.NetProfitUSD);
+        decimal totMargin = totSales > 0 ? (totNet / totSales) * 100m : 0m;
+        int totInv = rows.Sum(r => r.InvoicesCount);
+
+        sb.AppendLine($"\"TOTALES GENERALES\";{totInv};{totSales:F2};{totCost:F2};{totGross:F2};{(totSales > 0 ? (totGross / totSales) * 100m : 0m):F1}%;{totExp:F2};{totShrink:F2};{totNet:F2};{totMargin:F1}%;{(totInv > 0 ? totSales / totInv : 0m):F2};\"{(totNet >= 0 ? "Rentable" : "Déficit")}\"");
 
         var utf8WithBom = new UTF8Encoding(true);
         await File.WriteAllTextAsync(targetFilePath, sb.ToString(), utf8WithBom);

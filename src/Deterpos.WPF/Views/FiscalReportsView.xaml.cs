@@ -26,6 +26,9 @@ public partial class FiscalReportsView : UserControl
     private readonly List<PurchasesBookRowDto> _allPurchasesRows = new();
     private readonly ObservableCollection<PurchasesBookRowDto> _displayedPurchasesRows = new();
 
+    private readonly ObservableCollection<ProfitBreakdownItemViewModel> _displayedBreakdown = new();
+    private bool _isDailyMode = true;
+
     private FiscalBookSummaryDto? _currentSummary;
     private SalesAnalyticsDto? _currentAnalytics;
 
@@ -40,6 +43,7 @@ public partial class FiscalReportsView : UserControl
 
         GridSalesBook.ItemsSource = _displayedSalesRows;
         GridPurchasesBook.ItemsSource = _displayedPurchasesRows;
+        GridProfitBreakdown.ItemsSource = _displayedBreakdown;
 
         Loaded += FiscalReportsView_Loaded;
         IsVisibleChanged += async (s, e) =>
@@ -295,6 +299,8 @@ public partial class FiscalReportsView : UserControl
 
         GridTopProducts.ItemsSource = _currentAnalytics.TopProducts;
         GridPaymentMethods.ItemsSource = _currentAnalytics.PaymentMethods;
+
+        PopulateProfitBreakdown();
     }
 
     private async void BtnLoadPeriod_Click(object sender, RoutedEventArgs e)
@@ -393,4 +399,136 @@ public partial class FiscalReportsView : UserControl
             }
         }
     }
+
+    private void PopulateProfitBreakdown()
+    {
+        _displayedBreakdown.Clear();
+        if (_currentAnalytics == null) return;
+
+        var list = _isDailyMode ? _currentAnalytics.DailyBreakdown : _currentAnalytics.WeeklyBreakdown;
+        foreach (var row in list)
+        {
+            _displayedBreakdown.Add(new ProfitBreakdownItemViewModel(row));
+        }
+
+        decimal totalSales = list.Sum(r => r.TotalSalesUSD);
+        decimal totalCost = list.Sum(r => r.CostOfGoodsSoldUSD);
+        decimal totalGross = list.Sum(r => r.GrossProfitUSD);
+        decimal totalExpenses = list.Sum(r => r.OperatingExpensesUSD);
+        decimal totalShrinkage = list.Sum(r => r.InventoryShrinkageUSD);
+        decimal totalNet = list.Sum(r => r.NetProfitUSD);
+
+        TxtTotalBreakdownSales.Text = $"$ {totalSales:N2}";
+        TxtTotalBreakdownCost.Text = $"$ {totalCost:N2}";
+        TxtTotalBreakdownGross.Text = $"$ {totalGross:N2}";
+        TxtTotalBreakdownExpenses.Text = $"$ {(totalExpenses + totalShrinkage):N2}";
+        TxtTotalBreakdownNet.Text = $"$ {totalNet:N2}";
+        TxtTotalBreakdownNet.Foreground = totalNet >= 0
+            ? new SolidColorBrush(Color.FromRgb(21, 128, 61))
+            : new SolidColorBrush(Color.FromRgb(220, 38, 38));
+    }
+
+    private void BtnBreakdownDaily_Click(object sender, RoutedEventArgs e)
+    {
+        _isDailyMode = true;
+        BtnBreakdownDaily.Background = Brushes.White;
+        BtnBreakdownDaily.Foreground = (Brush)FindResource("TextPrimaryBrush");
+        BtnBreakdownWeekly.Background = Brushes.Transparent;
+        BtnBreakdownWeekly.Foreground = (Brush)FindResource("TextSecondaryBrush");
+        PopulateProfitBreakdown();
+    }
+
+    private void BtnBreakdownWeekly_Click(object sender, RoutedEventArgs e)
+    {
+        _isDailyMode = false;
+        BtnBreakdownWeekly.Background = Brushes.White;
+        BtnBreakdownWeekly.Foreground = (Brush)FindResource("TextPrimaryBrush");
+        BtnBreakdownDaily.Background = Brushes.Transparent;
+        BtnBreakdownDaily.Foreground = (Brush)FindResource("TextSecondaryBrush");
+        PopulateProfitBreakdown();
+    }
+
+    private async void BtnExportProfitBreakdown_Click(object sender, RoutedEventArgs e)
+    {
+        if (_currentAnalytics == null) return;
+        var list = _isDailyMode ? _currentAnalytics.DailyBreakdown : _currentAnalytics.WeeklyBreakdown;
+        if (!list.Any())
+        {
+            MessageBox.Show("No hay datos de desglose para exportar en este período.", "Exportar Desglose", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        int month = CmbMonth.SelectedIndex + 1;
+        int year = 2026;
+        if (CmbYear.SelectedItem is ComboBoxItem itemYear && int.TryParse(itemYear.Content?.ToString(), out int y))
+        {
+            year = y;
+        }
+
+        string modeName = _isDailyMode ? "Diario" : "Semanal";
+        var sfd = new SaveFileDialog
+        {
+            FileName = $"Desglose_Ganancias_{modeName}_{month:D2}_{year}.csv",
+            Filter = "Archivo Excel CSV (*.csv)|*.csv|Todos los archivos (*.*)|*.*",
+            Title = $"Exportar Desglose {modeName} de Ganancias y Pérdidas a Excel"
+        };
+
+        if (sfd.ShowDialog() == true)
+        {
+            try
+            {
+                await _fiscalBookService.ExportProfitBreakdownToCsvAsync(list, sfd.FileName, $"Desglose {modeName} de Rentabilidad P&L ({month:D2}/{year})");
+
+                var res = MessageBox.Show(
+                    $"El desglose de ganancias fue exportado con éxito a:\n{sfd.FileName}\n\n¿Desea abrir el archivo en Microsoft Excel ahora?",
+                    "Exportación Exitosa",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Information);
+
+                if (res == MessageBoxResult.Yes)
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = sfd.FileName,
+                        UseShellExecute = true
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al exportar desglose de ganancias: {ex.Message}", "Error al Exportar", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+}
+
+public class ProfitBreakdownItemViewModel
+{
+    public ProfitBreakdownRowDto Source { get; }
+    public ProfitBreakdownItemViewModel(ProfitBreakdownRowDto source) => Source = source;
+
+    public string PeriodLabel => Source.PeriodLabel;
+    public int InvoicesCount => Source.InvoicesCount;
+    public decimal TotalSalesUSD => Source.TotalSalesUSD;
+    public decimal TotalSalesVES => Source.TotalSalesVES;
+    public decimal CostOfGoodsSoldUSD => Source.CostOfGoodsSoldUSD;
+    public decimal GrossProfitUSD => Source.GrossProfitUSD;
+    public decimal GrossMarginPercentage => Source.GrossMarginPercentage;
+    public decimal OperatingExpensesUSD => Source.OperatingExpensesUSD;
+    public decimal InventoryShrinkageUSD => Source.InventoryShrinkageUSD;
+    public decimal NetProfitUSD => Source.NetProfitUSD;
+    public decimal NetMarginPercentage => Source.NetMarginPercentage;
+    public decimal AverageTicketUSD => Source.AverageTicketUSD;
+    public string StatusText => Source.StatusText;
+
+    public string NetProfitUSDDisplay => $"{(Source.NetProfitUSD >= 0 ? "+$" : "-$")} {Math.Abs(Source.NetProfitUSD):N2}";
+    public Brush NetProfitBrush => Source.NetProfitUSD >= 0
+        ? new SolidColorBrush(Color.FromRgb(21, 128, 61))
+        : new SolidColorBrush(Color.FromRgb(220, 38, 38));
+    public Brush StatusBackground => Source.NetProfitUSD >= 0
+        ? new SolidColorBrush(Color.FromRgb(220, 252, 231))
+        : new SolidColorBrush(Color.FromRgb(254, 226, 226));
+    public Brush StatusForeground => Source.NetProfitUSD >= 0
+        ? new SolidColorBrush(Color.FromRgb(21, 128, 61))
+        : new SolidColorBrush(Color.FromRgb(185, 28, 28));
 }
