@@ -13,8 +13,7 @@ public partial class CasheaOrderDetailsDialog : Window
     {
         InitializeComponent();
 
-        TxtHeaderOrderNum.Text = $"Orden Cashea #{order.OrderNumber}";
-        TxtHeaderDate.Text = $"Emitida el {order.CreatedAt.ToLocalTime():dd/MM/yyyy HH:mm}";
+        Title = $"Orden Cashea #{order.OrderNumber} ({order.CreatedAt.ToLocalTime():dd/MM/yyyy HH:mm}) - Deterpos";
 
         bool isSettled = order.Status == CasheaOrderStatus.LiquidadaEnBanco;
         BadgeStatus.Background = isSettled ? new SolidColorBrush(Color.FromRgb(209, 250, 229)) : new SolidColorBrush(Color.FromRgb(254, 243, 199));

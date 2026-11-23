@@ -56,17 +56,19 @@ public partial class CashMovementDialog : Window
 
         if (isEntry)
         {
-            TxtModalTitle.Text = "Entrada de Efectivo";
+            Title = "Entrada de Efectivo - Deterpos";
+            ContextBar.Text = "Entradas y aportes de efectivo a caja chica con soporte justificativo";
+            ContextBar.IconBrush = (SolidColorBrush)FindResource("AccentGreenBrush");
             TxtBtnSave.Text = "Registrar Entrada";
             BtnSave.Background = (SolidColorBrush)FindResource("AccentGreenBrush");
-            IconHeader.Foreground = (SolidColorBrush)FindResource("AccentGreenBrush");
         }
         else
         {
-            TxtModalTitle.Text = "Salida de Caja Chica";
+            Title = "Salida de Caja Chica - Deterpos";
+            ContextBar.Text = "Salidas de efectivo de caja chica con soporte justificativo";
+            ContextBar.IconBrush = new SolidColorBrush(Color.FromRgb(216, 59, 1));
             TxtBtnSave.Text = "Registrar Salida";
             BtnSave.Background = new SolidColorBrush(Color.FromRgb(216, 59, 1));
-            IconHeader.Foreground = new SolidColorBrush(Color.FromRgb(216, 59, 1));
         }
 
         if (isUSD)

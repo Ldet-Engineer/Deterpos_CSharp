@@ -18,7 +18,8 @@ public partial class ShiftAuditSummaryDialog : Window
         _shift = result.Shift;
         _actText = result.FormattedActText;
 
-        TxtShiftInfoSubtitle.Text = $"Turno #{_shift.Id} • Cajero: {_shift.CashierUsername} • Cierre: {_shift.ClosedAt?.ToLocalTime():dd/MM/yyyy HH:mm}";
+        Title = $"Acta de Conciliación - Turno #{_shift.Id} - Deterpos";
+        ContextBar.Text = $"Turno #{_shift.Id} • Cajero: {_shift.CashierUsername} • Cierre: {_shift.ClosedAt?.ToLocalTime():dd/MM/yyyy HH:mm}";
 
         // Asignar valores superiores USD
         TxtExpectedUSD.Text = $"$ {result.TotalExpectedCashUSD:N2}";
@@ -51,7 +52,8 @@ public partial class ShiftAuditSummaryDialog : Window
         _shift = shift;
         _actText = shift.Notes;
 
-        TxtShiftInfoSubtitle.Text = $"Turno #{shift.Id} • Cajero: {shift.CashierUsername} • Cierre: {shift.ClosedAt?.ToLocalTime():dd/MM/yyyy HH:mm}";
+        Title = $"Acta de Conciliación - Turno #{shift.Id} - Deterpos";
+        ContextBar.Text = $"Turno #{shift.Id} • Cajero: {shift.CashierUsername} • Cierre: {shift.ClosedAt?.ToLocalTime():dd/MM/yyyy HH:mm}";
 
         decimal expUsd = shift.ExpectedAmountUSD;
         decimal decUsd = shift.ActualAmountUSD ?? expUsd;

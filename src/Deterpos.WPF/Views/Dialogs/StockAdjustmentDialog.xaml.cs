@@ -19,7 +19,8 @@ public partial class StockAdjustmentDialog : Window
     {
         InitializeComponent();
         _product = product;
-        TxtProductName.Text = $"{product.Code} - {product.Name}";
+        Title = $"Ajuste Físico: {_product.Name} - Deterpos";
+        ContextBar.Text = $"{_product.Code} • {_product.Name} (Stock actual: {_product.CurrentStock:N2})";
         TxtCurrentStock.Text = $"{product.CurrentStock:N2} Unidades";
         TxtNewStock.Text = product.CurrentStock.ToString("F2", CultureInfo.InvariantCulture);
 

@@ -10,7 +10,8 @@ public partial class PurchaseDetailsDialog : Window
     {
         InitializeComponent();
 
-        TxtHeaderSub.Text = $"Factura #{purchase.InvoiceNumber} • Control SENIAT: {purchase.ControlNumber}";
+        Title = $"Comprobante de Compra #{purchase.InvoiceNumber} - Deterpos";
+        ContextBar.Text = $"Factura #{purchase.InvoiceNumber} • Control SENIAT: {purchase.ControlNumber}";
         TxtSupplierName.Text = purchase.Supplier?.CompanyName ?? "Proveedor General";
         TxtSupplierRif.Text = $"RIF: {purchase.Supplier?.DocumentNumber ?? "-"}";
         TxtInvoiceNum.Text = purchase.InvoiceNumber;

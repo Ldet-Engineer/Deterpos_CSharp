@@ -32,7 +32,8 @@ public partial class InvoiceTicketDialog : Window
 
         if (sale.DocumentType == FiscalDocumentType.NotaDeCredito)
         {
-            TxtInvoiceHeaderSub.Text = "Nota de Crédito Fiscal Homologada SENIAT";
+            Title = $"Nota de Crédito #{sale.InvoiceNumber} - Deterpos";
+            ContextBar.Text = "Nota de Crédito Fiscal Homologada SENIAT";
             TxtFiscalDocNum.Text = $"NOTA DE CRÉDITO: {sale.InvoiceNumber}";
             if (!string.IsNullOrWhiteSpace(sale.AffectedInvoiceNumber))
             {
@@ -42,7 +43,8 @@ public partial class InvoiceTicketDialog : Window
         }
         else
         {
-            TxtInvoiceHeaderSub.Text = "Documento Fiscal Homologado SENIAT";
+            Title = $"Factura Fiscal #{sale.InvoiceNumber} - Deterpos";
+            ContextBar.Text = "Documento Fiscal Homologado SENIAT";
             TxtFiscalDocNum.Text = $"FACTURA FISCAL: {sale.InvoiceNumber}";
             TxtAffectedInvoiceNotice.Visibility = Visibility.Collapsed;
         }

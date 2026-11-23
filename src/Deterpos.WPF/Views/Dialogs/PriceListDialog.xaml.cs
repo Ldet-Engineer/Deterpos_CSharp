@@ -21,7 +21,7 @@ public partial class PriceListDialog : Window
     {
         InitializeComponent();
         _bcvRate = bcvRate > 0 ? bcvRate : 55.40m;
-        TxtHeaderSubtitle.Text = $"Tasa Oficial BCV: {_bcvRate:N4} Bs. • Precios calculados según normativa legal";
+        ContextBar.Text = $"Tasa Oficial BCV: {_bcvRate:N4} Bs. • Precios calculados según normativa legal";
 
         // Inicializar Categorías en el Combo
         CmbCategoryFilter.Items.Add("Todas las Categorías");

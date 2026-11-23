@@ -22,7 +22,8 @@ public partial class AccountStatementDialog : Window
 
         TxtAccountHolderName.Text = holderName;
         TxtAccountHolderDoc.Text = isSupplier ? $"RIF Proveedor: {documentNumber}" : $"Cédula/RIF Cliente: {documentNumber}";
-        TxtHeaderSub.Text = isSupplier
+        Title = $"Estado de Cuenta: {_holderName} - Deterpos";
+        ContextBar.Text = isSupplier
             ? "Cuentas por Pagar (CxP) • Trazabilidad de Facturas y Pagos a Proveedor"
             : "Cuentas por Cobrar (CxC) • Trazabilidad de Facturas y Abonos de Cliente";
 

@@ -23,7 +23,7 @@ public partial class HoldTicketsDialog : Window
         PanelEmptyState.Visibility = hasTickets ? Visibility.Collapsed : Visibility.Visible;
         ScrollTicketsList.Visibility = hasTickets ? Visibility.Visible : Visibility.Collapsed;
 
-        TxtSubtitleCount.Text = hasTickets
+        ContextBar.Text = hasTickets
             ? $"{tickets.Count} venta(s) pausada(s) en espera de cobro"
             : "No hay ventas pausadas en este momento";
     }
