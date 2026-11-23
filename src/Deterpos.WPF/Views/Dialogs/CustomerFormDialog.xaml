@@ -2,8 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
-        Title="Formulario de Cliente" 
-        Height="610" Width="520"
+        Title="Nuevo Cliente - Deterpos" 
+        Height="590" Width="520"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
         ResizeMode="NoResize"
@@ -17,21 +17,12 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Encabezado Modal -->
-        <Border Grid.Row="0" Background="#F6F8FA" Padding="22,14" BorderBrush="#E1E4E8" BorderThickness="0,0,0,1">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <fluentIcons:SymbolIcon Grid.Column="0" Symbol="PersonAdd" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
-
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock x:Name="TxtModalTitle" Text="Nuevo Cliente" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                    <TextBlock Text="Datos fiscales para facturación SENIAT y créditos comerciales" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
-                </StackPanel>
-            </Grid>
+        <!-- Franja Contextual Compacta con Icono (Opción 1) -->
+        <Border Grid.Row="0" Background="#F8FAFC" Padding="20,10" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <fluentIcons:SymbolIcon Symbol="PersonAdd" FontSize="18" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
+                <TextBlock x:Name="TxtContextInfo" Text="Datos fiscales para facturación SENIAT y créditos comerciales" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+            </StackPanel>
         </Border>
 
         <!-- Formulario -->

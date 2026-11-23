@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
         Title="Pasarela de Cobro Multimoneda - POS Deterpos" 
-        Height="740" Width="840"
+        Height="720" Width="840"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
         ResizeMode="NoResize"
@@ -17,21 +17,12 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Encabezado Modal -->
-        <Border Grid.Row="0" Background="#F6F8FA" Padding="22,14" BorderBrush="#E1E4E8" BorderThickness="0,0,0,1">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <fluentIcons:SymbolIcon Grid.Column="0" Symbol="Payment" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="0,0,12,0" />
-
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="Pasarela de Cobro Fraccionado (Multimoneda)" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                    <TextBlock x:Name="TxtClientInfoSubtitle" Text="Cliente: V-00000000 • Tasa Oficial BCV: 55.4000 Bs." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
-                </StackPanel>
-            </Grid>
+        <!-- Franja Contextual Compacta con Icono (Opción 1) -->
+        <Border Grid.Row="0" Background="#F8FAFC" Padding="20,10" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <fluentIcons:SymbolIcon Symbol="Payment" FontSize="18" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
+                <TextBlock x:Name="TxtClientInfoSubtitle" Text="Cliente: V-00000000 • Tasa Oficial BCV: 55.4000 Bs." FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+            </StackPanel>
         </Border>
 
         <!-- Contenido Principal -->
