@@ -46,6 +46,8 @@ public class SplitPaymentDisplayItem
 public partial class SplitPaymentDialog : Window
 {
     private readonly decimal _baseSaleTotalUSD;
+    private readonly decimal _subtotalWithoutVatUSD;
+    private readonly decimal _vatAmountUSD;
     private readonly decimal _bcvRate;
     private readonly bool _isSpecialTaxpayer;
     private readonly Customer? _customer;
@@ -60,13 +62,22 @@ public partial class SplitPaymentDialog : Window
     public decimal ChangeVES { get; private set; }
     public CasheaOrder? CasheaOrderResult { get; private set; }
 
-    public SplitPaymentDialog(decimal baseSaleTotalUSD, decimal bcvRate, bool isSpecialTaxpayer, Customer? customer = null)
+    public SplitPaymentDialog(
+        decimal baseSaleTotalUSD, 
+        decimal bcvRate, 
+        bool isSpecialTaxpayer, 
+        Customer? customer = null,
+        decimal subtotalWithoutVatUSD = 0m,
+        decimal vatAmountUSD = 0m)
     {
         InitializeComponent();
         _baseSaleTotalUSD = decimal.Round(baseSaleTotalUSD, 2);
         _bcvRate = bcvRate > 0 ? bcvRate : 55.4000m;
         _isSpecialTaxpayer = isSpecialTaxpayer;
         _customer = customer;
+
+        _subtotalWithoutVatUSD = subtotalWithoutVatUSD > 0 ? decimal.Round(subtotalWithoutVatUSD, 2) : _baseSaleTotalUSD;
+        _vatAmountUSD = vatAmountUSD >= 0 ? decimal.Round(vatAmountUSD, 2) : 0m;
 
         var dbConfig = new DatabaseConfigurationService();
         var factory = new DeterposDbContextFactory(dbConfig);
@@ -114,41 +125,75 @@ public partial class SplitPaymentDialog : Window
             .Where(p => !IsForeign(p.Method))
             .Sum(p => p.AmountEquivalentUSD);
 
-        // 2. Determinar base gravable del 3% IGTF (Ley IGTF: Acotada estrictamente a la venta base)
+        decimal totalPaidUSD = ConfirmedPayments.Sum(p => p.AmountEquivalentUSD);
+
+        var selectedTag = (CmbPaymentMethod.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "EfectivoUSD";
+        var currentMethod = Enum.TryParse<PaymentMethodType>(selectedTag, out var parsedMethod) ? parsedMethod : PaymentMethodType.EfectivoUSD;
+        bool methodCausesIgtf = _isSpecialTaxpayer && IsForeign(currentMethod);
+
         decimal foreignBase = 0m;
-        if (_isSpecialTaxpayer && foreignPaidUSD > 0)
+
+        if (ConfirmedPayments.Count == 0)
         {
-            if (foreignPaidUSD >= _baseSaleTotalUSD)
+            // Estado inicial ("en un principio"):
+            // Si el método seleccionado en el formulario es Divisas (Efectivo USD / Zelle), proyectar el IGTF de la venta completa
+            if (methodCausesIgtf)
             {
                 foreignBase = _baseSaleTotalUSD;
+                FinalIgtfUSD = decimal.Round(_baseSaleTotalUSD * 0.03m, 2);
             }
             else
             {
-                decimal baseRemaining = Math.Max(0m, _baseSaleTotalUSD - nonForeignPaidUSD);
-                foreignBase = Math.Min(baseRemaining, foreignPaidUSD);
+                foreignBase = 0m;
+                FinalIgtfUSD = 0m;
             }
-            FinalIgtfUSD = decimal.Round(foreignBase * 0.03m, 2);
         }
         else
         {
-            FinalIgtfUSD = 0m;
+            // Ya hay pagos registrados:
+            if (_isSpecialTaxpayer && foreignPaidUSD > 0)
+            {
+                if (foreignPaidUSD >= _baseSaleTotalUSD)
+                {
+                    foreignBase = _baseSaleTotalUSD;
+                }
+                else
+                {
+                    decimal baseRemaining = Math.Max(0m, _baseSaleTotalUSD - nonForeignPaidUSD);
+                    foreignBase = Math.Min(baseRemaining, foreignPaidUSD);
+                }
+                FinalIgtfUSD = decimal.Round(foreignBase * 0.03m, 2);
+            }
+            else
+            {
+                FinalIgtfUSD = 0m;
+            }
         }
 
         FinalTotalUSD = _baseSaleTotalUSD + FinalIgtfUSD;
-        decimal totalPaidUSD = ConfirmedPayments.Sum(p => p.AmountEquivalentUSD);
         decimal remainingUSD = FinalTotalUSD - totalPaidUSD;
 
-        // Tarjetas informativas
+        // Tarjeta 1: Venta Base (con y sin IVA)
         TxtBaseSaleUSD.Text = $"$ {_baseSaleTotalUSD:N2}";
         TxtBaseSaleVES.Text = $"{(_baseSaleTotalUSD * _bcvRate):N2} Bs.";
+        TxtSubtotalAndVatBreakdown.Text = $"Sin IVA: $ {_subtotalWithoutVatUSD:N2} • IVA: $ {_vatAmountUSD:N2}";
 
+        // Tarjeta 2: IGTF 3% (USD y VES)
         TxtIgtfAmountUSD.Text = $"$ {FinalIgtfUSD:N2}";
-        TxtIgtfBaseNotice.Text = foreignBase > 0 ? $"Base gravable: $ {foreignBase:N2}" : "Sin IGTF aplicado";
+        TxtIgtfAmountVES.Text = $"{(FinalIgtfUSD * _bcvRate):N2} Bs.";
+        TxtIgtfBaseNotice.Text = foreignBase > 0 
+            ? $"Base gravable: $ {foreignBase:N2}" 
+            : "Exento de IGTF (Pago en Bs.)";
 
+        // Tarjeta 3: Total Factura a Cobrar (USD y VES)
         TxtTotalSaleUSD.Text = $"$ {FinalTotalUSD:N2}";
         TxtTotalSaleVES.Text = $"{(FinalTotalUSD * _bcvRate):N2} Bs.";
+        TxtTotalNote.Text = FinalIgtfUSD > 0 
+            ? $"Incluye IVA ($ {_vatAmountUSD:N2}) + IGTF 3% ($ {FinalIgtfUSD:N2})"
+            : $"Venta base exenta de IGTF (Incluye IVA $ {_vatAmountUSD:N2})";
 
-        if (remainingUSD <= 0.005m) // Cubierto o con vuelto
+        // Tarjeta 4: Estado / Restante / Vuelto
+        if (ConfirmedPayments.Count > 0 && remainingUSD <= 0.005m) // Cubierto o con vuelto
         {
             ChangeUSD = Math.Abs(remainingUSD);
             ChangeVES = decimal.Round(ChangeUSD * _bcvRate, 2);
@@ -159,6 +204,8 @@ public partial class SplitPaymentDialog : Window
             TxtBalanceTitle.Foreground = new SolidColorBrush(Color.FromRgb(16, 124, 65));
             TxtRemainingUSD.Text = "$ 0.00";
             TxtRemainingUSD.Foreground = new SolidColorBrush(Color.FromRgb(16, 124, 65));
+            TxtRemainingVES.Text = "0.00 Bs.";
+            TxtRemainingVES.Foreground = new SolidColorBrush(Color.FromRgb(16, 124, 65));
             TxtBalanceSubtitle.Text = "Factura liquidada al 100%";
 
             if (ChangeUSD > 0.01m)
@@ -186,7 +233,9 @@ public partial class SplitPaymentDialog : Window
             TxtBalanceTitle.Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69));
             TxtRemainingUSD.Text = $"$ {remainingUSD:N2}";
             TxtRemainingUSD.Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69));
-            TxtBalanceSubtitle.Text = $"Equiv: {(remainingUSD * _bcvRate):N2} Bs.";
+            TxtRemainingVES.Text = $"Equiv: {(remainingUSD * _bcvRate):N2} Bs.";
+            TxtRemainingVES.Foreground = new SolidColorBrush(Color.FromRgb(220, 53, 69));
+            TxtBalanceSubtitle.Text = ConfirmedPayments.Count > 0 ? "Faltante por liquidar" : "Saldo pendiente inicial";
 
             BtnConfirmSale.IsEnabled = false;
         }
@@ -382,7 +431,7 @@ public partial class SplitPaymentDialog : Window
     private void CmbPaymentMethod_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (!IsLoaded) return;
-        SuggestPaymentAmount();
+        RecalculateTotals();
         TxtPaymentAmount.Focus();
         TxtPaymentAmount.SelectAll();
     }

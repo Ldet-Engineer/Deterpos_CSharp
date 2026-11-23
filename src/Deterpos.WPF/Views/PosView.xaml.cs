@@ -653,11 +653,13 @@ public partial class PosView : UserControl
         var bcv = ViewModel?.BcvRate ?? 55.40m;
         bool isSpecial = ViewModel?.IsSpecialTaxpayer ?? true;
 
-        decimal totalBaseSaleUSD = _cartItems.Sum(i => i.TotalPriceUSD) +
-                                  _cartItems.Where(i => i.VatRate == VatRateType.General16).Sum(i => decimal.Round(i.TotalPriceUSD * 0.16m, 4)) +
-                                  _cartItems.Where(i => i.VatRate == VatRateType.Reducida8).Sum(i => decimal.Round(i.TotalPriceUSD * 0.08m, 4));
+        decimal subtotalWithoutVatUSD = _cartItems.Sum(i => i.TotalPriceUSD);
+        decimal vatGeneralUSD = _cartItems.Where(i => i.VatRate == VatRateType.General16).Sum(i => decimal.Round(i.TotalPriceUSD * 0.16m, 4));
+        decimal vatReducidaUSD = _cartItems.Where(i => i.VatRate == VatRateType.Reducida8).Sum(i => decimal.Round(i.TotalPriceUSD * 0.08m, 4));
+        decimal totalVatUSD = vatGeneralUSD + vatReducidaUSD;
+        decimal totalBaseSaleUSD = subtotalWithoutVatUSD + totalVatUSD;
 
-        var splitDialog = new SplitPaymentDialog(totalBaseSaleUSD, bcv, isSpecial, _activeCustomer)
+        var splitDialog = new SplitPaymentDialog(totalBaseSaleUSD, bcv, isSpecial, _activeCustomer, subtotalWithoutVatUSD, totalVatUSD)
         {
             Owner = Window.GetWindow(this)
         };
