@@ -116,7 +116,7 @@
             <!-- Acciones Inferiores -->
             <Border Grid.Row="2" Background="#F6F8FA" CornerRadius="0,0,12,12" Padding="22,14" BorderBrush="#E1E4E8" BorderThickness="0,1,0,0">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Click="BtnCancel_Click" Content="Cancelar" Background="Transparent" BorderBrush="#D0D7DE" BorderThickness="1"
+                    <Button Click="BtnCancel_Click" Content="Cancelar" Style="{StaticResource ModernOutlineActionButtonStyle}"
                             Padding="16,8" Margin="0,0,10,0" FontWeight="SemiBold" Cursor="Hand">
                         <Button.Resources>
                             <Style TargetType="Border">
@@ -125,7 +125,7 @@
                         </Button.Resources>
                     </Button>
 
-                    <Button Click="BtnSave_Click" Content="Guardar Cliente" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                    <Button Click="BtnSave_Click" Content="Guardar Cliente" Style="{StaticResource ModernPrimaryActionButtonStyle}"
                             Padding="22,8" FontWeight="SemiBold" Cursor="Hand">
                         <Button.Resources>
                             <Style TargetType="Border">

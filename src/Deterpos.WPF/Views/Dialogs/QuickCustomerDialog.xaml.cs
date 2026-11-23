@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Deterpos.Domain.Entities;
 using Deterpos.Infrastructure.Data;
 using Deterpos.Infrastructure.Services;
@@ -73,53 +74,35 @@ public partial class QuickCustomerDialog : Window
         BtnSelect.IsEnabled = SelectedCustomer != null;
     }
 
-    private void BtnToggleExpress_Click(object sender, RoutedEventArgs e)
+    private void LstCustomers_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        PanelExpressNew.Visibility = PanelExpressNew.Visibility == Visibility.Visible
-            ? Visibility.Collapsed
-            : Visibility.Visible;
-    }
-
-    private async void BtnSaveExpress_Click(object sender, RoutedEventArgs e)
-    {
-        string prefix = (CmbDocPrefix.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "V-";
-        string docNum = TxtNewDoc.Text.Trim();
-        string name = TxtNewName.Text.Trim();
-        string phone = TxtNewPhone.Text.Trim();
-
-        if (string.IsNullOrWhiteSpace(docNum))
+        if (SelectedCustomer != null)
         {
-            MessageBox.Show("Ingrese la cédula o RIF fiscal.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
-            TxtNewDoc.Focus();
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            MessageBox.Show("Ingrese el nombre o razón social.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
-            TxtNewName.Focus();
-            return;
-        }
-
-        var customer = new Customer
-        {
-            DocumentNumber = $"{prefix}{docNum}",
-            FullName = name,
-            Phone = phone,
-            Address = "Local / Mostrador",
-            IsActive = true
-        };
-
-        try
-        {
-            var created = await _customerService.CreateCustomerAsync(customer);
-            SelectedCustomer = created;
             DialogResult = true;
             Close();
         }
-        catch (Exception ex)
+    }
+
+    private async void BtnNewCustomer_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new CustomerFormDialog
         {
-            MessageBox.Show($"Error al guardar cliente: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Owner = this
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            try
+            {
+                var created = await _customerService.CreateCustomerAsync(dialog.ResultCustomer);
+                SelectedCustomer = created;
+                DialogResult = true;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al registrar cliente: {ex.Message}", "Error Fiscal", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 
