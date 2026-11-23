@@ -19,7 +19,7 @@ public partial class OpenShiftDialog : Window
         InitializeComponent();
         _bcvRate = bcvRate > 0 ? bcvRate : 55.40m;
         TxtBcvRateDisplay.Text = $"1 USD = {_bcvRate:N4} Bs.";
-        TxtTerminalSubtitle.Text = $"Estación: {terminalIdentifier} (Caja Principal)";
+        ContextBar.Text = $"Estación: {terminalIdentifier} (Caja Principal)";
         TxtCashierName.Text = currentUserName;
 
         // Monto inicial sugerido

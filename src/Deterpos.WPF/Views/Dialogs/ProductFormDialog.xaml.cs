@@ -32,7 +32,8 @@ public partial class ProductFormDialog : Window
         // Modo Edición vs Modo Nuevo
         if (_editingProduct != null)
         {
-            TxtModalTitle.Text = "Editar Producto de Catálogo";
+            Title = "Editar Producto - Deterpos";
+            ContextBar.Text = $"Editando producto: {_editingProduct.Name} ({_editingProduct.Code})";
             TxtCode.Text = _editingProduct.Code;
             TxtCode.IsReadOnly = true;
             TxtBarcode.Text = _editingProduct.Barcode;
@@ -52,6 +53,7 @@ public partial class ProductFormDialog : Window
         }
         else
         {
+            Title = "Nuevo Producto - Deterpos";
             // Código autogenerado por defecto
             TxtCode.Text = $"PROD-{DateTime.UtcNow.Ticks % 10000:D4}";
             BtnGenBarcode_Click(null!, null!);

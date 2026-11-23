@@ -21,7 +21,8 @@ public partial class UserEditDialog : Window
 
         if (_editingUser != null)
         {
-            TxtDialogTitle.Text = $"Editar Usuario: {_editingUser.Username}";
+            Title = $"Editar Usuario: {_editingUser.Username} - Deterpos";
+            ContextBar.Text = $"Credenciales y perfil de acceso para {_editingUser.FullName}";
             TxtUsername.Text = _editingUser.Username;
             TxtUsername.IsEnabled = false; // El username no se cambia una vez creado
             TxtFullName.Text = _editingUser.FullName;

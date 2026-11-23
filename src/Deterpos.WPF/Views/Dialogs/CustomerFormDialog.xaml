@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Deterpos.WPF.Views.Dialogs.CustomerFormDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
+        xmlns:ctrl="clr-namespace:Deterpos.WPF.Controls"
         Title="Nuevo Cliente - Deterpos" 
         Height="590" Width="520"
         WindowStartupLocation="CenterOwner"
@@ -17,13 +17,10 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Franja Contextual Compacta con Icono (Opción 1) -->
-        <Border Grid.Row="0" Background="#F8FAFC" Padding="20,10" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <fluentIcons:SymbolIcon Symbol="PersonAdd" FontSize="18" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
-                <TextBlock x:Name="TxtContextInfo" Text="Datos fiscales para facturación SENIAT y créditos comerciales" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
-            </StackPanel>
-        </Border>
+        <!-- Franja Contextual Reutilizable -->
+        <ctrl:DialogContextBar x:Name="ContextBar" Grid.Row="0" 
+                               Symbol="PersonAdd" 
+                               Text="Datos fiscales para facturación SENIAT y créditos comerciales" />
 
         <!-- Formulario -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,18">

@@ -19,8 +19,8 @@ public partial class UserPermissionsDialog : Window
         _user = user;
         _permissions = user.Permissions ?? UserService.CreateDefaultPermissionsForRole(user.Role);
 
-        TxtTitle.Text = $"Permisos: {_user.FullName} (@{_user.Username})";
-        TxtSubtitle.Text = $"Rol asignado: {_user.Role} • Defina qué facultades específicas tiene este usuario";
+        Title = $"Permisos: {_user.FullName} (@{_user.Username}) - Deterpos";
+        ContextBar.Text = $"Rol asignado: {_user.Role} • Defina qué facultades específicas tiene este usuario";
 
         LoadPermissionsToUi();
     }

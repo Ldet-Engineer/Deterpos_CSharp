@@ -93,7 +93,7 @@ public partial class SplitPaymentDialog : Window
             BtnOpenCasheaAssistant.Visibility = cSettings.IsEnabled ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        TxtClientInfoSubtitle.Text = $"Cliente: {customer?.FullName ?? "Cliente de Contado"} ({customer?.DocumentNumber ?? "V-00000000"}) • Tasa Oficial BCV: {_bcvRate:N4} Bs.";
+        ContextBar.Text = $"Cliente: {customer?.FullName ?? "Cliente de Contado"} ({customer?.DocumentNumber ?? "V-00000000"}) • Tasa Oficial BCV: {_bcvRate:N4} Bs.";
         DgPayments.ItemsSource = _displayedPayments;
 
         Loaded += (_, _) =>

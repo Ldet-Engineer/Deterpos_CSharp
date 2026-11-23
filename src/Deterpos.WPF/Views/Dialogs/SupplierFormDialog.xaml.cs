@@ -16,13 +16,18 @@ public partial class SupplierFormDialog : Window
 
         if (_editingSupplier != null)
         {
-            TxtModalTitle.Text = "Editar Proveedor";
+            Title = "Editar Proveedor - Deterpos";
+            ContextBar.Text = $"Editando proveedor: {_editingSupplier.CompanyName} ({_editingSupplier.DocumentNumber})";
             TxtDocumentNumber.Text = _editingSupplier.DocumentNumber;
             TxtCompanyName.Text = _editingSupplier.CompanyName;
             TxtContactName.Text = _editingSupplier.ContactName;
             TxtPhone.Text = _editingSupplier.Phone;
             TxtEmail.Text = _editingSupplier.Email;
             TxtAddress.Text = _editingSupplier.Address;
+        }
+        else
+        {
+            Title = "Nuevo Proveedor - Deterpos";
         }
     }
 

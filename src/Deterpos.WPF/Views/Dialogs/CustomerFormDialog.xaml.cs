@@ -19,7 +19,7 @@ public partial class CustomerFormDialog : Window
         if (_editingCustomer != null)
         {
             Title = "Editar Cliente - Deterpos";
-            TxtContextInfo.Text = $"Editando cliente: {_editingCustomer.FullName} ({_editingCustomer.DocumentNumber})";
+            ContextBar.Text = $"Editando cliente: {_editingCustomer.FullName} ({_editingCustomer.DocumentNumber})";
             ParseAndSetDocument(_editingCustomer.DocumentNumber);
             TxtFullName.Text = _editingCustomer.FullName;
             TxtPhone.Text = _editingCustomer.Phone;
