@@ -132,9 +132,20 @@ public partial class MainWindow : RibbonWindow
                 }
                 else if (args.PropertyName == nameof(MainViewModel.CreditActionRequested))
                 {
-                    if (vm.CreditActionRequested == "AccountStatement")
+                    switch (vm.CreditActionRequested)
                     {
-                        ViewCreditManagement.OpenSelectedCustomerStatement();
+                        case "AccountStatement":
+                            ViewCreditManagement.OpenSelectedCustomerStatement();
+                            break;
+                        case "SupplierAccountStatement":
+                            ViewCreditManagement.OpenSelectedSupplierStatement();
+                            break;
+                        case "RegisterCustomerPayment":
+                            ViewCreditManagement.OpenRegisterCustomerPayment();
+                            break;
+                        case "RegisterSupplierPayment":
+                            ViewCreditManagement.OpenRegisterSupplierPayment();
+                            break;
                     }
                     vm.CreditActionRequested = string.Empty;
                 }

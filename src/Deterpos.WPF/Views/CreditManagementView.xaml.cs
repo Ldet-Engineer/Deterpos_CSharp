@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Deterpos.Application.Common;
 using Deterpos.Application.Interfaces;
 using Deterpos.Domain.Entities;
@@ -12,6 +13,7 @@ using Deterpos.Infrastructure.Data;
 using Deterpos.Infrastructure.Services;
 using Deterpos.WPF.ViewModels;
 using Deterpos.WPF.Views.Dialogs;
+using FluentIcons.Common;
 
 namespace Deterpos.WPF.Views;
 
@@ -48,10 +50,15 @@ public partial class CreditManagementView : UserControl
 
     private readonly List<Customer> _allCustomers = new();
     private readonly List<Supplier> _allSuppliers = new();
+    private readonly List<CustomerPayment> _allCustomerPayments = new();
+    private readonly List<SupplierPayment> _allSupplierPayments = new();
+
     private readonly ObservableCollection<CustomerDebtRowDisplay> _displayedCustomers = new();
     private readonly ObservableCollection<SupplierDebtRowDisplay> _displayedSuppliers = new();
     private readonly ObservableCollection<CustomerPayment> _displayedCustomerPayments = new();
     private readonly ObservableCollection<SupplierPayment> _displayedSupplierPayments = new();
+
+    private int _currentTabIndex = 0;
 
     private MainViewModel? ViewModel => DataContext as MainViewModel;
 
@@ -81,6 +88,7 @@ public partial class CreditManagementView : UserControl
     private async void CreditManagementView_Loaded(object sender, RoutedEventArgs e)
     {
         await LoadAllDataAsync();
+        SelectTab(_currentTabIndex);
     }
 
     public async Task LoadAllDataAsync()
@@ -96,12 +104,12 @@ public partial class CreditManagementView : UserControl
             _allSuppliers.AddRange(supps);
 
             var custPayments = await _creditService.GetRecentCustomerPaymentsAsync(100);
-            _displayedCustomerPayments.Clear();
-            foreach (var cp in custPayments) _displayedCustomerPayments.Add(cp);
+            _allCustomerPayments.Clear();
+            _allCustomerPayments.AddRange(custPayments);
 
             var suppPayments = await _creditService.GetRecentSupplierPaymentsAsync(100);
-            _displayedSupplierPayments.Clear();
-            foreach (var sp in suppPayments) _displayedSupplierPayments.Add(sp);
+            _allSupplierPayments.Clear();
+            _allSupplierPayments.AddRange(suppPayments);
 
             ApplyFilters();
             CalculateMetrics();
@@ -165,16 +173,38 @@ public partial class CreditManagementView : UserControl
         {
             _displayedSuppliers.Add(new SupplierDebtRowDisplay { Source = s, BcvRate = bcv });
         }
-    }
 
-    private void CreditTab_Checked(object sender, RoutedEventArgs e)
-    {
-        if (!IsLoaded) return;
+        // 3. Filtrar Historial Abonos Clientes
+        var filteredCustPayments = _allCustomerPayments.AsEnumerable();
+        if (!string.IsNullOrEmpty(term))
+        {
+            filteredCustPayments = filteredCustPayments.Where(p =>
+                (p.Customer != null && (p.Customer.FullName.ToLower().Contains(term) || p.Customer.DocumentNumber.ToLower().Contains(term))) ||
+                p.Id.ToString().Contains(term) ||
+                p.PaymentMethod.ToString().ToLower().Contains(term));
+        }
 
-        DgCustomersDebt.Visibility = RbTabCxc.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
-        DgSuppliersDebt.Visibility = RbTabCxp.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
-        DgCustomerPaymentsHistory.Visibility = RbTabCustomerHistory.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
-        DgSupplierPaymentsHistory.Visibility = RbTabSupplierHistory.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        _displayedCustomerPayments.Clear();
+        foreach (var p in filteredCustPayments)
+        {
+            _displayedCustomerPayments.Add(p);
+        }
+
+        // 4. Filtrar Historial Pagos Proveedores
+        var filteredSuppPayments = _allSupplierPayments.AsEnumerable();
+        if (!string.IsNullOrEmpty(term))
+        {
+            filteredSuppPayments = filteredSuppPayments.Where(p =>
+                (p.Supplier != null && (p.Supplier.CompanyName.ToLower().Contains(term) || p.Supplier.DocumentNumber.ToLower().Contains(term))) ||
+                p.Id.ToString().Contains(term) ||
+                p.PaymentMethod.ToString().ToLower().Contains(term));
+        }
+
+        _displayedSupplierPayments.Clear();
+        foreach (var p in filteredSuppPayments)
+        {
+            _displayedSupplierPayments.Add(p);
+        }
     }
 
     private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
@@ -196,21 +226,7 @@ public partial class CreditManagementView : UserControl
     {
         if (sender is Button btn && btn.DataContext is CustomerDebtRowDisplay row)
         {
-            decimal bcv = ViewModel?.BcvRate ?? 55.40m;
-            string user = ViewModel?.CurrentUserName ?? "Administrador";
-
-            var shift = await _cashService.GetActiveShiftAsync(1);
-            int? shiftId = shift?.Id;
-
-            var dialog = new CustomerPaymentDialog(row.Source, _creditService, bcv, shiftId, user)
-            {
-                Owner = Window.GetWindow(this)
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                await LoadAllDataAsync();
-            }
+            await ProcessCustomerPaymentAsync(row.Source);
         }
     }
 
@@ -218,14 +234,7 @@ public partial class CreditManagementView : UserControl
     {
         if (sender is Button btn && btn.DataContext is CustomerDebtRowDisplay row)
         {
-            decimal bcv = ViewModel?.BcvRate ?? 55.40m;
-            var statementItems = await _creditService.GetCustomerStatementAsync(row.Source.Id, bcv);
-
-            var dialog = new AccountStatementDialog(row.Source.FullName, row.Source.DocumentNumber, statementItems, bcv, isSupplier: false)
-            {
-                Owner = Window.GetWindow(this)
-            };
-            dialog.ShowDialog();
+            await ShowCustomerStatementAsync(row.Source);
         }
     }
 
@@ -233,21 +242,7 @@ public partial class CreditManagementView : UserControl
     {
         if (sender is Button btn && btn.DataContext is SupplierDebtRowDisplay row)
         {
-            decimal bcv = ViewModel?.BcvRate ?? 55.40m;
-            string user = ViewModel?.CurrentUserName ?? "Administrador";
-
-            var shift = await _cashService.GetActiveShiftAsync(1);
-            int? shiftId = shift?.Id;
-
-            var dialog = new SupplierPaymentDialog(row.Source, _creditService, bcv, shiftId, user)
-            {
-                Owner = Window.GetWindow(this)
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                await LoadAllDataAsync();
-            }
+            await ProcessSupplierPaymentAsync(row.Source);
         }
     }
 
@@ -255,23 +250,134 @@ public partial class CreditManagementView : UserControl
     {
         if (sender is Button btn && btn.DataContext is SupplierDebtRowDisplay row)
         {
-            decimal bcv = ViewModel?.BcvRate ?? 55.40m;
-            var statementItems = await _creditService.GetSupplierStatementAsync(row.Source.Id, bcv);
-
-            var dialog = new AccountStatementDialog(row.Source.CompanyName, row.Source.DocumentNumber, statementItems, bcv, isSupplier: true)
-            {
-                Owner = Window.GetWindow(this)
-            };
-            dialog.ShowDialog();
+            await ShowSupplierStatementAsync(row.Source);
         }
     }
 
     public void SelectTab(int tabIndex)
     {
-        if (tabIndex == 0) RbTabCxc.IsChecked = true;
-        else if (tabIndex == 1) RbTabCxp.IsChecked = true;
-        else if (tabIndex == 2) RbTabCustomerHistory.IsChecked = true;
-        else if (tabIndex == 3) RbTabSupplierHistory.IsChecked = true;
+        _currentTabIndex = tabIndex;
+        DgCustomersDebt.Visibility = tabIndex == 0 ? Visibility.Visible : Visibility.Collapsed;
+        DgSuppliersDebt.Visibility = tabIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
+        DgCustomerPaymentsHistory.Visibility = tabIndex == 2 ? Visibility.Visible : Visibility.Collapsed;
+        DgSupplierPaymentsHistory.Visibility = tabIndex == 3 ? Visibility.Visible : Visibility.Collapsed;
+
+        switch (tabIndex)
+        {
+            case 0: // CxC Clientes
+                TxtViewTitle.Text = "Cuentas por Cobrar (CxC) - Cartera de Clientes";
+                TxtViewSubtitle.Text = "Gestión de clientes con saldo deudor, amortizaciones a crédito y cobranza bimonetaria.";
+                TxtActiveSection.Text = "Cartera Deudora de Clientes (CxC)";
+                IconActiveSection.Symbol = Symbol.MoneyHand;
+                IconActiveSection.Foreground = (SolidColorBrush)FindResource("AccentGreenBrush");
+                BadgeTag.Visibility = Visibility.Visible;
+                TxtBadgeTag.Text = "CRÉDITOS PROTEGIDOS EN USD";
+                CardCxc.Visibility = Visibility.Visible;
+                CardCxp.Visibility = Visibility.Collapsed;
+                TxtSearchPlaceholder.Text = "Buscar por cliente, cédula o teléfono...";
+                break;
+
+            case 1: // CxP Proveedores
+                TxtViewTitle.Text = "Cuentas por Pagar (CxP) - Obligaciones con Proveedores";
+                TxtViewSubtitle.Text = "Control de facturas a crédito, amortizaciones y pasivos comerciales protegidos en USD.";
+                TxtActiveSection.Text = "Obligaciones por Pagar a Proveedores (CxP)";
+                IconActiveSection.Symbol = Symbol.Payment;
+                IconActiveSection.Foreground = new SolidColorBrush(Color.FromRgb(142, 86, 46));
+                BadgeTag.Visibility = Visibility.Visible;
+                TxtBadgeTag.Text = "PASIVOS COMERCIALES USD";
+                CardCxc.Visibility = Visibility.Collapsed;
+                CardCxp.Visibility = Visibility.Visible;
+                TxtSearchPlaceholder.Text = "Buscar por proveedor, RIF o contacto...";
+                break;
+
+            case 2: // Historial Abonos Clientes
+                TxtViewTitle.Text = "Historial de Abonos y Cobranzas de Clientes";
+                TxtViewSubtitle.Text = "Auditoría cronológica de abonos recibidos, comprobantes de ingreso y saldo resultante.";
+                TxtActiveSection.Text = "Historial de Abonos Recibidos (CxC)";
+                IconActiveSection.Symbol = Symbol.History;
+                IconActiveSection.Foreground = (SolidColorBrush)FindResource("PrimaryBrandBrush");
+                BadgeTag.Visibility = Visibility.Collapsed;
+                CardCxc.Visibility = Visibility.Visible;
+                CardCxp.Visibility = Visibility.Collapsed;
+                TxtSearchPlaceholder.Text = "Buscar abono por cliente o comprobante...";
+                break;
+
+            case 3: // Historial Pagos Proveedor
+                TxtViewTitle.Text = "Historial de Pagos Emitidos a Proveedores";
+                TxtViewSubtitle.Text = "Registro cronológico de desembolsos, pagos a proveedores y amortización de pasivos.";
+                TxtActiveSection.Text = "Historial de Pagos a Proveedores (CxP)";
+                IconActiveSection.Symbol = Symbol.History;
+                IconActiveSection.Foreground = (SolidColorBrush)FindResource("PrimaryBrandBrush");
+                BadgeTag.Visibility = Visibility.Collapsed;
+                CardCxc.Visibility = Visibility.Collapsed;
+                CardCxp.Visibility = Visibility.Visible;
+                TxtSearchPlaceholder.Text = "Buscar pago por proveedor o comprobante...";
+                break;
+        }
+
+        ApplyFilters();
+    }
+
+    public async Task ProcessCustomerPaymentAsync(Customer customer)
+    {
+        decimal bcv = ViewModel?.BcvRate ?? 55.40m;
+        string user = ViewModel?.CurrentUserName ?? "Administrador";
+
+        var shift = await _cashService.GetActiveShiftAsync(1);
+        int? shiftId = shift?.Id;
+
+        var dialog = new CustomerPaymentDialog(customer, _creditService, bcv, shiftId, user)
+        {
+            Owner = Window.GetWindow(this)
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            await LoadAllDataAsync();
+        }
+    }
+
+    public async Task ShowCustomerStatementAsync(Customer customer)
+    {
+        decimal bcv = ViewModel?.BcvRate ?? 55.40m;
+        var statementItems = await _creditService.GetCustomerStatementAsync(customer.Id, bcv);
+
+        var dialog = new AccountStatementDialog(customer.FullName, customer.DocumentNumber, statementItems, bcv, isSupplier: false)
+        {
+            Owner = Window.GetWindow(this)
+        };
+        dialog.ShowDialog();
+    }
+
+    public async Task ProcessSupplierPaymentAsync(Supplier supplier)
+    {
+        decimal bcv = ViewModel?.BcvRate ?? 55.40m;
+        string user = ViewModel?.CurrentUserName ?? "Administrador";
+
+        var shift = await _cashService.GetActiveShiftAsync(1);
+        int? shiftId = shift?.Id;
+
+        var dialog = new SupplierPaymentDialog(supplier, _creditService, bcv, shiftId, user)
+        {
+            Owner = Window.GetWindow(this)
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            await LoadAllDataAsync();
+        }
+    }
+
+    public async Task ShowSupplierStatementAsync(Supplier supplier)
+    {
+        decimal bcv = ViewModel?.BcvRate ?? 55.40m;
+        var statementItems = await _creditService.GetSupplierStatementAsync(supplier.Id, bcv);
+
+        var dialog = new AccountStatementDialog(supplier.CompanyName, supplier.DocumentNumber, statementItems, bcv, isSupplier: true)
+        {
+            Owner = Window.GetWindow(this)
+        };
+        dialog.ShowDialog();
     }
 
     public async void OpenSelectedCustomerStatement()
@@ -279,17 +385,50 @@ public partial class CreditManagementView : UserControl
         var row = DgCustomersDebt.SelectedItem as CustomerDebtRowDisplay ?? _displayedCustomers.FirstOrDefault();
         if (row != null)
         {
-            decimal bcv = ViewModel?.BcvRate ?? 55.40m;
-            var statementItems = await _creditService.GetCustomerStatementAsync(row.Source.Id, bcv);
-            var dialog = new AccountStatementDialog(row.Source.FullName, row.Source.DocumentNumber, statementItems, bcv, isSupplier: false)
-            {
-                Owner = Window.GetWindow(this)
-            };
-            dialog.ShowDialog();
+            await ShowCustomerStatementAsync(row.Source);
         }
         else
         {
-            MessageBox.Show("No hay clientes con saldo o deuda pendiente registrada en este momento.", "Estado de Cuenta", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("No hay clientes con saldo o deuda pendiente seleccionados en este momento.", "Estado de Cuenta", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
+    public async void OpenSelectedSupplierStatement()
+    {
+        var row = DgSuppliersDebt.SelectedItem as SupplierDebtRowDisplay ?? _displayedSuppliers.FirstOrDefault();
+        if (row != null)
+        {
+            await ShowSupplierStatementAsync(row.Source);
+        }
+        else
+        {
+            MessageBox.Show("No hay proveedores con deuda pendiente seleccionados en este momento.", "Estado de Cuenta Proveedor", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
+    public async void OpenRegisterCustomerPayment()
+    {
+        var row = DgCustomersDebt.SelectedItem as CustomerDebtRowDisplay ?? _displayedCustomers.FirstOrDefault();
+        if (row != null)
+        {
+            await ProcessCustomerPaymentAsync(row.Source);
+        }
+        else
+        {
+            MessageBox.Show("Seleccione un cliente de la lista para registrar un abono.", "Abono a Cliente", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
+    public async void OpenRegisterSupplierPayment()
+    {
+        var row = DgSuppliersDebt.SelectedItem as SupplierDebtRowDisplay ?? _displayedSuppliers.FirstOrDefault();
+        if (row != null)
+        {
+            await ProcessSupplierPaymentAsync(row.Source);
+        }
+        else
+        {
+            MessageBox.Show("Seleccione un proveedor de la lista para registrar un pago.", "Pago a Proveedor", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }

@@ -604,18 +604,49 @@ public class MainViewModel : ViewModelBase
                         break;
                     case "Cuentas por Cobrar":
                     case "Abonos y Cobros":
+                    case "Cartera Deudora":
                         CurrentModule = ActiveViewModule.CreditManagement;
                         CreditTabRequested = 0;
+                        break;
+                    case "Historial de Abonos":
+                    case "Historial Abonos":
+                    case "Historial Abonos Clientes":
+                        CurrentModule = ActiveViewModule.CreditManagement;
+                        CreditTabRequested = 2;
                         break;
                     case "Estado de Cuenta Clientes":
                     case "Estado de Cuenta":
                         CurrentModule = ActiveViewModule.CreditManagement;
                         CreditActionRequested = "AccountStatement";
                         break;
+                    case "Registrar Abono":
+                    case "Registrar Abono Cliente":
+                    case "Abonar a Cliente":
+                        CurrentModule = ActiveViewModule.CreditManagement;
+                        CreditActionRequested = "RegisterCustomerPayment";
+                        break;
                     case "Cuentas por Pagar":
                     case "Pagos a Proveedor":
+                    case "Deudas por Pagar":
                         CurrentModule = ActiveViewModule.CreditManagement;
                         CreditTabRequested = 1;
+                        break;
+                    case "Historial Pagos Proveedor":
+                    case "Historial Pagos":
+                    case "Historial de Pagos Proveedor":
+                        CurrentModule = ActiveViewModule.CreditManagement;
+                        CreditTabRequested = 3;
+                        break;
+                    case "Estado de Cuenta Proveedor":
+                    case "Estado de Cuenta CxP":
+                        CurrentModule = ActiveViewModule.CreditManagement;
+                        CreditActionRequested = "SupplierAccountStatement";
+                        break;
+                    case "Registrar Pago":
+                    case "Registrar Pago Proveedor":
+                    case "Pagar a Proveedor":
+                        CurrentModule = ActiveViewModule.CreditManagement;
+                        CreditActionRequested = "RegisterSupplierPayment";
                         break;
 
                     // FINANZAS Y GASTOS

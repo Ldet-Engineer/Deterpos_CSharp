@@ -876,11 +876,32 @@
                 </Fluent:RibbonGroupBox>
 
                 <Fluent:RibbonGroupBox Header="Cuentas por Pagar (CxP)">
-                    <Fluent:Button Header="Pagos a Proveedor" Size="Large"
+                    <Fluent:Button Header="Deudas por Pagar" Size="Large"
                                    Command="{Binding NavigateCommand}" CommandParameter="Cuentas por Pagar">
                         <Fluent:Button.LargeIcon>
                             <fluentIcons:SymbolIcon Symbol="Payment" FontSize="26" Foreground="#8E562E" />
                         </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Historial Pagos" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Historial Pagos Proveedor">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="History" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Pagar a Proveedor" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Registrar Pago Proveedor">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="MoneyHand" FontSize="18" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Estado de Cuenta" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Estado de Cuenta Proveedor">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="DocumentPdf" FontSize="18" Foreground="#D83B01" />
+                        </Fluent:Button.Icon>
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
@@ -899,11 +920,25 @@
                 </Fluent:RibbonGroupBox>
 
                 <Fluent:RibbonGroupBox Header="Cuentas por Cobrar (CxC)">
-                    <Fluent:Button Header="Abonos y Cobros" Size="Large"
+                    <Fluent:Button Header="Cartera Deudora" Size="Large"
                                    Command="{Binding NavigateCommand}" CommandParameter="Cuentas por Cobrar">
                         <Fluent:Button.LargeIcon>
                             <fluentIcons:SymbolIcon Symbol="MoneyHand" FontSize="26" Foreground="{StaticResource AccentGreenBrush}" />
                         </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Historial Abonos" Size="Large"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Historial de Abonos">
+                        <Fluent:Button.LargeIcon>
+                            <fluentIcons:SymbolIcon Symbol="History" FontSize="26" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+
+                    <Fluent:Button Header="Abonar a Cliente" Size="Middle"
+                                   Command="{Binding NavigateCommand}" CommandParameter="Registrar Abono Cliente">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="Payment" FontSize="18" Foreground="{StaticResource AccentGreenBrush}" />
+                        </Fluent:Button.Icon>
                     </Fluent:Button>
 
                     <Fluent:Button Header="Estado de Cuenta" Size="Middle"

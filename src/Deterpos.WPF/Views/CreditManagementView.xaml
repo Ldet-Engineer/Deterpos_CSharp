@@ -23,19 +23,19 @@
             <!-- Título y Subtítulo -->
             <StackPanel Grid.Column="0" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                    <TextBlock Text="Cuentas por Cobrar (CxC) y por Pagar (CxP)" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,12,0" />
-                    <Border Background="#E6F4EA" CornerRadius="6" Padding="10,3" VerticalAlignment="Center">
-                        <TextBlock Text="CRÉDITOS PROTEGIDOS EN USD" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
+                    <TextBlock x:Name="TxtViewTitle" Text="Cuentas por Cobrar (CxC) - Cartera de Clientes" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,12,0" />
+                    <Border x:Name="BadgeTag" Background="#E6F4EA" CornerRadius="6" Padding="10,3" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtBadgeTag" Text="CRÉDITOS PROTEGIDOS EN USD" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
                     </Border>
                 </StackPanel>
-                <TextBlock Text="Gestión de cartera deudora bimonetaria, liquidación a tasa oficial BCV y conciliación de abonos." FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBlock x:Name="TxtViewSubtitle" Text="Gestión de saldos deudores de clientes, amortizaciones y cobranza a tasa oficial BCV." FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" />
             </StackPanel>
 
             <!-- Métricas Resumen -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
 
                 <!-- Tarjeta 1: Cartera por Cobrar (CxC) -->
-                <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,10" Margin="0,0,10,0" MinWidth="160">
+                <Border x:Name="CardCxc" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,10" Margin="0,0,10,0" MinWidth="160">
                     <StackPanel>
                         <TextBlock Text="CARTERA POR COBRAR (CxC)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" />
                         <TextBlock x:Name="TxtMetricsCxcUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="{StaticResource AccentGreenBrush}" Margin="0,2,0,0" />
@@ -44,7 +44,7 @@
                 </Border>
 
                 <!-- Tarjeta 2: Cartera por Pagar (CxP) -->
-                <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,10" MinWidth="160">
+                <Border x:Name="CardCxp" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,10" MinWidth="160" Visibility="Collapsed">
                     <StackPanel>
                         <TextBlock Text="DEUDA A PROVEEDORES (CxP)" FontSize="10" FontWeight="Bold" Foreground="#D83B01" />
                         <TextBlock x:Name="TxtMetricsCxpUSD" Text="$ 0.00" FontSize="16" FontWeight="Bold" Foreground="#D83B01" Margin="0,2,0,0" />
@@ -56,28 +56,26 @@
         </Grid>
 
         <!-- ============================================== -->
-        <!--  FILA 1: SELECTOR DE PESTAÑAS Y BUSCADOR       -->
+        <!--  FILA 1: CONTEXTO ACTIVO Y BUSCADOR            -->
         <!-- ============================================== -->
         <Border Grid.Row="1" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,14">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="260" />
+                    <ColumnDefinition Width="320" />
                     <ColumnDefinition Width="10" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Segment Tabs Modernos -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <RadioButton x:Name="RbTabCxc" Content="Cuentas por Cobrar (Clientes)" GroupName="CreditTabGroup" IsChecked="True" Checked="CreditTab_Checked"
-                                 Style="{StaticResource SegmentedTabRadioStyle}" Margin="0,0,8,0" />
-                    <RadioButton x:Name="RbTabCxp" Content="Cuentas por Pagar (Proveedores)" GroupName="CreditTabGroup" Checked="CreditTab_Checked"
-                                 Style="{StaticResource SegmentedTabRadioStyle}" Margin="0,0,8,0" />
-                    <RadioButton x:Name="RbTabCustomerHistory" Content="Historial de Abonos" GroupName="CreditTabGroup" Checked="CreditTab_Checked"
-                                 Style="{StaticResource SegmentedTabRadioStyle}" Margin="0,0,8,0" />
-                    <RadioButton x:Name="RbTabSupplierHistory" Content="Historial Pagos Proveedor" GroupName="CreditTabGroup" Checked="CreditTab_Checked"
-                                 Style="{StaticResource SegmentedTabRadioStyle}" />
+                <!-- Badge Contextual Indicador de la Sección Activa -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border x:Name="BadgeActiveSection" Background="#EFF6FC" CornerRadius="6" Padding="12,6" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <fluentIcons:SymbolIcon x:Name="IconActiveSection" Symbol="MoneyHand" FontSize="16" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock x:Name="TxtActiveSection" Text="Cartera Deudora de Clientes (CxC)" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <!-- Buscador por texto -->
@@ -91,13 +89,13 @@
                     </TextBox>
                     <fluentIcons:SymbolIcon Symbol="Search" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" 
                                             HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0" IsHitTestVisible="False" />
-                    <TextBlock x:Name="TxtSearchPlaceholder" Text="Buscar por nombre o documento..." FontSize="12" Foreground="#999999"
+                    <TextBlock x:Name="TxtSearchPlaceholder" Text="Buscar por cliente, cédula o teléfono..." FontSize="12" Foreground="#999999"
                                VerticalAlignment="Center" Margin="28,0,0,0" IsHitTestVisible="False" />
                 </Grid>
 
                 <!-- Botón Actualizar -->
                 <Button Grid.Column="4" Click="BtnRefresh_Click" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
-                        Padding="10,6" Cursor="Hand" ToolTip="Actualizar Cartera">
+                        Padding="10,6" Cursor="Hand" ToolTip="Actualizar Datos">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="6" />
