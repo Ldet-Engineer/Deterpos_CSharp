@@ -70,13 +70,17 @@ public partial class SupplierPaymentDialog : Window
 
     private void UpdateCashShiftCheckbox()
     {
-        // Solo Efectivo USD (0) o Efectivo VES (5) pueden egresarse de la caja física
+        // Solo Efectivo USD (0) o Efectivo VES (5) pueden egresarse de la caja física si hay turno abierto
         bool isPhysicalCash = CmbPaymentMethod.SelectedIndex == 0 || CmbPaymentMethod.SelectedIndex == 5;
-        ChkPayFromCashShift.IsEnabled = isPhysicalCash;
-        if (!isPhysicalCash)
+        bool hasShift = _currentShiftId.HasValue && _currentShiftId > 0;
+        ChkPayFromCashShift.IsEnabled = isPhysicalCash && hasShift;
+        if (!isPhysicalCash || !hasShift)
         {
             ChkPayFromCashShift.IsChecked = false;
         }
+        ChkPayFromCashShift.Content = hasShift
+            ? "Egresar efectivo de Caja Actual (Turno Abierto)"
+            : "Egresar efectivo de Caja Actual (Caja Cerrada - Sin Turno)";
     }
 
     private void TxtAmountInput_TextChanged(object sender, TextChangedEventArgs e)

@@ -345,8 +345,24 @@ public class DatabaseConnectionAndModuleTests
         }
 
         var product = await context.Products.FirstAsync();
-        var shift = await context.CashShifts.OrderByDescending(s => s.Id).FirstOrDefaultAsync();
-        int shiftId = shift?.Id ?? 1;
+        var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Status == CashShiftStatus.Abierta);
+        if (shift == null)
+        {
+            shift = new CashShift
+            {
+                CashRegisterId = 1,
+                CashierUsername = "TestRunner",
+                OpeningAmountUSD = 100m,
+                OpeningAmountVES = 5540m,
+                ExpectedAmountUSD = 100m,
+                ExpectedAmountVES = 5540m,
+                Status = CashShiftStatus.Abierta,
+                OpenedAt = DateTime.UtcNow
+            };
+            context.CashShifts.Add(shift);
+            await context.SaveChangesAsync();
+        }
+        int shiftId = shift.Id;
 
         decimal initialBalance = customer.CurrentBalanceUSD;
         decimal saleQty = 2m;
@@ -971,5 +987,58 @@ public class DatabaseConnectionAndModuleTests
                 File.Delete(tempCsv);
             }
         }
+    }
+
+    [Fact]
+    public async Task Test_ProcessSale_FailsWhenCashRegisterIsClosed()
+    {
+        var saleService = new SaleService(_factory);
+        await using var ctx = _factory.CreateDbContext();
+
+        var prod = await ctx.Products.FirstAsync(p => p.IsActive);
+
+        var saleDraft = new Sale
+        {
+            CashRegisterId = 1,
+            CashShiftId = -9999,
+            CashierUsername = "TestCashier",
+            FiscalPrinterSerial = "TESTFISCAL01",
+            Notes = "Intento de venta con caja cerrada"
+        };
+
+        var details = new List<SaleDetail>
+        {
+            new()
+            {
+                ProductId = prod.Id,
+                ProductCode = prod.Code,
+                ProductName = prod.Name,
+                Quantity = 1.0m,
+                UnitPriceUSD = prod.PriceUSD,
+                UnitCostUSD = prod.CostUSD,
+                VatRate = prod.VatRate
+            }
+        };
+
+        var payments = new List<SalePayment>
+        {
+            new()
+            {
+                Method = PaymentMethodType.EfectivoUSD,
+                CurrencyCode = "USD",
+                AmountOriginal = prod.PriceUSD,
+                ExchangeRateApplied = 1.0000m,
+                AmountEquivalentUSD = prod.PriceUSD,
+                ReferenceNumber = "CASH-TEST"
+            }
+        };
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await saleService.ProcessSaleAsync(saleDraft, details, payments, 55.40m, false);
+        });
+
+        Assert.Contains("CERRADA", ex.Message);
+        _output.WriteLine($"Validación exitosa: El intento de facturación con caja cerrada fue rechazado: {ex.Message}");
     }
 }

@@ -33,6 +33,7 @@ public partial class ExpenseDialog : Window
 
     private async void ExpenseDialog_Loaded(object sender, RoutedEventArgs e)
     {
+        UpdateCashShiftCheckbox();
         await LoadCategoriesAsync();
         RecalculateEquivalence();
     }
@@ -60,8 +61,21 @@ public partial class ExpenseDialog : Window
     private void CmbOrigin_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (!IsLoaded) return;
-        ChkDeductFromCash.IsEnabled = CmbOrigin.SelectedIndex == 0;
-        if (CmbOrigin.SelectedIndex != 0) ChkDeductFromCash.IsChecked = false;
+        UpdateCashShiftCheckbox();
+    }
+
+    private void UpdateCashShiftCheckbox()
+    {
+        bool isCashOrigin = CmbOrigin.SelectedIndex == 0;
+        bool hasShift = _currentShiftId.HasValue && _currentShiftId > 0;
+        ChkDeductFromCash.IsEnabled = isCashOrigin && hasShift;
+        if (!isCashOrigin || !hasShift)
+        {
+            ChkDeductFromCash.IsChecked = false;
+        }
+        ChkDeductFromCash.Content = hasShift
+            ? "Egresar efectivo de Caja Actual (Turno Abierto)"
+            : "Egresar efectivo de Caja Actual (Caja Cerrada - Sin Turno)";
     }
 
     private void TxtAmountInput_TextChanged(object sender, TextChangedEventArgs e)

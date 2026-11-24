@@ -105,7 +105,7 @@
                         </Grid>
 
                         <!-- Botón Buscar / Agregar -->
-                        <Button Grid.Column="2" Click="BtnAddFromSearch_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0" Padding="16,8" Cursor="Hand" FontWeight="SemiBold">
+                        <Button x:Name="BtnAddFromSearch" Grid.Column="2" Click="BtnAddFromSearch_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0" Padding="16,8" Cursor="Hand" FontWeight="SemiBold">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="6" />
@@ -469,6 +469,45 @@
                     </StackPanel>
 
                 </Grid>
+            </Border>
+
+            <!-- ======================================================= -->
+            <!--  OVERLAY DE BLOQUEO CUANDO LA CAJA ESTÁ CERRADA         -->
+            <!-- ======================================================= -->
+            <Border x:Name="OverlayClosedRegister" Grid.Column="0" Grid.ColumnSpan="3"
+                    Background="#DDF1F5F9" CornerRadius="8"
+                    Visibility="Collapsed" Panel.ZIndex="100">
+                <Border Background="White" CornerRadius="12" BorderBrush="#CBD5E1" BorderThickness="1"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Padding="40,32" MaxWidth="540">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="30" ShadowDepth="6" Direction="270" Color="#0F172A" Opacity="0.15" />
+                    </Border.Effect>
+                    <StackPanel HorizontalAlignment="Center">
+                        <!-- Icono de Seguridad / Caja Cerrada -->
+                        <Border Width="68" Height="68" CornerRadius="34" Background="#FEE2E2" HorizontalAlignment="Center" Margin="0,0,0,16">
+                            <fluentIcons:SymbolIcon Symbol="LockClosed" FontSize="34" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+
+                        <TextBlock Text="Caja Registradora Cerrada" FontSize="20" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center" Margin="0,0,0,8" />
+                        <TextBlock Text="Esta estación no cuenta con un turno de caja abierto en este momento. Para escanear productos y facturar, debe realizar la apertura de turno con el fondo de caja inicial."
+                                   FontSize="13.5" Foreground="#64748B" TextWrapping="Wrap" TextAlignment="Center" LineHeight="20" Margin="0,0,0,24" />
+
+                        <!-- Botón de Acción Directo para Aperturar Caja -->
+                        <Button x:Name="BtnOpenShiftFromPos" Click="BtnOpenShiftFromPos_Click"
+                                Style="{StaticResource ModernGreenActionButtonStyle}"
+                                Padding="24,12" Cursor="Hand" HorizontalAlignment="Center">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8" />
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <fluentIcons:SymbolIcon Symbol="Key" FontSize="18" Foreground="White" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Aperturar Turno de Caja Ahora" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
             </Border>
 
         </Grid>

@@ -70,10 +70,14 @@ public partial class CustomerPaymentDialog : Window
 
     private void UpdateCashShiftCheckbox()
     {
-        // Solo Efectivo USD (índice 0) o Efectivo Bs (índice 5) representan dinero físico para la gaveta
+        // Solo Efectivo USD (índice 0) o Efectivo Bs (índice 5) representan dinero físico para la gaveta si hay turno abierto
         bool isPhysicalCash = CmbPaymentMethod.SelectedIndex == 0 || CmbPaymentMethod.SelectedIndex == 5;
-        ChkSendToCashShift.IsEnabled = isPhysicalCash;
-        ChkSendToCashShift.IsChecked = isPhysicalCash;
+        bool hasShift = _currentShiftId.HasValue && _currentShiftId > 0;
+        ChkSendToCashShift.IsEnabled = isPhysicalCash && hasShift;
+        ChkSendToCashShift.IsChecked = isPhysicalCash && hasShift;
+        ChkSendToCashShift.Content = hasShift
+            ? "Ingresar efectivo a Caja Actual (Turno Abierto)"
+            : "Ingresar efectivo a Caja Actual (Caja Cerrada - Sin Turno)";
     }
 
     private void TxtAmountInput_TextChanged(object sender, TextChangedEventArgs e)

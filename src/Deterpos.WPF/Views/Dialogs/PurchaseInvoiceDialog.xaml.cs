@@ -98,6 +98,7 @@ public partial class PurchaseInvoiceDialog : Window
 
     private async void PurchaseInvoiceDialog_Loaded(object sender, RoutedEventArgs e)
     {
+        UpdateCashShiftCheckbox();
         await LoadMasterDataAsync();
     }
 
@@ -150,8 +151,20 @@ public partial class PurchaseInvoiceDialog : Window
     private void Condition_Checked(object sender, RoutedEventArgs e)
     {
         if (!IsLoaded) return;
-        ChkPayFromCashShift.IsEnabled = RbContado.IsChecked == true;
-        if (RbCredito.IsChecked == true) ChkPayFromCashShift.IsChecked = false;
+        UpdateCashShiftCheckbox();
+    }
+
+    private void UpdateCashShiftCheckbox()
+    {
+        bool hasShift = _currentShiftId.HasValue && _currentShiftId > 0;
+        ChkPayFromCashShift.IsEnabled = RbContado.IsChecked == true && hasShift;
+        if (RbCredito.IsChecked == true || !hasShift)
+        {
+            ChkPayFromCashShift.IsChecked = false;
+        }
+        ChkPayFromCashShift.Content = hasShift
+            ? "Pagar en efectivo desde Caja Actual (Turno Abierto)"
+            : "Pagar en efectivo desde Caja Actual (Caja Cerrada - Sin Turno)";
     }
 
     private void BtnAddItem_Click(object sender, RoutedEventArgs e)

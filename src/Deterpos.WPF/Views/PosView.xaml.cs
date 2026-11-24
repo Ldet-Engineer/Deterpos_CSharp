@@ -146,6 +146,7 @@ public partial class PosView : UserControl
         {
             var cSettings = _casheaService.LoadSettings();
             BtnCasheaCheckout.Visibility = cSettings.IsEnabled ? Visibility.Visible : Visibility.Collapsed;
+            await ReloadShiftStatusAsync();
             await ReloadCatalogAsync();
         }
     }
@@ -185,24 +186,38 @@ public partial class PosView : UserControl
     {
         try
         {
-            if (_currentRegister != null)
+            if (_currentRegister == null)
             {
-                _activeShift = await _cashService.GetActiveShiftAsync(_currentRegister.Id);
-                if (_activeShift != null)
-                {
-                    BadgeShift.Background = new SolidColorBrush(Color.FromRgb(230, 244, 234));
-                    TxtShiftBadge.Text = $"TURNO #{_activeShift.Id} ACTIVO";
-                    TxtShiftBadge.Foreground = new SolidColorBrush(Color.FromRgb(16, 124, 65));
-                    TxtTerminalCashier.Text = $"Caja: {_currentRegister.TerminalIdentifier} • Cajero: {_activeShift.CashierUsername}";
-                }
-                else
-                {
-                    BadgeShift.Background = new SolidColorBrush(Color.FromRgb(253, 231, 233));
-                    TxtShiftBadge.Text = "CAJA CERRADA";
-                    TxtShiftBadge.Foreground = new SolidColorBrush(Color.FromRgb(216, 59, 1));
-                    TxtTerminalCashier.Text = $"Caja: {_currentRegister.TerminalIdentifier} • Turno Cerrado";
-                }
+                _currentRegister = await _cashService.GetOrCreateTerminalRegisterAsync("POS-01", "Caja Principal - Servidor");
             }
+
+            _activeShift = await _cashService.GetActiveShiftAsync(_currentRegister.Id);
+            if (_activeShift != null)
+            {
+                BadgeShift.Background = new SolidColorBrush(Color.FromRgb(230, 244, 234));
+                TxtShiftBadge.Text = $"TURNO #{_activeShift.Id} ACTIVO";
+                TxtShiftBadge.Foreground = new SolidColorBrush(Color.FromRgb(16, 124, 65));
+                TxtTerminalCashier.Text = $"Caja: {_currentRegister.TerminalIdentifier} • Cajero: {_activeShift.CashierUsername}";
+                OverlayClosedRegister.Visibility = Visibility.Collapsed;
+                TxtBarcodeSearch.IsEnabled = true;
+                BtnAddFromSearch.IsEnabled = true;
+                DgCatalog.IsEnabled = true;
+            }
+            else
+            {
+                BadgeShift.Background = new SolidColorBrush(Color.FromRgb(254, 226, 226));
+                TxtShiftBadge.Text = "CAJA CERRADA";
+                TxtShiftBadge.Foreground = new SolidColorBrush(Color.FromRgb(220, 38, 38));
+                TxtTerminalCashier.Text = $"Caja: {_currentRegister.TerminalIdentifier} • Turno Cerrado (Requiere Apertura)";
+                OverlayClosedRegister.Visibility = Visibility.Visible;
+                TxtBarcodeSearch.IsEnabled = false;
+                BtnAddFromSearch.IsEnabled = false;
+                DgCatalog.IsEnabled = false;
+                BtnCheckout.IsEnabled = false;
+                BtnCasheaCheckout.IsEnabled = false;
+            }
+
+            RecalculateCartTotals();
         }
         catch
         {
@@ -217,22 +232,7 @@ public partial class PosView : UserControl
             TxtBcvRateDisplay.Text = $"1 USD = {bcv:N4} Bs.";
 
             _currentRegister = await _cashService.GetOrCreateTerminalRegisterAsync("POS-01", "Caja Principal - Servidor");
-            _activeShift = await _cashService.GetActiveShiftAsync(_currentRegister.Id);
-
-            if (_activeShift != null)
-            {
-                BadgeShift.Background = new SolidColorBrush(Color.FromRgb(230, 244, 234));
-                TxtShiftBadge.Text = $"TURNO #{_activeShift.Id} ACTIVO";
-                TxtShiftBadge.Foreground = new SolidColorBrush(Color.FromRgb(16, 124, 65));
-                TxtTerminalCashier.Text = $"Caja: {_currentRegister.TerminalIdentifier} • Cajero: {_activeShift.CashierUsername}";
-            }
-            else
-            {
-                BadgeShift.Background = new SolidColorBrush(Color.FromRgb(253, 231, 233));
-                TxtShiftBadge.Text = "CAJA CERRADA";
-                TxtShiftBadge.Foreground = new SolidColorBrush(Color.FromRgb(216, 59, 1));
-                TxtTerminalCashier.Text = $"Caja: {_currentRegister.TerminalIdentifier} • Abra turno en Control de Caja para facturar";
-            }
+            await ReloadShiftStatusAsync();
 
             // Cliente Genérico por defecto
             if (_activeCustomer == null)
@@ -252,7 +252,11 @@ public partial class PosView : UserControl
 
             BuildCategoryPills();
             ApplyCatalogFilter();
-            FocusBarcodeInput();
+
+            if (_activeShift != null)
+            {
+                FocusBarcodeInput();
+            }
         }
         catch (Exception ex)
         {
@@ -371,6 +375,17 @@ public partial class PosView : UserControl
         var input = TxtBarcodeSearch.Text.Trim();
         if (string.IsNullOrWhiteSpace(input)) return;
 
+        if (_activeShift == null)
+        {
+            MessageBox.Show(
+                "La caja registradora se encuentra CERRADA.\n\nDebe realizar la apertura de turno con el fondo de caja inicial para poder escanear artículos y facturar.",
+                "Caja Cerrada",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            TxtBarcodeSearch.Clear();
+            return;
+        }
+
         // 1. Coincidencia exacta por código de barras o código de producto
         var matched = _allProducts.FirstOrDefault(p =>
             p.Barcode.Equals(input, StringComparison.OrdinalIgnoreCase) ||
@@ -410,6 +425,16 @@ public partial class PosView : UserControl
 
     public void AddItemToCart(Product product, decimal quantity = 1.00m)
     {
+        if (_activeShift == null)
+        {
+            MessageBox.Show(
+                "La caja registradora se encuentra CERRADA.\n\nDebe realizar la apertura de turno con el fondo de caja inicial antes de agregar artículos al carrito.",
+                "Caja Cerrada",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
         // 1. Obtener la referencia más actualizada del producto desde _allProducts o el propio objeto
         var currentProduct = _allProducts.FirstOrDefault(p => p.Id == product.Id) ?? product;
         decimal availableStock = currentProduct.CurrentStock;
@@ -1223,5 +1248,40 @@ public partial class PosView : UserControl
         RecalculateCartTotals();
         FocusBarcodeInput();
         MessageBox.Show($"Cotización {quotation.QuotationNumber} cargada en el carrito del POS lista para facturar.", "Cotización Cargada", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private async void BtnOpenShiftFromPos_Click(object sender, RoutedEventArgs e)
+    {
+        if (_currentRegister == null)
+        {
+            _currentRegister = await _cashService.GetOrCreateTerminalRegisterAsync("POS-01", "Caja Principal - Servidor");
+        }
+
+        var bcv = ViewModel?.BcvRate ?? 55.40m;
+        var user = ViewModel?.CurrentUserName ?? "Administrador";
+
+        var dialog = new OpenShiftDialog(bcv, _currentRegister?.TerminalIdentifier ?? "POS-01", user)
+        {
+            Owner = Window.GetWindow(this)
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            try
+            {
+                await _cashService.OpenShiftAsync(_currentRegister!.Id, dialog.CashierName, dialog.OpeningUSD, dialog.OpeningVES, dialog.Notes);
+                await ReloadShiftStatusAsync();
+                MessageBox.Show(
+                    $"Caja abierta exitosamente con fondo inicial de:\n• $ {dialog.OpeningUSD:N2} USD\n• {dialog.OpeningVES:N2} Bs.\n\nYa puede escanear artículos y facturar.",
+                    "Apertura Exitosa",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                FocusBarcodeInput();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error abriendo turno: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
 }

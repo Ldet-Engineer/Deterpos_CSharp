@@ -92,11 +92,19 @@ public partial class CreateCreditNoteDialog : Window
         TxtExchangeRateInfo.Text = $"1 USD = {_originalSale.AppliedRateVES:N4} Bs.";
 
         bool wasCreditSale = _originalSale.Payments.Any(p => p.Method == PaymentMethodType.Credito);
+        bool hasShift = _currentShiftId > 0;
+
         if (wasCreditSale)
         {
             ChkRefundToCash.IsChecked = false;
             ChkRefundToCash.IsEnabled = false;
             ChkRefundToCash.Content = "Acreditar a cuenta del cliente (Venta a Crédito: Amortiza deuda pendiente en CxC)";
+        }
+        else if (!hasShift)
+        {
+            ChkRefundToCash.IsChecked = false;
+            ChkRefundToCash.IsEnabled = false;
+            ChkRefundToCash.Content = "Reembolsar dinero desde Caja Actual (Caja Cerrada - Sin Turno)";
         }
         else
         {

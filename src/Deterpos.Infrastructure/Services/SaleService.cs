@@ -54,6 +54,13 @@ public class SaleService : ISaleService
 
         await using var context = GetContext();
 
+        // 0. Validar que el turno de caja exista y esté estrictamente ABIERTO
+        var activeShift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == saleDraft.CashShiftId && s.Status == CashShiftStatus.Abierta);
+        if (activeShift == null)
+        {
+            throw new InvalidOperationException("No se puede procesar la venta: La caja registradora se encuentra CERRADA o el turno de caja no está activo.");
+        }
+
         // 1. Obtener o crear correlativo secuencial garantizando unicidad estricta
         var sequence = await context.CashRegisterSequences
             .FirstOrDefaultAsync(s => s.CashRegisterId == saleDraft.CashRegisterId && s.Prefix == "FAC");
@@ -255,23 +262,19 @@ public class SaleService : ISaleService
         // 6. Impacto en Caja (si hubo pago en efectivo USD o VES)
         if (cashUsdToRegister > 0 || cashVesToRegister > 0)
         {
-            var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == sale.CashShiftId && s.Status == CashShiftStatus.Abierta);
-            if (shift != null)
-            {
-                shift.ExpectedAmountUSD += cashUsdToRegister;
-                shift.ExpectedAmountVES += cashVesToRegister;
+            activeShift.ExpectedAmountUSD += cashUsdToRegister;
+            activeShift.ExpectedAmountVES += cashVesToRegister;
 
-                context.CashMovements.Add(new CashMovement
-                {
-                    CashShiftId = shift.Id,
-                    Type = TransactionType.IngresoVenta,
-                    AmountUSD = cashUsdToRegister,
-                    AmountVES = cashVesToRegister,
-                    Description = $"Venta Factura {sale.InvoiceNumber}",
-                    AuthorizedBy = sale.CashierUsername,
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
+            context.CashMovements.Add(new CashMovement
+            {
+                CashShiftId = activeShift.Id,
+                Type = TransactionType.IngresoVenta,
+                AmountUSD = cashUsdToRegister,
+                AmountVES = cashVesToRegister,
+                Description = $"Venta Factura {sale.InvoiceNumber}",
+                AuthorizedBy = sale.CashierUsername,
+                CreatedAt = DateTime.UtcNow
+            });
         }
 
         context.Sales.Add(sale);

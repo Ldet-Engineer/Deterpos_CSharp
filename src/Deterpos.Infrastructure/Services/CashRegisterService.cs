@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Deterpos.Application.Common;
 using Deterpos.Application.DTOs;
 using Deterpos.Application.Interfaces;
 using Deterpos.Domain.Entities;
@@ -98,6 +99,7 @@ public class CashRegisterService : ICashRegisterService
 
         context.CashShifts.Add(shift);
         await context.SaveChangesAsync();
+        AppEvents.RaiseCashChanged();
         return shift;
     }
 
@@ -135,6 +137,7 @@ public class CashRegisterService : ICashRegisterService
 
         context.CashMovements.Add(movement);
         await context.SaveChangesAsync();
+        AppEvents.RaiseCashChanged();
         return movement;
     }
 
@@ -195,6 +198,7 @@ public class CashRegisterService : ICashRegisterService
                       $"Observaciones: {closingNotes ?? "Ninguna"}";
 
         await context.SaveChangesAsync();
+        AppEvents.RaiseCashChanged();
         return shift;
     }
 
@@ -330,6 +334,7 @@ public class CashRegisterService : ICashRegisterService
         shift.Notes = $"{noteSeparator}{actText}";
 
         await context.SaveChangesAsync();
+        AppEvents.RaiseCashChanged();
 
         return new ShiftAuditSummaryResult
         {
