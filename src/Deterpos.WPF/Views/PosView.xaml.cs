@@ -113,7 +113,22 @@ public partial class PosView : UserControl
         PreviewKeyDown += PosView_PreviewKeyDown;
         AppEvents.InventoryChanged += OnInventoryChanged;
         AppEvents.CashChanged += OnCashChanged;
+        AppEvents.ExchangeRateChanged += OnExchangeRateChanged;
         ParkedTicketsManager.ParkedTicketsChanged += () => Dispatcher.Invoke(UpdateHoldTicketsBadge);
+    }
+
+    private void OnExchangeRateChanged(decimal newRate)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            TxtBcvRateDisplay.Text = $"1 USD = {newRate:N4} Bs.";
+            foreach (var item in _cartItems)
+            {
+                item.BcvRate = newRate;
+            }
+            RecalculateCartTotals();
+            ApplyCatalogFilter();
+        });
     }
 
     private async void PosView_Loaded(object sender, RoutedEventArgs e)

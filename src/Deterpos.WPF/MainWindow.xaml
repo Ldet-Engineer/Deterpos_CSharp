@@ -719,6 +719,13 @@
                         </Fluent:Button.LargeIcon>
                     </Fluent:Button>
 
+                    <Fluent:Button Header="Sincronizar BCV" Size="Middle"
+                                   Command="{Binding SyncBcvOnlineCommand}" ToolTip="Consultar y aplicar inmediatamente la tasa oficial del BCV en línea">
+                        <Fluent:Button.Icon>
+                            <fluentIcons:SymbolIcon Symbol="ArrowSync" FontSize="18" Foreground="{StaticResource PrimaryBrandBrush}" />
+                        </Fluent:Button.Icon>
+                    </Fluent:Button>
+
                     <Fluent:Button Header="Calculadora Divisas" Size="Middle"
                                    Command="{Binding OpenCalculatorCommand}">
                         <Fluent:Button.Icon>
@@ -1647,9 +1654,13 @@
                     <TextBlock Text="{Binding DbStatusText}" Foreground="White" FontSize="11" VerticalAlignment="Center" />
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,20,0">
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,20,0" ToolTip="Tasa oficial del Banco Central de Venezuela">
+                    <fluentIcons:SymbolIcon Symbol="ArrowSync" FontSize="11" Foreground="#A6D5FA" VerticalAlignment="Center" Margin="0,0,5,0" />
                     <TextBlock Text="Tasa BCV: 1 $ = " Foreground="#D0E7FB" FontSize="11" VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding BcvRate, StringFormat={}{0:N4} Bs.}" Foreground="White" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding BcvRate, StringFormat={}{0:N4} Bs.}" Foreground="White" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <Border Background="#107C41" CornerRadius="3" Padding="5,1" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding BcvSyncStatusText}" Foreground="White" FontSize="9" FontWeight="SemiBold" />
+                    </Border>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,20,0">

@@ -84,6 +84,8 @@ public class MainViewModel : ViewModelBase
     private readonly DashboardService _dashboardService;
     private readonly ISaleService _saleService;
     private readonly CasheaService _casheaService;
+    private readonly IBcvExchangeRateService _bcvService = new BcvExchangeRateService();
+    private readonly System.Windows.Threading.DispatcherTimer _bcvTimer;
 
     private string _activeViewTitle = "Panel Principal (Dashboard)";
     private string _currentUserName = "Administrador";
@@ -96,6 +98,11 @@ public class MainViewModel : ViewModelBase
     private decimal _cashInVES = 19140.70m;
     private decimal _todaySalesUSD = 1280.00m;
     private int _todayInvoicesCount = 38;
+
+    // Estado Sincronización Automática BCV
+    private string _bcvSyncStatusText = "BCV Inicial";
+    private bool _isBcvSyncing = false;
+    private DateTime? _bcvLastSyncTime;
 
     // Estado de Conexión PostgreSQL
     private bool _isDbConnected = false;
@@ -318,6 +325,24 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _copRate, value);
     }
 
+    public string BcvSyncStatusText
+    {
+        get => _bcvSyncStatusText;
+        set => SetProperty(ref _bcvSyncStatusText, value);
+    }
+
+    public bool IsBcvSyncing
+    {
+        get => _isBcvSyncing;
+        set => SetProperty(ref _isBcvSyncing, value);
+    }
+
+    public DateTime? BcvLastSyncTime
+    {
+        get => _bcvLastSyncTime;
+        set => SetProperty(ref _bcvLastSyncTime, value);
+    }
+
     public string CashRegisterStatus
     {
         get => _cashRegisterStatus;
@@ -459,6 +484,7 @@ public class MainViewModel : ViewModelBase
     // Comandos del Ribbon
     public ICommand NavigateCommand { get; }
     public ICommand OpenUpdateRateCommand { get; }
+    public ICommand SyncBcvOnlineCommand { get; }
     public ICommand OpenCalculatorCommand { get; }
     public ICommand PrintReportXCommand { get; }
     public ICommand PrintReportZCommand { get; }
@@ -476,6 +502,15 @@ public class MainViewModel : ViewModelBase
         IsCasheaIntegrationEnabled = cSettings.IsEnabled;
 
         RefreshDashboardCommand = new RelayCommand(async _ => await LoadDashboardLiveMetricsAsync());
+        SyncBcvOnlineCommand = new RelayCommand(async _ => await SyncBcvRateAutomaticallyAsync(silent: false));
+
+        // Timer de fondo: Re-sincronizar automáticamente cada 30 minutos
+        _bcvTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromMinutes(30)
+        };
+        _bcvTimer.Tick += async (s, e) => await SyncBcvRateAutomaticallyAsync(silent: true);
+        _bcvTimer.Start();
 
         // Suscribirse a eventos en tiempo real de toda la aplicación
         AppEvents.InventoryChanged += () => _ = LoadDashboardLiveMetricsAsync();
@@ -904,6 +939,9 @@ public class MainViewModel : ViewModelBase
 
                 // Sincronizar último número de Reporte Z desde PostgreSQL
                 LastZReport = await _saleService.GetMaxFiscalZReportNumberAsync();
+
+                // Sincronizar automáticamente en segundo plano la tasa oficial del BCV al iniciar
+                _ = SyncBcvRateAutomaticallyAsync(silent: true);
             }
             else
             {
@@ -915,6 +953,94 @@ public class MainViewModel : ViewModelBase
         {
             IsDbConnected = false;
             DbStatusText = $"Error BD: {ex.Message}";
+        }
+    }
+
+    public async Task SyncBcvRateAutomaticallyAsync(bool silent = true)
+    {
+        if (IsBcvSyncing) return;
+        IsBcvSyncing = true;
+        BcvSyncStatusText = "Consultando...";
+
+        try
+        {
+            var result = await _bcvService.FetchOfficialRatesAsync();
+            if (result.IsSuccess && result.VesRate > 0)
+            {
+                BcvRate = result.VesRate;
+                if (result.EurRate > 0) EurRate = result.EurRate;
+                if (result.CopRate > 0) CopRate = result.CopRate;
+
+                // Actualizar items de la colección para el Ribbon y la vista Currency
+                var vesItem = Currencies.FirstOrDefault(c => c.Code == "VES");
+                if (vesItem != null) vesItem.RateToUSD = result.VesRate;
+
+                var eurItem = Currencies.FirstOrDefault(c => c.Code == "EUR");
+                if (eurItem != null && result.EurRate > 0) eurItem.RateToUSD = result.EurRate;
+
+                var copItem = Currencies.FirstOrDefault(c => c.Code == "COP");
+                if (copItem != null && result.CopRate > 0) copItem.RateToUSD = result.CopRate;
+
+                // Guardar asíncronamente en base de datos de manera persistente
+                try
+                {
+                    await _currencyService.UpdateExchangeRateAsync("VES", result.VesRate, result.Source, "Auto-Sync BCV");
+                    if (result.EurRate > 0)
+                    {
+                        await _currencyService.UpdateExchangeRateAsync("EUR", result.EurRate, "Auto-Sync BCV", "Auto-Sync BCV");
+                    }
+                    if (result.CopRate > 0)
+                    {
+                        await _currencyService.UpdateExchangeRateAsync("COP", result.CopRate, "Fronterizo", "Auto-Sync BCV");
+                    }
+
+                    await RefreshRateHistoryFromDbAsync();
+                }
+                catch
+                {
+                    // La tasa en memoria ya está activa para la sesión
+                }
+
+                _bcvLastSyncTime = DateTime.Now;
+                BcvSyncStatusText = $"✓ Oficial BCV ({result.EffectiveDate:dd/MM})";
+
+                // Notificar en tiempo real a toda la aplicación (POS, CxC, CxP, Ventas)
+                AppEvents.RaiseExchangeRateChanged(result.VesRate);
+                await LoadDashboardLiveMetricsAsync();
+
+                if (!silent)
+                {
+                    MessageBox.Show(
+                        $"Tasa oficial BCV sincronizada con éxito:\n\n• 1 USD = {result.VesRate:N4} Bs.\n• Fecha Valor Oficial: {result.EffectiveDate:dd/MM/yyyy}\n• Fuente: {result.Source}",
+                        "Sincronización BCV",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+            }
+            else
+            {
+                BcvSyncStatusText = $"Local: {BcvRate:N4} Bs.";
+                if (!silent)
+                {
+                    MessageBox.Show(
+                        $"No se pudo contactar los servidores del BCV en este momento.\nSe mantiene la tasa registrada: {BcvRate:N4} Bs.\n\nDetalle: {result.ErrorMessage ?? "Sin conexión"}",
+                        "Aviso BCV",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            BcvSyncStatusText = $"Local: {BcvRate:N4} Bs.";
+            if (!silent)
+            {
+                MessageBox.Show($"Error al consultar el Banco Central de Venezuela: {ex.Message}", "Error BCV", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+        finally
+        {
+            IsBcvSyncing = false;
         }
     }
 

@@ -30,9 +30,15 @@ public static class AppEvents
     /// </summary>
     public static event Action? CasheaChanged;
 
+    /// <summary>
+    /// Evento global disparado cuando la tasa oficial BCV o multimoneda cambia en el sistema.
+    /// </summary>
+    public static event Action<decimal>? ExchangeRateChanged;
+
     public static void RaiseInventoryChanged() => InventoryChanged?.Invoke();
     public static void RaiseSalesChanged() => SalesChanged?.Invoke();
     public static void RaiseCashChanged() => CashChanged?.Invoke();
     public static void RaiseCreditChanged() => CreditChanged?.Invoke();
     public static void RaiseCasheaChanged() => CasheaChanged?.Invoke();
+    public static void RaiseExchangeRateChanged(decimal newRate) => ExchangeRateChanged?.Invoke(newRate);
 }

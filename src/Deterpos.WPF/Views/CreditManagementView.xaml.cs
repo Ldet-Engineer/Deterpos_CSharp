@@ -83,6 +83,13 @@ public partial class CreditManagementView : UserControl
                 await Dispatcher.InvokeAsync(LoadAllDataAsync);
             }
         };
+        AppEvents.ExchangeRateChanged += async (_) =>
+        {
+            if (IsLoaded)
+            {
+                await Dispatcher.InvokeAsync(LoadAllDataAsync);
+            }
+        };
     }
 
     private async void CreditManagementView_Loaded(object sender, RoutedEventArgs e)
