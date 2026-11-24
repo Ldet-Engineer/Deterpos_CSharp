@@ -72,6 +72,7 @@ public class FiscalBookSummaryDto
     public decimal TotalSalesUSD { get; set; }
     public decimal TotalSalesVatDebitVES { get; set; } // Total Débito Fiscal
     public decimal TotalSalesExemptVES { get; set; }
+    public decimal TotalSalesBaseIgtfVES { get; set; }
     public decimal TotalSalesIgtfVES { get; set; } // Total IGTF Percibido
 
     public decimal TotalPurchasesVES { get; set; }
@@ -163,5 +164,6 @@ public interface IFiscalBookService
     Task<string> ExportSalesBookToCsvAsync(int year, int month, string targetFilePath, CompanyFiscalProfile? company = null);
     Task<string> ExportPurchasesBookToCsvAsync(int year, int month, string targetFilePath, CompanyFiscalProfile? company = null);
     Task<string> ExportTaxSummaryToCsvAsync(int year, int month, string targetFilePath, CompanyFiscalProfile? company = null);
+    Task<string> ExportTaxSummaryToCsvAsync(int year, int month, string targetFilePath, decimal bcvRate, CompanyFiscalProfile? company = null);
     Task<string> ExportProfitBreakdownToCsvAsync(List<ProfitBreakdownRowDto> rows, string targetFilePath, string periodTitle);
 }

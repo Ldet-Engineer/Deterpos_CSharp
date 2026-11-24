@@ -53,6 +53,15 @@ public class UserService : IUserService
         return user;
     }
 
+    public async Task EnsureAdminUserExistsAsync()
+    {
+        await using var context = GetContext();
+        if (!await context.Users.AnyAsync())
+        {
+            await SeedDefaultAdminUserAsync(context);
+        }
+    }
+
     public async Task<IReadOnlyList<User>> GetAllUsersAsync(string? searchTerm = null)
     {
         await using var context = GetContext();

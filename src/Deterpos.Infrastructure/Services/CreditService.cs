@@ -109,31 +109,43 @@ public class CreditService : ICreditService
             RemainingBalanceUSD = customer.CurrentBalanceUSD
         };
 
-        if (sendToCashShift && currentCashShiftId.HasValue)
+        if (sendToCashShift)
         {
-            var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == currentCashShiftId.Value && s.Status == CashShiftStatus.Abierta);
-            if (shift != null)
+            if (!currentCashShiftId.HasValue || currentCashShiftId.Value <= 0)
             {
-                if (currencyCode == "USD")
-                {
-                    shift.ExpectedAmountUSD += amountUSD;
-                }
-                else
-                {
-                    shift.ExpectedAmountVES += amountOriginal;
-                }
-
-                context.CashMovements.Add(new CashMovement
-                {
-                    CashShiftId = shift.Id,
-                    Type = TransactionType.AbonoCliente,
-                    AmountUSD = amountUSD,
-                    AmountVES = amountUSD * bcvRate,
-                    Description = $"Abono CxC Cliente {customer.FullName} ({customer.DocumentNumber}) - {method}",
-                    AuthorizedBy = cashierUsername,
-                    CreatedAt = DateTime.UtcNow
-                });
+                throw new InvalidOperationException("No se puede registrar el abono en efectivo porque no se especificó un turno de caja.");
             }
+
+            var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == currentCashShiftId.Value && s.Status == CashShiftStatus.Abierta);
+            if (shift == null)
+            {
+                throw new InvalidOperationException("No se puede registrar el abono en efectivo porque el turno de caja no está abierto.");
+            }
+
+            decimal movUsd = 0m;
+            decimal movVes = 0m;
+
+            if (currencyCode == "USD")
+            {
+                shift.ExpectedAmountUSD += amountUSD;
+                movUsd = amountUSD;
+            }
+            else
+            {
+                shift.ExpectedAmountVES += amountOriginal;
+                movVes = amountOriginal;
+            }
+
+            context.CashMovements.Add(new CashMovement
+            {
+                CashShiftId = shift.Id,
+                Type = TransactionType.AbonoCliente,
+                AmountUSD = movUsd,
+                AmountVES = movVes,
+                Description = $"Abono CxC Cliente {customer.FullName} ({customer.DocumentNumber}) - {method}",
+                AuthorizedBy = cashierUsername,
+                CreatedAt = DateTime.UtcNow
+            });
         }
 
         context.CustomerPayments.Add(payment);
@@ -192,33 +204,45 @@ public class CreditService : ICreditService
             RemainingDebtUSD = supplier.CurrentDebtUSD
         };
 
-        if (payFromCashShift && currentCashShiftId.HasValue)
+        if (payFromCashShift)
         {
-            var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == currentCashShiftId.Value && s.Status == CashShiftStatus.Abierta);
-            if (shift != null)
+            if (!currentCashShiftId.HasValue || currentCashShiftId.Value <= 0)
             {
-                if (currencyCode == "USD")
-                {
-                    shift.ExpectedAmountUSD -= amountUSD;
-                    if (shift.ExpectedAmountUSD < 0) shift.ExpectedAmountUSD = 0;
-                }
-                else
-                {
-                    shift.ExpectedAmountVES -= amountOriginal;
-                    if (shift.ExpectedAmountVES < 0) shift.ExpectedAmountVES = 0;
-                }
-
-                context.CashMovements.Add(new CashMovement
-                {
-                    CashShiftId = shift.Id,
-                    Type = TransactionType.PagoProveedor,
-                    AmountUSD = amountUSD,
-                    AmountVES = amountUSD * bcvRate,
-                    Description = $"Pago CxP Proveedor {supplier.CompanyName} ({supplier.DocumentNumber}) - {method}",
-                    AuthorizedBy = authorizedBy,
-                    CreatedAt = DateTime.UtcNow
-                });
+                throw new InvalidOperationException("No se puede egresar efectivo porque no se especificó un turno de caja.");
             }
+
+            var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == currentCashShiftId.Value && s.Status == CashShiftStatus.Abierta);
+            if (shift == null)
+            {
+                throw new InvalidOperationException("No se puede egresar efectivo de caja porque el turno de caja no está abierto.");
+            }
+
+            decimal movUsd = 0m;
+            decimal movVes = 0m;
+
+            if (currencyCode == "USD")
+            {
+                shift.ExpectedAmountUSD -= amountUSD;
+                if (shift.ExpectedAmountUSD < 0) shift.ExpectedAmountUSD = 0;
+                movUsd = amountUSD;
+            }
+            else
+            {
+                shift.ExpectedAmountVES -= amountOriginal;
+                if (shift.ExpectedAmountVES < 0) shift.ExpectedAmountVES = 0;
+                movVes = amountOriginal;
+            }
+
+            context.CashMovements.Add(new CashMovement
+            {
+                CashShiftId = shift.Id,
+                Type = TransactionType.PagoProveedor,
+                AmountUSD = movUsd,
+                AmountVES = movVes,
+                Description = $"Pago CxP Proveedor {supplier.CompanyName} ({supplier.DocumentNumber}) - {method}",
+                AuthorizedBy = authorizedBy,
+                CreatedAt = DateTime.UtcNow
+            });
         }
 
         context.SupplierPayments.Add(payment);

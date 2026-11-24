@@ -12,6 +12,7 @@ using Deterpos.Application.Interfaces;
 using Deterpos.Infrastructure.Data;
 using Deterpos.Infrastructure.Services;
 using Deterpos.WPF.ViewModels;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 
 namespace Deterpos.WPF.Views;
@@ -19,6 +20,7 @@ namespace Deterpos.WPF.Views;
 public partial class FiscalReportsView : UserControl
 {
     private readonly IFiscalBookService _fiscalBookService;
+    private readonly DeterposDbContextFactory _factory;
 
     private readonly List<SalesBookRowDto> _allSalesRows = new();
     private readonly ObservableCollection<SalesBookRowDto> _displayedSalesRows = new();
@@ -38,8 +40,8 @@ public partial class FiscalReportsView : UserControl
     {
         InitializeComponent();
 
-        var factory = new DeterposDbContextFactory(new DatabaseConfigurationService());
-        _fiscalBookService = new FiscalBookService(factory);
+        _factory = new DeterposDbContextFactory(new DatabaseConfigurationService());
+        _fiscalBookService = new FiscalBookService(_factory);
 
         GridSalesBook.ItemsSource = _displayedSalesRows;
         GridPurchasesBook.ItemsSource = _displayedPurchasesRows;
@@ -365,17 +367,21 @@ public partial class FiscalReportsView : UserControl
         {
             try
             {
+                await using var ctx = _factory.CreateDbContext();
+                var company = await ctx.CompanyFiscalProfiles.FirstOrDefaultAsync();
+                decimal currentBcv = ViewModel?.BcvRate ?? 55.40m;
+
                 if (_currentTabIndex == 0)
                 {
-                    await _fiscalBookService.ExportSalesBookToCsvAsync(year, month, sfd.FileName);
+                    await _fiscalBookService.ExportSalesBookToCsvAsync(year, month, sfd.FileName, company);
                 }
                 else if (_currentTabIndex == 1)
                 {
-                    await _fiscalBookService.ExportPurchasesBookToCsvAsync(year, month, sfd.FileName);
+                    await _fiscalBookService.ExportPurchasesBookToCsvAsync(year, month, sfd.FileName, company);
                 }
                 else
                 {
-                    await _fiscalBookService.ExportTaxSummaryToCsvAsync(year, month, sfd.FileName);
+                    await _fiscalBookService.ExportTaxSummaryToCsvAsync(year, month, sfd.FileName, currentBcv, company);
                 }
 
                 var res = MessageBox.Show(

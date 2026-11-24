@@ -162,6 +162,7 @@ public class FiscalBookService : IFiscalBookService
             TotalSalesUSD = sales.Sum(s => s.TotalSalesUSD),
             TotalSalesVatDebitVES = sales.Sum(s => s.VatAmountGeneralVES + s.VatAmountReducedVES),
             TotalSalesExemptVES = sales.Sum(s => s.ExemptSalesVES),
+            TotalSalesBaseIgtfVES = sales.Sum(s => s.TaxableBaseIgtfVES),
             TotalSalesIgtfVES = sales.Sum(s => s.IgtfAmountVES),
 
             TotalPurchasesVES = purchases.Sum(p => p.TotalPurchasesVES),
@@ -528,13 +529,19 @@ public class FiscalBookService : IFiscalBookService
         return targetFilePath;
     }
 
-    public async Task<string> ExportTaxSummaryToCsvAsync(int year, int month, string targetFilePath, CompanyFiscalProfile? company = null)
+    public Task<string> ExportTaxSummaryToCsvAsync(int year, int month, string targetFilePath, CompanyFiscalProfile? company = null)
+    {
+        return ExportTaxSummaryToCsvAsync(year, month, targetFilePath, 55.40m, company);
+    }
+
+    public async Task<string> ExportTaxSummaryToCsvAsync(int year, int month, string targetFilePath, decimal bcvRate, CompanyFiscalProfile? company = null)
     {
         var summary = await GetFiscalMonthSummaryAsync(year, month);
         var start = new DateTime(year, month, 1);
         var end = start.AddMonths(1).AddDays(-1);
         var analytics = await GetSalesAnalyticsAsync(start, end);
 
+        decimal rate = bcvRate > 0 ? bcvRate : 55.40m;
         var sb = new StringBuilder();
 
         string companyName = company?.BusinessName ?? "Deterpos C.A.";
@@ -554,7 +561,7 @@ public class FiscalBookService : IFiscalBookService
         sb.AppendLine($"Ventas Internas No Gravadas (Exentas / Exoneradas);{summary.TotalSalesExemptVES:F2};0.00%;0.00");
         sb.AppendLine($"Ventas Internas Gravadas por Alícuota General;{(summary.TotalSalesVES - summary.TotalSalesExemptVES - summary.TotalSalesVatDebitVES):F2};16.00%;{summary.TotalSalesVatDebitVES:F2}");
         sb.AppendLine($"Total Ventas Brutas Facturadas del Período;{summary.TotalSalesVES:F2};—;{summary.TotalSalesVatDebitVES:F2}");
-        sb.AppendLine($"Base Imponible Sujeta a Percepción de IGTF (Divisas);{summary.TotalSalesVES:F2};3.00%;{summary.TotalSalesIgtfVES:F2}");
+        sb.AppendLine($"Base Imponible Sujeta a Percepción de IGTF (Divisas);{summary.TotalSalesBaseIgtfVES:F2};3.00%;{summary.TotalSalesIgtfVES:F2}");
         sb.AppendLine();
 
         // SECCIÓN II: COMPRAS Y CRÉDITOS FISCALES
@@ -569,31 +576,31 @@ public class FiscalBookService : IFiscalBookService
         // SECCIÓN III: AUTOLIQUIDACIÓN Y OBLIGACIÓN FISCAL
         sb.AppendLine("\"SECCIÓN III: AUTOLIQUIDACIÓN Y RESULTADO DE LA FORMA 30\";;;");
         sb.AppendLine("Línea de Declaración;Monto en Bolívares (Bs.);Referencia USD ($);Observación");
-        sb.AppendLine($"Total Débito Fiscal IVA Generado;{summary.TotalSalesVatDebitVES:F2};${(summary.TotalSalesVatDebitVES / (summary.TotalSalesUSD > 0 ? (summary.TotalSalesVES / summary.TotalSalesUSD) : 55.40m)):F2};Ventas a clientes");
-        sb.AppendLine($"Total Crédito Fiscal IVA Deducible;{summary.TotalPurchasesVatCreditVES:F2};${(summary.TotalPurchasesVatCreditVES / 55.40m):F2};Compras con derecho a crédito");
+        sb.AppendLine($"Total Débito Fiscal IVA Generado;{summary.TotalSalesVatDebitVES:F2};${(summary.TotalSalesVatDebitVES / (summary.TotalSalesUSD > 0 ? (summary.TotalSalesVES / summary.TotalSalesUSD) : rate)):F2};Ventas a clientes");
+        sb.AppendLine($"Total Crédito Fiscal IVA Deducible;{summary.TotalPurchasesVatCreditVES:F2};${(summary.TotalPurchasesVatCreditVES / rate):F2};Compras con derecho a crédito");
 
         decimal netVat = summary.NetVatPositionVES;
         if (netVat > 0)
         {
-            sb.AppendLine($"TOTAL CUOTA TRIBUTARIA IVA A PAGAR AL FISCO (SENIAT);{netVat:F2};${(netVat / 55.40m):F2};\"PAGO OBLIGATORIO SENIAT\"");
+            sb.AppendLine($"TOTAL CUOTA TRIBUTARIA IVA A PAGAR AL FISCO (SENIAT);{netVat:F2};${(netVat / rate):F2};\"PAGO OBLIGATORIO SENIAT\"");
         }
         else
         {
             decimal surplus = Math.Abs(netVat);
-            sb.AppendLine($"EXCEDENTE DE CRÉDITO FISCAL A FAVOR PARA EL PRÓXIMO MES;{surplus:F2};${(surplus / 55.40m):F2};\"SALDO A FAVOR DEDUCIBLE\"");
+            sb.AppendLine($"EXCEDENTE DE CRÉDITO FISCAL A FAVOR PARA EL PRÓXIMO MES;{surplus:F2};${(surplus / rate):F2};\"SALDO A FAVOR DEDUCIBLE\"");
         }
 
-        sb.AppendLine($"TOTAL IGTF 3% PERCIBIDO A ENTERAR AL SENIAT;{summary.TotalSalesIgtfVES:F2};${(summary.TotalSalesIgtfVES / 55.40m):F2};\"PAGO POR CUENTA DE TERCEROS\"");
+        sb.AppendLine($"TOTAL IGTF 3% PERCIBIDO A ENTERAR AL SENIAT;{summary.TotalSalesIgtfVES:F2};${(summary.TotalSalesIgtfVES / rate):F2};\"PAGO POR CUENTA DE TERCEROS\"");
         sb.AppendLine();
 
         // SECCIÓN IV: RESULTADOS COMERCIALES DEL MES
         sb.AppendLine("\"SECCIÓN IV: RESUMEN DE RENDIMIENTO COMERCIAL (ESTADO DE RESULTADOS)\";;;");
         sb.AppendLine("Concepto Económico;Monto USD ($);Monto Bs. (Tasa Oficial);Margen");
-        sb.AppendLine($"Ingresos Operativos Netos;${analytics.TotalRevenueUSD:F2};{(analytics.TotalRevenueUSD * 55.40m):F2};100.0%");
-        sb.AppendLine($"Costo de Mercancía Vendida (CPP);${analytics.TotalCostUSD:F2};{(analytics.TotalCostUSD * 55.40m):F2};—");
-        sb.AppendLine($"Utilidad Bruta de Operaciones;${analytics.GrossProfitUSD:F2};{(analytics.GrossProfitUSD * 55.40m):F2};{analytics.ProfitMarginPercentage:F1}%");
-        sb.AppendLine($"Gastos Operativos y Caja Chica;${analytics.TotalOperatingExpensesUSD:F2};{(analytics.TotalOperatingExpensesUSD * 55.40m):F2};—");
-        sb.AppendLine($"UTILIDAD NETA FINAL DEL PERÍODO;${analytics.NetProfitUSD:F2};{(analytics.NetProfitUSD * 55.40m):F2};{analytics.NetMarginPercentage:F1}%");
+        sb.AppendLine($"Ingresos Operativos Netos;${analytics.TotalRevenueUSD:F2};{(analytics.TotalRevenueUSD * rate):F2};100.0%");
+        sb.AppendLine($"Costo de Mercancía Vendida (CPP);${analytics.TotalCostUSD:F2};{(analytics.TotalCostUSD * rate):F2};—");
+        sb.AppendLine($"Utilidad Bruta de Operaciones;${analytics.GrossProfitUSD:F2};{(analytics.GrossProfitUSD * rate):F2};{analytics.ProfitMarginPercentage:F1}%");
+        sb.AppendLine($"Gastos Operativos y Caja Chica;${analytics.TotalOperatingExpensesUSD:F2};{(analytics.TotalOperatingExpensesUSD * rate):F2};—");
+        sb.AppendLine($"UTILIDAD NETA FINAL DEL PERÍODO;${analytics.NetProfitUSD:F2};{(analytics.NetProfitUSD * rate):F2};{analytics.NetMarginPercentage:F1}%");
 
         var utf8WithBom = new UTF8Encoding(true);
         await File.WriteAllTextAsync(targetFilePath, sb.ToString(), utf8WithBom);

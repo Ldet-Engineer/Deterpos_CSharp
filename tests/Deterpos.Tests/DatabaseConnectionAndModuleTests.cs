@@ -184,6 +184,11 @@ public class DatabaseConnectionAndModuleTests
 
         var customer = await context.Customers.FirstOrDefaultAsync(c => c.DocumentNumber == "V-00000000");
         var product = await context.Products.FirstOrDefaultAsync(p => p.Code == "PROD-005") ?? await context.Products.FirstAsync();
+        if (product.CurrentStock < 10)
+        {
+            product.CurrentStock = 100;
+            await context.SaveChangesAsync();
+        }
 
         var saleDraft = new Sale
         {
@@ -279,6 +284,11 @@ public class DatabaseConnectionAndModuleTests
         await using var context = CreateDbContext();
 
         var product = await context.Products.FirstAsync();
+        if (product.CurrentStock < 10)
+        {
+            product.CurrentStock = 100;
+            await context.SaveChangesAsync();
+        }
         decimal initialStock = product.CurrentStock;
 
         var draft = new Quotation
@@ -345,6 +355,11 @@ public class DatabaseConnectionAndModuleTests
         }
 
         var product = await context.Products.FirstAsync();
+        if (product.CurrentStock < 10)
+        {
+            product.CurrentStock = 100;
+            await context.SaveChangesAsync();
+        }
         var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Status == CashShiftStatus.Abierta);
         if (shift == null)
         {
@@ -468,12 +483,15 @@ public class DatabaseConnectionAndModuleTests
         var cashService = new CashRegisterService(_factory);
         await using var context = CreateDbContext();
 
-        var shift = await cashService.GetActiveShiftAsync(1);
-        if (shift == null)
+        var openShifts = await context.CashShifts.Where(s => s.CashRegisterId == 1 && s.Status == CashShiftStatus.Abierta).ToListAsync();
+        foreach (var s in openShifts)
         {
-            shift = await cashService.OpenShiftAsync(1, "TestRunner", 100m, 5000m, "Turno de prueba");
+            s.Status = CashShiftStatus.Cerrada;
+            s.ClosedAt = DateTime.UtcNow;
         }
+        await context.SaveChangesAsync();
 
+        var shift = await cashService.OpenShiftAsync(1, "TestRunner", 100m, 5000m, "Turno de prueba");
         decimal initialExpectedUSD = shift.ExpectedAmountUSD;
 
         // Registrar AbonoCliente ($50 entrada)
@@ -780,6 +798,11 @@ public class DatabaseConnectionAndModuleTests
 
         await using var ctx = factory.CreateDbContext();
         var prod = await ctx.Products.FirstAsync(p => p.IsActive);
+        if (prod.CurrentStock < 10)
+        {
+            prod.CurrentStock = 100;
+            await ctx.SaveChangesAsync();
+        }
         var shift = await ctx.CashShifts.FirstAsync(s => s.Status == CashShiftStatus.Abierta);
 
         var saleDraft = new Sale
@@ -881,6 +904,11 @@ public class DatabaseConnectionAndModuleTests
 
         await using var ctx = factory.CreateDbContext();
         var prod = await ctx.Products.FirstAsync(p => p.IsActive);
+        if (prod.CurrentStock < 10)
+        {
+            prod.CurrentStock = 100;
+            await ctx.SaveChangesAsync();
+        }
         var shift = await ctx.CashShifts.FirstAsync(s => s.Status == CashShiftStatus.Abierta);
 
         decimal stockBefore = prod.CurrentStock;
@@ -1040,5 +1068,391 @@ public class DatabaseConnectionAndModuleTests
 
         Assert.Contains("CERRADA", ex.Message);
         _output.WriteLine($"Validación exitosa: El intento de facturación con caja cerrada fue rechazado: {ex.Message}");
+    }
+
+    [Fact]
+    public async Task Test23_CustomerAndSupplierPayment_DoesNotCrossContaminateCurrenciesInCashShift()
+    {
+        var creditService = new CreditService(_factory);
+        await using var ctx = _factory.CreateDbContext();
+
+        var shift = new CashShift
+        {
+            CashRegisterId = 1,
+            CashierUsername = "TestAudit",
+            OpeningAmountUSD = 100m,
+            OpeningAmountVES = 5000m,
+            ExpectedAmountUSD = 100m,
+            ExpectedAmountVES = 5000m,
+            Status = CashShiftStatus.Abierta,
+            OpenedAt = DateTime.UtcNow
+        };
+        ctx.CashShifts.Add(shift);
+
+        var customer = new Customer
+        {
+            DocumentNumber = $"V-{Guid.NewGuid():N}"[..10],
+            FullName = "Cliente Prueba Monedas",
+            CurrentBalanceUSD = 200m
+        };
+        ctx.Customers.Add(customer);
+
+        var supplier = new Supplier
+        {
+            DocumentNumber = $"J-{Guid.NewGuid():N}"[..10],
+            CompanyName = "Proveedor Prueba Monedas",
+            CurrentDebtUSD = 200m
+        };
+        ctx.Suppliers.Add(supplier);
+        await ctx.SaveChangesAsync();
+
+        // 1. Abono en USD de $25
+        await creditService.ProcessCustomerPaymentAsync(
+            customer.Id, 25m, 25m, "USD", 60m, PaymentMethodType.EfectivoUSD, "REF-USD", "Abono USD",
+            sendToCashShift: true, currentCashShiftId: shift.Id, cashierUsername: "TestAudit");
+
+        await using var verifyCtx1 = _factory.CreateDbContext();
+        var shiftAfterUsd = await verifyCtx1.CashShifts.FindAsync(shift.Id);
+        Assert.NotNull(shiftAfterUsd);
+        Assert.Equal(125m, shiftAfterUsd.ExpectedAmountUSD);
+        Assert.Equal(5000m, shiftAfterUsd.ExpectedAmountVES); // VES debe ser exactamente 5000 (sin contaminación cruzada)
+
+        var movUsd = await verifyCtx1.CashMovements.OrderByDescending(m => m.Id).FirstAsync();
+        Assert.Equal(25m, movUsd.AmountUSD);
+        Assert.Equal(0m, movUsd.AmountVES);
+
+        // 2. Abono en VES de 1200 Bs.
+        await creditService.ProcessCustomerPaymentAsync(
+            customer.Id, 20m, 1200m, "VES", 60m, PaymentMethodType.EfectivoVES, "REF-VES", "Abono VES",
+            sendToCashShift: true, currentCashShiftId: shift.Id, cashierUsername: "TestAudit");
+
+        await using var verifyCtx2 = _factory.CreateDbContext();
+        var shiftAfterVes = await verifyCtx2.CashShifts.FindAsync(shift.Id);
+        Assert.NotNull(shiftAfterVes);
+        Assert.Equal(125m, shiftAfterVes.ExpectedAmountUSD); // USD debe permanecer intacto en 125
+        Assert.Equal(6200m, shiftAfterVes.ExpectedAmountVES);
+
+        var movVes = await verifyCtx2.CashMovements.OrderByDescending(m => m.Id).FirstAsync();
+        Assert.Equal(0m, movVes.AmountUSD);
+        Assert.Equal(1200m, movVes.AmountVES);
+
+        // 3. Pago a Proveedor en USD de $15
+        await creditService.ProcessSupplierPaymentAsync(
+            supplier.Id, 15m, 15m, "USD", 60m, PaymentMethodType.EfectivoUSD, "REF-SUPP-USD", "Pago USD",
+            payFromCashShift: true, currentCashShiftId: shift.Id, authorizedBy: "TestAudit");
+
+        await using var verifyCtx3 = _factory.CreateDbContext();
+        var shiftAfterSuppUsd = await verifyCtx3.CashShifts.FindAsync(shift.Id);
+        Assert.NotNull(shiftAfterSuppUsd);
+        Assert.Equal(110m, shiftAfterSuppUsd.ExpectedAmountUSD);
+        Assert.Equal(6200m, shiftAfterSuppUsd.ExpectedAmountVES); // VES no debe ser alterado
+
+        shiftAfterSuppUsd.Status = CashShiftStatus.Cerrada;
+        shiftAfterSuppUsd.ClosedAt = DateTime.UtcNow;
+        await verifyCtx3.SaveChangesAsync();
+
+        _output.WriteLine("Test23 Superado: Se verificó la estricta separación de divisas USD y VES en turnos y movimientos de caja.");
+    }
+
+    [Fact]
+    public async Task Test24_CreditNote_FailsCashRefundWhenShiftIsClosed()
+    {
+        var saleService = new SaleService(_factory);
+        await using var ctx = _factory.CreateDbContext();
+
+        var prod = await ctx.Products.FirstAsync(p => p.IsActive);
+        if (prod.CurrentStock < 10)
+        {
+            prod.CurrentStock = 50;
+            await ctx.SaveChangesAsync();
+        }
+
+        // Crear turno abierto para registrar la venta original
+        var shift = new CashShift
+        {
+            CashRegisterId = 1,
+            CashierUsername = "TestCashier",
+            OpeningAmountUSD = 50m,
+            ExpectedAmountUSD = 50m,
+            Status = CashShiftStatus.Abierta,
+            OpenedAt = DateTime.UtcNow
+        };
+        ctx.CashShifts.Add(shift);
+        await ctx.SaveChangesAsync();
+
+        var saleDraft = new Sale
+        {
+            CashRegisterId = 1,
+            CashShiftId = shift.Id,
+            CashierUsername = "TestCashier",
+            FiscalPrinterSerial = "TESTFISCAL",
+            Notes = "Venta previa a NC"
+        };
+        var details = new List<SaleDetail>
+        {
+            new()
+            {
+                ProductId = prod.Id,
+                ProductCode = prod.Code,
+                ProductName = prod.Name,
+                Quantity = 1.0m,
+                UnitPriceUSD = prod.PriceUSD,
+                UnitCostUSD = prod.CostUSD,
+                VatRate = VatRateType.Exento0
+            }
+        };
+        var payments = new List<SalePayment>
+        {
+            new()
+            {
+                Method = PaymentMethodType.EfectivoUSD,
+                CurrencyCode = "USD",
+                AmountOriginal = prod.PriceUSD,
+                ExchangeRateApplied = 1.0m,
+                AmountEquivalentUSD = prod.PriceUSD,
+                ReferenceNumber = "CASH-ORIGINAL"
+            }
+        };
+
+        var sale = await saleService.ProcessSaleAsync(saleDraft, details, payments, 55.40m, false);
+
+        // Ahora cerrar el turno
+        shift.Status = CashShiftStatus.Cerrada;
+        shift.ClosedAt = DateTime.UtcNow;
+        await ctx.SaveChangesAsync();
+
+        var returnItems = new List<CreditNoteItemDraft>
+        {
+            new()
+            {
+                ProductId = prod.Id,
+                ProductCode = prod.Code,
+                ProductName = prod.Name,
+                OriginalQuantity = 1.0m,
+                ReturnQuantity = 1.0m,
+                UnitPriceUSD = prod.PriceUSD,
+                VatRate = VatRateType.Exento0
+            }
+        };
+
+        // Intentar reembolsar efectivo con turno cerrado o shiftId 0 debe lanzar InvalidOperationException
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await saleService.ProcessCreditNoteAsync(sale.Id, returnItems, "Prueba Devolución", refundToCashRegister: true, currentCashShiftId: 0, cashierUsername: "TestCashier");
+        });
+
+        Assert.Contains("turno", ex.Message.ToLower());
+        _output.WriteLine($"Test24 Superado: Reembolso en efectivo denegado correctamente con caja cerrada: {ex.Message}");
+    }
+
+    [Fact]
+    public async Task Test25_CancelSale_BlockedAfterZReport_AndRevertsOpenShiftCash()
+    {
+        var saleService = new SaleService(_factory);
+        await using var ctx = _factory.CreateDbContext();
+
+        var prod = await ctx.Products.FirstAsync(p => p.IsActive);
+        if (prod.CurrentStock < 10)
+        {
+            prod.CurrentStock = 50;
+            await ctx.SaveChangesAsync();
+        }
+
+        var shift = new CashShift
+        {
+            CashRegisterId = 1,
+            CashierUsername = "TestCashier",
+            OpeningAmountUSD = 100m,
+            ExpectedAmountUSD = 100m,
+            Status = CashShiftStatus.Abierta,
+            OpenedAt = DateTime.UtcNow
+        };
+        ctx.CashShifts.Add(shift);
+        await ctx.SaveChangesAsync();
+
+        var saleDraft = new Sale
+        {
+            CashRegisterId = 1,
+            CashShiftId = shift.Id,
+            CashierUsername = "TestCashier",
+            FiscalPrinterSerial = "TESTZ01",
+            Notes = "Venta sujeta a reporte Z"
+        };
+        var details = new List<SaleDetail>
+        {
+            new()
+            {
+                ProductId = prod.Id,
+                ProductCode = prod.Code,
+                ProductName = prod.Name,
+                Quantity = 1.0m,
+                UnitPriceUSD = 10m,
+                UnitCostUSD = prod.CostUSD,
+                VatRate = VatRateType.Exento0
+            }
+        };
+        var payments = new List<SalePayment>
+        {
+            new()
+            {
+                Method = PaymentMethodType.EfectivoUSD,
+                CurrencyCode = "USD",
+                AmountOriginal = 10m,
+                ExchangeRateApplied = 1.0m,
+                AmountEquivalentUSD = 10m,
+                ReferenceNumber = "CASH-Z"
+            }
+        };
+
+        var sale = await saleService.ProcessSaleAsync(saleDraft, details, payments, 55.40m, false);
+
+        // 1. Simular reporte Z emitido (actualizando vía contexto rastreado)
+        var dbSale = await ctx.Sales.FindAsync(sale.Id);
+        Assert.NotNull(dbSale);
+        dbSale.FiscalZReportNumber = 105;
+        await ctx.SaveChangesAsync();
+
+        var exZ = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await saleService.CancelSaleAsync(sale.Id, "Intento anular factura declarada en Z");
+        });
+        Assert.Contains("Reporte Z", exZ.Message);
+
+        // 2. Probar anulación válida de una factura sin Z que revierte caja abierta
+        dbSale.FiscalZReportNumber = null;
+        await ctx.SaveChangesAsync();
+
+        bool cancelled = await saleService.CancelSaleAsync(sale.Id, "Anulación normal antes de Z");
+        Assert.True(cancelled);
+
+        await using var verifyCtx = _factory.CreateDbContext();
+        var cancelledSale = await verifyCtx.Sales.FindAsync(sale.Id);
+        Assert.Equal(SaleStatus.Anulada, cancelledSale!.Status);
+
+        var shiftAfterCancel = await verifyCtx.CashShifts.FindAsync(shift.Id);
+        Assert.Equal(100m, shiftAfterCancel!.ExpectedAmountUSD); // 100 + 10 - 10 = 100m
+
+        // Cerrar el turno de prueba para no dejar turnos huérfanos
+        shiftAfterCancel.Status = CashShiftStatus.Cerrada;
+        shiftAfterCancel.ClosedAt = DateTime.UtcNow;
+        await verifyCtx.SaveChangesAsync();
+
+        _output.WriteLine("Test25 Superado: Se verificó el bloqueo de anulación post-Z y el reverso exacto de gaveta en turno abierto.");
+    }
+
+    [Fact]
+    public async Task Test26_CancelPurchase_BlockedIfStockAlreadySold_AndLogsKardex()
+    {
+        var purchaseService = new PurchaseService(_factory);
+        await using var ctx = _factory.CreateDbContext();
+
+        var supplier = await ctx.Suppliers.FirstAsync();
+        var prod = new Product
+        {
+            Code = $"TEST-PRD-{Guid.NewGuid():N}"[..12].ToUpperInvariant(),
+            Name = "Producto Prueba Anulación Compra",
+            CostUSD = 5.0m,
+            PriceUSD = 10.0m,
+            CurrentStock = 0m,
+            VatRate = VatRateType.Exento0,
+            IsActive = true
+        };
+        ctx.Products.Add(prod);
+        await ctx.SaveChangesAsync();
+
+        var purchaseDraft = new Purchase
+        {
+            SupplierId = supplier.Id,
+            InvoiceNumber = $"FAC-TEST-{Guid.NewGuid():N}"[..10],
+            ControlNumber = "00-112233",
+            Condition = PaymentCondition.Contado,
+            RegisteredBy = "Supervisor"
+        };
+        var itemDrafts = new List<PurchaseItemDraft>
+        {
+            new()
+            {
+                ProductId = prod.Id,
+                ProductCode = prod.Code,
+                ProductName = prod.Name,
+                Quantity = 10m,
+                UnitCostUSD = 5.0m,
+                VatRate = VatRateType.Exento0
+            }
+        };
+
+        var purchase = await purchaseService.ProcessPurchaseAsync(purchaseDraft, itemDrafts, payFromCashShift: false, currentCashShiftId: null);
+
+        // 1. Simular que se vendieron 6 unidades (quedan 4 unidades en stock, menor a 10)
+        prod.CurrentStock = 4m;
+        await ctx.SaveChangesAsync();
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await purchaseService.CancelPurchaseAsync(purchase.Id, "Intento anular compra con mercancía ya vendida");
+        });
+        Assert.Contains("ya fue vendido", ex.Message);
+
+        // 2. Restaurar stock a 10 y anular
+        prod.CurrentStock = 10m;
+        await ctx.SaveChangesAsync();
+
+        bool cancelled = await purchaseService.CancelPurchaseAsync(purchase.Id, "Anulación autorizada");
+        Assert.True(cancelled);
+
+        await using var verifyCtx = _factory.CreateDbContext();
+        var verifyProd = await verifyCtx.Products.FindAsync(prod.Id);
+        Assert.Equal(0m, verifyProd!.CurrentStock);
+
+        var kardexEntry = await verifyCtx.InventoryMovements
+            .FirstOrDefaultAsync(m => m.ProductId == prod.Id && m.MovementType == InventoryMovementType.AnulacionCompra);
+        Assert.NotNull(kardexEntry);
+
+        _output.WriteLine("Test26 Superado: Protección de stock negativo en compras y registro Kárdex verificado.");
+    }
+
+    [Fact]
+    public async Task Test27_BackupService_DirectSqlDumpGeneratesRealTableData()
+    {
+        var backupService = new DatabaseBackupService(new DatabaseConfigurationService());
+        string tempBackupFileAuto = Path.Combine(Path.GetTempPath(), $"deterpos_test_backup_auto_{Guid.NewGuid():N}.sql");
+        string tempBackupFileDirect = Path.Combine(Path.GetTempPath(), $"deterpos_test_backup_direct_{Guid.NewGuid():N}.sql");
+
+        try
+        {
+            // 1. Probar CreateBackupAsync (detecta pg_dump/docker o fallback)
+            var resultAuto = await backupService.CreateBackupAsync(tempBackupFileAuto);
+            Assert.True(resultAuto.Success, $"Fallo la creación del respaldo automático: {resultAuto.Message}");
+            Assert.True(File.Exists(tempBackupFileAuto));
+
+            string contentAuto = await File.ReadAllTextAsync(tempBackupFileAuto);
+            Assert.True(contentAuto.Length > 200, "El archivo de respaldo generado está vacío o incompleto.");
+            Assert.True(contentAuto.Contains("PostgreSQL database dump") || contentAuto.Contains("DETERPOS BACKUP") || contentAuto.Contains("INSERT INTO"),
+                "El respaldo no contiene encabezado reconocible de PostgreSQL ni datos SQL.");
+
+            // 2. Probar explícitamente el volcado C# directo Npgsql
+            var resultDirect = await backupService.CreateDirectSqlDumpAsync(tempBackupFileDirect);
+            Assert.True(resultDirect.Success, $"Fallo el volcado directo SQL C#: {resultDirect.Message}");
+            Assert.True(File.Exists(tempBackupFileDirect));
+
+            string contentDirect = await File.ReadAllTextAsync(tempBackupFileDirect);
+            Assert.Contains("BEGIN;", contentDirect);
+            Assert.Contains("SET session_replication_role", contentDirect);
+            Assert.Contains("INSERT INTO", contentDirect);
+            Assert.Contains("COMMIT;", contentDirect);
+
+            _output.WriteLine($"Test27 Superado: Respaldo automático ({resultAuto.FileSizeBytes:N0} bytes) y volcado directo C# Npgsql ({resultDirect.FileSizeBytes:N0} bytes) verificados exitosamente con datos reales.");
+        }
+        finally
+        {
+            if (File.Exists(tempBackupFileAuto))
+            {
+                File.Delete(tempBackupFileAuto);
+            }
+            if (File.Exists(tempBackupFileDirect))
+            {
+                File.Delete(tempBackupFileDirect);
+            }
+        }
     }
 }

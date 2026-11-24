@@ -295,6 +295,61 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _currentUserName, value);
     }
 
+    private User? _currentUser;
+    public User? CurrentUser
+    {
+        get => _currentUser;
+        set
+        {
+            if (SetProperty(ref _currentUser, value))
+            {
+                CurrentUserName = !string.IsNullOrWhiteSpace(value?.FullName) ? value.FullName : (value?.Username ?? "Administrador");
+                CurrentUserRole = value != null ? value.Role.ToString() : "Administrador";
+                NotifyPermissionProperties();
+            }
+        }
+    }
+
+    private string _currentUserRole = "Administrador";
+    public string CurrentUserRole
+    {
+        get => _currentUserRole;
+        set => SetProperty(ref _currentUserRole, value);
+    }
+
+    public bool CanOpenCashRegister => _currentUser?.Permissions?.CanOpenCashRegister ?? (_currentUser == null || _currentUser.Role == SystemUserRole.Administrador);
+    public bool CanCloseCashRegister => _currentUser?.Permissions?.CanCloseCashRegister ?? (_currentUser == null || _currentUser.Role == SystemUserRole.Administrador);
+    public bool CanPerformBlindCount => _currentUser?.Permissions?.CanPerformBlindCount ?? (_currentUser == null || _currentUser.Role == SystemUserRole.Administrador);
+    public bool CanEmitInvoices => _currentUser?.Permissions?.CanEmitInvoices ?? (_currentUser == null || _currentUser.Role == SystemUserRole.Administrador);
+    public bool CanEmitCreditNotes => _currentUser?.Permissions?.CanEmitCreditNotes ?? (_currentUser == null || _currentUser.Role == SystemUserRole.Administrador);
+    public bool CanCancelSales => _currentUser?.Permissions?.CanCancelSales ?? (_currentUser == null || _currentUser.Role == SystemUserRole.Administrador);
+    public bool CanManagePurchases => _currentUser?.Permissions?.CanManagePurchases ?? (_currentUser == null || _currentUser.Role == SystemUserRole.Administrador);
+    public bool CanManageCredits => _currentUser?.Permissions?.CanManageCredits ?? (_currentUser == null || _currentUser.Role == SystemUserRole.Administrador);
+    public bool CanManageExpenses => _currentUser?.Permissions?.CanManageExpenses ?? (_currentUser == null || _currentUser.Role == SystemUserRole.Administrador);
+    public bool CanViewFiscalBooks => _currentUser?.Permissions?.CanViewFiscalBooks ?? (_currentUser == null || _currentUser.Role == SystemUserRole.Administrador);
+    public bool CanViewProductCosts => _currentUser?.Permissions?.CanViewProductCosts ?? (_currentUser == null || _currentUser.Role == SystemUserRole.Administrador);
+    public bool CanUpdateExchangeRates => _currentUser?.Permissions?.CanUpdateExchangeRates ?? (_currentUser == null || _currentUser.Role == SystemUserRole.Administrador);
+    public bool CanManageUsers => _currentUser?.Permissions?.CanManageUsers ?? (_currentUser == null || _currentUser.Role == SystemUserRole.Administrador);
+    public bool IsAdmin => _currentUser == null || _currentUser.Role == SystemUserRole.Administrador;
+
+    public void NotifyPermissionProperties()
+    {
+        OnPropertyChanged(nameof(CanOpenCashRegister));
+        OnPropertyChanged(nameof(CanCloseCashRegister));
+        OnPropertyChanged(nameof(CanPerformBlindCount));
+        OnPropertyChanged(nameof(CanEmitInvoices));
+        OnPropertyChanged(nameof(CanEmitCreditNotes));
+        OnPropertyChanged(nameof(CanCancelSales));
+        OnPropertyChanged(nameof(CanManagePurchases));
+        OnPropertyChanged(nameof(CanManageCredits));
+        OnPropertyChanged(nameof(CanManageExpenses));
+        OnPropertyChanged(nameof(CanViewFiscalBooks));
+        OnPropertyChanged(nameof(CanViewProductCosts));
+        OnPropertyChanged(nameof(CanUpdateExchangeRates));
+        OnPropertyChanged(nameof(CanManageUsers));
+        OnPropertyChanged(nameof(IsAdmin));
+    }
+
     public string CurrentBranch
     {
         get => _currentBranch;
@@ -1068,6 +1123,7 @@ public class MainViewModel : ViewModelBase
             await _currencyService.UpdateExchangeRateAsync("COP", newCop, "Fronterizo", CurrentUserName);
 
             await RefreshRateHistoryFromDbAsync();
+            AppEvents.RaiseExchangeRateChanged(newVes);
 
             MessageBox.Show($"Nuevas tasas de cambio aplicadas y registradas en PostgreSQL:\n• 1 USD = {newVes:N4} Bs. ({source})\n• 1 USD = {newEur:N4} €\n• 1 USD = {newCop:N2} Col$", "Tasas Actualizadas", MessageBoxButton.OK, MessageBoxImage.Information);
         }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Deterpos.Application.Common;
 using Deterpos.Application.Interfaces;
 using Deterpos.Domain.Entities;
 using Deterpos.Domain.Enums;
@@ -80,39 +81,56 @@ public class ExpenseService : IExpenseService
         }
 
         // Si egresa de caja física en turno abierto
-        if (deductFromCashShift && currentCashShiftId.HasValue)
+        if (deductFromCashShift)
         {
-            var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == currentCashShiftId.Value && s.Status == CashShiftStatus.Abierta);
-            if (shift != null)
+            if (!currentCashShiftId.HasValue || currentCashShiftId.Value <= 0)
             {
-                if (expenseDraft.CurrencyCode == "USD")
-                {
-                    shift.ExpectedAmountUSD -= expenseDraft.AmountUSD;
-                    if (shift.ExpectedAmountUSD < 0) shift.ExpectedAmountUSD = 0;
-                }
-                else
-                {
-                    shift.ExpectedAmountVES -= expenseDraft.AmountOriginal;
-                    if (shift.ExpectedAmountVES < 0) shift.ExpectedAmountVES = 0;
-                }
-
-                expenseDraft.CashShiftId = shift.Id;
-
-                context.CashMovements.Add(new CashMovement
-                {
-                    CashShiftId = shift.Id,
-                    Type = expenseDraft.PaymentOrigin == ExpensePaymentOrigin.CajaChica ? TransactionType.EgresoCajaChica : TransactionType.EgresoGastoOperativo,
-                    AmountUSD = expenseDraft.AmountUSD,
-                    AmountVES = expenseDraft.AmountVES,
-                    Description = $"Gasto Operativo: {expenseDraft.Description} ({expenseDraft.Beneficiary})",
-                    AuthorizedBy = expenseDraft.AuthorizedBy,
-                    CreatedAt = DateTime.UtcNow
-                });
+                throw new InvalidOperationException("No se puede deducir el gasto de caja porque no se especificó un turno de caja.");
             }
+
+            var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == currentCashShiftId.Value && s.Status == CashShiftStatus.Abierta);
+            if (shift == null)
+            {
+                throw new InvalidOperationException("No se puede deducir el gasto de caja porque el turno no está abierto.");
+            }
+
+            decimal movUsd = 0m;
+            decimal movVes = 0m;
+
+            if (expenseDraft.CurrencyCode == "USD")
+            {
+                shift.ExpectedAmountUSD -= expenseDraft.AmountUSD;
+                if (shift.ExpectedAmountUSD < 0) shift.ExpectedAmountUSD = 0;
+                movUsd = expenseDraft.AmountUSD;
+            }
+            else
+            {
+                shift.ExpectedAmountVES -= expenseDraft.AmountOriginal;
+                if (shift.ExpectedAmountVES < 0) shift.ExpectedAmountVES = 0;
+                movVes = expenseDraft.AmountOriginal;
+            }
+
+            expenseDraft.CashShiftId = shift.Id;
+
+            context.CashMovements.Add(new CashMovement
+            {
+                CashShiftId = shift.Id,
+                Type = expenseDraft.PaymentOrigin == ExpensePaymentOrigin.CajaChica ? TransactionType.EgresoCajaChica : TransactionType.EgresoGastoOperativo,
+                AmountUSD = movUsd,
+                AmountVES = movVes,
+                Description = $"Gasto Operativo: {expenseDraft.Description} ({expenseDraft.Beneficiary})",
+                AuthorizedBy = expenseDraft.AuthorizedBy,
+                CreatedAt = DateTime.UtcNow
+            });
         }
 
         context.OperatingExpenses.Add(expenseDraft);
         await context.SaveChangesAsync();
+
+        if (deductFromCashShift)
+        {
+            AppEvents.RaiseCashChanged();
+        }
 
         // Cargar relación de categoría
         await context.Entry(expenseDraft).Reference(e => e.Category).LoadAsync();
@@ -172,35 +190,47 @@ public class ExpenseService : IExpenseService
         if (expense == null) return false;
 
         // Si salió de caja, devolver el dinero al turno si sigue abierto
+        bool cashReverted = false;
         if (expense.CashShiftId.HasValue)
         {
             var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == expense.CashShiftId.Value && s.Status == CashShiftStatus.Abierta);
             if (shift != null)
             {
+                decimal revUsd = 0m;
+                decimal revVes = 0m;
+
                 if (expense.CurrencyCode == "USD")
                 {
                     shift.ExpectedAmountUSD += expense.AmountUSD;
+                    revUsd = expense.AmountUSD;
                 }
                 else
                 {
                     shift.ExpectedAmountVES += expense.AmountOriginal;
+                    revVes = expense.AmountOriginal;
                 }
 
                 context.CashMovements.Add(new CashMovement
                 {
                     CashShiftId = shift.Id,
                     Type = TransactionType.IngresoManual,
-                    AmountUSD = expense.AmountUSD,
-                    AmountVES = expense.AmountVES,
+                    AmountUSD = revUsd,
+                    AmountVES = revVes,
                     Description = $"Reverso de Gasto #{expense.Id}: {reason}",
                     AuthorizedBy = expense.AuthorizedBy,
                     CreatedAt = DateTime.UtcNow
                 });
+                cashReverted = true;
             }
         }
 
         expense.Notes = $"{expense.Notes}\n[ANULADO]: {reason}".Trim();
         await context.SaveChangesAsync();
+
+        if (cashReverted)
+        {
+            AppEvents.RaiseCashChanged();
+        }
         return true;
     }
 }

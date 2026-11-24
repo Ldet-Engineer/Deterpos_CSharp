@@ -27,6 +27,7 @@ public partial class CustomerPaymentDialog : Window
         _cashierUsername = cashierUsername;
 
         PopulateCustomerInfo();
+        UpdateCashShiftCheckbox();
         RecalculateEquivalence();
     }
 

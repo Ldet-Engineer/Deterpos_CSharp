@@ -88,28 +88,35 @@ public class MovementDisplayItem
     {
         TransactionType.IngresoManual => "Entrada de Efectivo",
         TransactionType.IngresoVenta => "Venta POS",
-        TransactionType.EgresoCajaChica => "Caja Chica",
+        TransactionType.AbonoCliente => "Abono a CxC (Cliente)",
+        TransactionType.EgresoCajaChica => "Salida Caja Chica",
         TransactionType.EgresoGastoOperativo => "Gasto Operativo",
+        TransactionType.EgresoDevolucion => "Devolución / NC Fiscal",
+        TransactionType.PagoProveedor => "Pago a Proveedor (CxP)",
         _ => Source.Type.ToString()
     };
 
-    public Brush TypeBadgeBackground => (Source.Type == TransactionType.IngresoManual || Source.Type == TransactionType.IngresoVenta)
+    private bool IsIncome => Source.Type == TransactionType.IngresoManual || 
+                             Source.Type == TransactionType.IngresoVenta || 
+                             Source.Type == TransactionType.AbonoCliente;
+
+    public Brush TypeBadgeBackground => IsIncome
         ? new SolidColorBrush(Color.FromRgb(230, 244, 234))
         : new SolidColorBrush(Color.FromRgb(253, 231, 233));
 
-    public Brush TypeBadgeForeground => (Source.Type == TransactionType.IngresoManual || Source.Type == TransactionType.IngresoVenta)
+    public Brush TypeBadgeForeground => IsIncome
         ? new SolidColorBrush(Color.FromRgb(16, 124, 65))
         : new SolidColorBrush(Color.FromRgb(216, 59, 1));
 
-    public Brush AmountColor => (Source.Type == TransactionType.IngresoManual || Source.Type == TransactionType.IngresoVenta)
+    public Brush AmountColor => IsIncome
         ? new SolidColorBrush(Color.FromRgb(16, 124, 65))
         : new SolidColorBrush(Color.FromRgb(216, 59, 1));
 
-    public string AmountUSDDisplay => (Source.Type == TransactionType.IngresoManual || Source.Type == TransactionType.IngresoVenta)
+    public string AmountUSDDisplay => IsIncome
         ? $"+ $ {Source.AmountUSD:N2}"
         : $"- $ {Source.AmountUSD:N2}";
 
-    public string AmountVESDisplay => (Source.Type == TransactionType.IngresoManual || Source.Type == TransactionType.IngresoVenta)
+    public string AmountVESDisplay => IsIncome
         ? $"+ {Source.AmountVES:N2} Bs."
         : $"- {Source.AmountVES:N2} Bs.";
 }
@@ -195,11 +202,11 @@ public partial class CashControlView : UserControl
             BtnCashOut.IsEnabled = true;
             BtnCloseShift.IsEnabled = true;
 
-            decimal totalInUSD = _activeShift.Movements.Where(m => m.Type == TransactionType.IngresoManual || m.Type == TransactionType.IngresoVenta).Sum(m => m.AmountUSD);
-            decimal totalInVES = _activeShift.Movements.Where(m => m.Type == TransactionType.IngresoManual || m.Type == TransactionType.IngresoVenta).Sum(m => m.AmountVES);
+            decimal totalInUSD = _activeShift.Movements.Where(m => m.Type == TransactionType.IngresoManual || m.Type == TransactionType.IngresoVenta || m.Type == TransactionType.AbonoCliente).Sum(m => m.AmountUSD);
+            decimal totalInVES = _activeShift.Movements.Where(m => m.Type == TransactionType.IngresoManual || m.Type == TransactionType.IngresoVenta || m.Type == TransactionType.AbonoCliente).Sum(m => m.AmountVES);
 
-            decimal totalOutUSD = _activeShift.Movements.Where(m => m.Type == TransactionType.EgresoCajaChica || m.Type == TransactionType.EgresoGastoOperativo).Sum(m => m.AmountUSD);
-            decimal totalOutVES = _activeShift.Movements.Where(m => m.Type == TransactionType.EgresoCajaChica || m.Type == TransactionType.EgresoGastoOperativo).Sum(m => m.AmountVES);
+            decimal totalOutUSD = _activeShift.Movements.Where(m => m.Type == TransactionType.EgresoCajaChica || m.Type == TransactionType.EgresoGastoOperativo || m.Type == TransactionType.EgresoDevolucion || m.Type == TransactionType.PagoProveedor).Sum(m => m.AmountUSD);
+            decimal totalOutVES = _activeShift.Movements.Where(m => m.Type == TransactionType.EgresoCajaChica || m.Type == TransactionType.EgresoGastoOperativo || m.Type == TransactionType.EgresoDevolucion || m.Type == TransactionType.PagoProveedor).Sum(m => m.AmountVES);
 
             TxtOpeningUSDDisplay.Text = $"$ {_activeShift.OpeningAmountUSD:N2}";
             TxtOpeningVESDisplay.Text = $"{_activeShift.OpeningAmountVES:N2} Bs.";

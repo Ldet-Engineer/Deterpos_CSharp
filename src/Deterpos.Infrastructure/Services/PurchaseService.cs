@@ -159,32 +159,39 @@ public class PurchaseService : IPurchaseService
         }
 
         // Si es de Contado y se autorizó pagar con efectivo del turno abierto
-        if (purchaseDraft.Condition == PaymentCondition.Contado && payFromCashShift && currentCashShiftId.HasValue)
+        if (purchaseDraft.Condition == PaymentCondition.Contado && payFromCashShift)
         {
-            var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == currentCashShiftId.Value && s.Status == CashShiftStatus.Abierta);
-            if (shift != null)
+            if (!currentCashShiftId.HasValue || currentCashShiftId.Value <= 0)
             {
-                shift.ExpectedAmountUSD -= purchaseDraft.TotalUSD;
-                shift.ExpectedAmountVES -= purchaseDraft.TotalVES;
-
-                context.CashMovements.Add(new CashMovement
-                {
-                    CashShiftId = shift.Id,
-                    Type = TransactionType.PagoProveedor,
-                    AmountUSD = purchaseDraft.TotalUSD,
-                    AmountVES = purchaseDraft.TotalVES,
-                    Description = $"Pago Factura Compra Proveedor {supplier.CompanyName} - Factura N° {purchaseDraft.InvoiceNumber}",
-                    AuthorizedBy = purchaseDraft.RegisteredBy,
-                    CreatedAt = DateTime.UtcNow
-                });
+                throw new InvalidOperationException("No se puede pagar desde caja porque no se especificó un turno de caja.");
             }
+
+            var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == currentCashShiftId.Value && s.Status == CashShiftStatus.Abierta);
+            if (shift == null)
+            {
+                throw new InvalidOperationException("No se puede pagar desde caja porque el turno de caja no está abierto.");
+            }
+
+            shift.ExpectedAmountUSD -= purchaseDraft.TotalUSD;
+            if (shift.ExpectedAmountUSD < 0) shift.ExpectedAmountUSD = 0;
+
+            context.CashMovements.Add(new CashMovement
+            {
+                CashShiftId = shift.Id,
+                Type = TransactionType.PagoProveedor,
+                AmountUSD = purchaseDraft.TotalUSD,
+                AmountVES = 0m,
+                Description = $"Pago Factura Compra Proveedor {supplier.CompanyName} - Factura N° {purchaseDraft.InvoiceNumber}",
+                AuthorizedBy = purchaseDraft.RegisteredBy,
+                CreatedAt = DateTime.UtcNow
+            });
         }
 
         context.Purchases.Add(purchaseDraft);
         await context.SaveChangesAsync();
 
         AppEvents.RaiseInventoryChanged();
-        if (purchaseDraft.Condition == PaymentCondition.Contado && payFromCashShift && currentCashShiftId.HasValue)
+        if (purchaseDraft.Condition == PaymentCondition.Contado && payFromCashShift)
         {
             AppEvents.RaiseCashChanged();
         }
@@ -244,7 +251,17 @@ public class PurchaseService : IPurchaseService
 
         if (purchase == null || purchase.Status == PurchaseStatus.Anulada) return false;
 
-        // Revertir stock recibido
+        // 1. Validar existencias actuales antes de revertir
+        foreach (var detail in purchase.Details)
+        {
+            var product = await context.Products.FindAsync(detail.ProductId);
+            if (product != null && product.CurrentStock < detail.Quantity)
+            {
+                throw new InvalidOperationException($"No se puede anular la compra porque el producto '{product.Name}' ya fue vendido y su existencia actual ({product.CurrentStock:G29}) es menor a la cantidad recibida ({detail.Quantity:G29}).");
+            }
+        }
+
+        // 2. Revertir stock recibido y registrar en Kárdex
         foreach (var detail in purchase.Details)
         {
             var product = await context.Products.FindAsync(detail.ProductId);
@@ -252,20 +269,73 @@ public class PurchaseService : IPurchaseService
             {
                 product.CurrentStock -= detail.Quantity;
                 product.CostUSD = detail.PreviousCostUSD;
+
+                context.InventoryMovements.Add(new InventoryMovement
+                {
+                    ProductId = detail.ProductId,
+                    MovementDate = DateTime.UtcNow,
+                    MovementType = InventoryMovementType.AnulacionCompra,
+                    DocumentNumber = purchase.InvoiceNumber,
+                    ReferenceNumber = "ANULACION",
+                    EntityName = purchase.Supplier?.CompanyName ?? "Proveedor",
+                    PerformedBy = "Supervisor",
+                    Reason = $"Anulación de Compra Factura {purchase.InvoiceNumber}: {reason}",
+                    QuantityIn = 0m,
+                    UnitCostInUSD = 0m,
+                    QuantityOut = detail.Quantity,
+                    UnitCostOutUSD = detail.UnitCostUSD,
+                    ResultingStock = product.CurrentStock,
+                    ResultingUnitCostUSD = product.CostUSD
+                });
             }
         }
 
-        // Revertir deuda a proveedor si era a crédito
+        // 3. Revertir deuda a proveedor si era a crédito
         if (purchase.Condition == PaymentCondition.Credito && purchase.Supplier != null)
         {
             purchase.Supplier.CurrentDebtUSD -= purchase.TotalUSD;
             if (purchase.Supplier.CurrentDebtUSD < 0) purchase.Supplier.CurrentDebtUSD = 0;
+            AppEvents.RaiseCreditChanged();
+        }
+
+        // 4. Si fue pagada en efectivo de caja, devolver el dinero si el turno sigue abierto
+        bool cashReverted = false;
+        var cashMovement = await context.CashMovements
+            .FirstOrDefaultAsync(m => m.Type == TransactionType.PagoProveedor && m.Description.Contains($"Factura N° {purchase.InvoiceNumber}"));
+
+        if (cashMovement != null)
+        {
+            var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == cashMovement.CashShiftId && s.Status == CashShiftStatus.Abierta);
+            if (shift != null)
+            {
+                shift.ExpectedAmountUSD += cashMovement.AmountUSD;
+                shift.ExpectedAmountVES += cashMovement.AmountVES;
+
+                context.CashMovements.Add(new CashMovement
+                {
+                    CashShiftId = shift.Id,
+                    Type = TransactionType.IngresoManual,
+                    AmountUSD = cashMovement.AmountUSD,
+                    AmountVES = cashMovement.AmountVES,
+                    Description = $"Reverso de Pago Compra Factura N° {purchase.InvoiceNumber}: {reason}",
+                    AuthorizedBy = "Supervisor",
+                    CreatedAt = DateTime.UtcNow
+                });
+                cashReverted = true;
+            }
         }
 
         purchase.Status = PurchaseStatus.Anulada;
         purchase.Notes = $"{purchase.Notes}\n[ANULADA]: {reason}".Trim();
 
         await context.SaveChangesAsync();
+
+        AppEvents.RaiseInventoryChanged();
+        if (cashReverted)
+        {
+            AppEvents.RaiseCashChanged();
+        }
+
         return true;
     }
 }

@@ -311,9 +311,9 @@ public partial class SalesInvoicesView : UserControl
             return;
         }
 
-        // Obtener turno actual
+        // Obtener turno actual (0 si no hay caja abierta)
         var currentShift = await _cashService.GetActiveShiftAsync(originalSale.CashRegisterId);
-        int shiftId = currentShift?.Id ?? originalSale.CashShiftId;
+        int shiftId = currentShift?.Id ?? 0;
         string cashier = ViewModel?.CurrentUserName ?? "Administrador";
 
         var dialog = new CreateCreditNoteDialog(originalSale, _saleService, shiftId, cashier)

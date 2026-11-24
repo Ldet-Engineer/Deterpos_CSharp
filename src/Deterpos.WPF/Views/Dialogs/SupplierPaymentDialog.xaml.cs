@@ -27,6 +27,7 @@ public partial class SupplierPaymentDialog : Window
         _authorizedBy = authorizedBy;
 
         PopulateSupplierInfo();
+        UpdateCashShiftCheckbox();
         RecalculateEquivalence();
     }
 

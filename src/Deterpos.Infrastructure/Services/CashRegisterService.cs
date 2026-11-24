@@ -58,6 +58,7 @@ public class CashRegisterService : ICashRegisterService
         await using var context = GetContext();
         var shift = await context.CashShifts
             .Include(s => s.Movements)
+            .OrderByDescending(s => s.Id)
             .FirstOrDefaultAsync(s => s.CashRegisterId == cashRegisterId && s.Status == CashShiftStatus.Abierta);
 
         if (shift != null)

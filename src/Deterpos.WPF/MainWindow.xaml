@@ -651,6 +651,13 @@
                             </ScrollViewer>
                         </Fluent:BackstageTabItem>
 
+                        <!-- BOTÓN DE CIERRE DE SESIÓN / RELEVO -->
+                        <Fluent:Button Header="Cerrar Sesión / Relevo" Click="BtnLogout_Click">
+                            <Fluent:Button.Icon>
+                                <fluentIcons:SymbolIcon Symbol="SignOut" FontSize="16" Foreground="#D83B01" />
+                            </Fluent:Button.Icon>
+                        </Fluent:Button>
+
                     </Fluent:BackstageTabControl>
                 </Fluent:Backstage>
             </Fluent:Ribbon.Menu>
@@ -1671,7 +1678,15 @@
                 <StackPanel Grid.Column="4" Orientation="Horizontal">
                     <TextBlock Text="Fiscal: Impresora En Línea (Z101)" Foreground="#D0E7FB" FontSize="11" VerticalAlignment="Center" Margin="0,0,15,0" />
                     <TextBlock Text="Usuario: " Foreground="#D0E7FB" FontSize="11" VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding CurrentUserName}" Foreground="White" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center" Margin="0,0,15,0" />
+                    <TextBlock Text="{Binding CurrentUserName}" Foreground="White" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <Border Background="#005A9E" CornerRadius="4" Margin="0,0,15,0" VerticalAlignment="Center">
+                        <Button Click="BtnLogout_Click" Background="Transparent" Foreground="White" BorderThickness="0" Padding="6,2" Cursor="Hand" ToolTip="Cerrar sesión actual o relevar cajero">
+                            <StackPanel Orientation="Horizontal">
+                                <fluentIcons:SymbolIcon Symbol="SignOut" FontSize="10" Foreground="#FED7AA" Margin="0,0,4,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Salir / Relevo" FontSize="9.5" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Border>
                     <TextBlock Text="Moneda Base: USD ($)" Foreground="#FFF5C2" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" />
                 </StackPanel>
             </Grid>

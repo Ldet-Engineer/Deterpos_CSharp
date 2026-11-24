@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Deterpos.Application.Common;
 using Deterpos.Domain.Entities;
 using Deterpos.Infrastructure.Data;
 using Deterpos.Infrastructure.Services;
@@ -73,6 +74,10 @@ public partial class CustomersSuppliersView : UserControl
         DgSuppliers.ItemsSource = _displayedSuppliers;
 
         Loaded += CustomersSuppliersView_Loaded;
+        IsVisibleChanged += async (s, e) => { if (IsVisible) await ReloadAllFromDbAsync(); };
+        AppEvents.CreditChanged += () => Dispatcher.InvokeAsync(async () => await ReloadAllFromDbAsync());
+        AppEvents.SalesChanged += () => Dispatcher.InvokeAsync(async () => await ReloadAllFromDbAsync());
+        AppEvents.ExchangeRateChanged += rate => Dispatcher.InvokeAsync(async () => await ReloadAllFromDbAsync());
     }
 
     private async void CustomersSuppliersView_Loaded(object sender, RoutedEventArgs e)

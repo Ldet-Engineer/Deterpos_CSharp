@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using Deterpos.Application.Common;
 using Deterpos.WPF.ViewModels;
 using Deterpos.WPF.Views.Dialogs;
 
@@ -13,6 +14,8 @@ public partial class CurrencyManagementView : UserControl
     {
         InitializeComponent();
         Loaded += CurrencyManagementView_Loaded;
+        IsVisibleChanged += (s, e) => { if (IsVisible) RefreshView(); };
+        AppEvents.ExchangeRateChanged += rate => Dispatcher.InvokeAsync(RefreshView);
     }
 
     private void CurrencyManagementView_Loaded(object sender, RoutedEventArgs e)

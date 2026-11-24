@@ -17,8 +17,12 @@ public class BcvExchangeRateService : IBcvExchangeRateService
     {
         var handler = new HttpClientHandler
         {
-            // Omitir errores de certificado SSL causados por entidades de certificación gubernamentales venezolanas
-            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            // Omitir errores de certificado SSL únicamente para el portal gubernamental del BCV (bcv.org.ve)
+            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
+            {
+                if (errors == System.Net.Security.SslPolicyErrors.None) return true;
+                return message.RequestUri != null && message.RequestUri.Host.EndsWith("bcv.org.ve", StringComparison.OrdinalIgnoreCase);
+            }
         };
 
         _httpClient = new HttpClient(handler)

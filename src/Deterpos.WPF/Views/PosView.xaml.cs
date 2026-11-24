@@ -1031,6 +1031,12 @@ public partial class PosView : UserControl
 
     public void OpenHoldTicketsDialog()
     {
+        if (_activeShift == null)
+        {
+            MessageBox.Show("No se pueden recuperar ventas en espera porque la caja se encuentra CERRADA.\nAbra un turno de caja antes de facturar.", "Caja Cerrada", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
         var holdDlg = new HoldTicketsDialog
         {
             Owner = Window.GetWindow(this)
@@ -1198,6 +1204,12 @@ public partial class PosView : UserControl
     public void LoadQuotationToCart(Quotation quotation)
     {
         if (quotation == null || quotation.Details == null || quotation.Details.Count == 0) return;
+
+        if (_activeShift == null)
+        {
+            MessageBox.Show("No se pueden cargar cotizaciones al carrito porque la caja se encuentra CERRADA.\nAbra un turno de caja para procesar la facturación.", "Caja Cerrada", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
 
         if (_cartItems.Count > 0)
         {

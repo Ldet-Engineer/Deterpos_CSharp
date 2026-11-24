@@ -7,6 +7,7 @@ namespace Deterpos.Application.Interfaces;
 public interface IUserService
 {
     Task<User?> AuthenticateAsync(string username, string password);
+    Task EnsureAdminUserExistsAsync();
     Task<IReadOnlyList<User>> GetAllUsersAsync(string? searchTerm = null);
     Task<User?> GetUserByIdAsync(int id);
     Task<User> CreateUserAsync(string username, string fullName, string email, string password, SystemUserRole role, UserPermissions? permissions = null);

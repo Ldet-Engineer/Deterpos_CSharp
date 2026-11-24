@@ -132,13 +132,13 @@ public class DatabaseBackupService : IDatabaseBackupService
             }
 
             // 2. Fallback: Si no hay pg_dump nativo, verificar si PostgreSQL corre en Docker (entorno dev)
-            bool isDocker = await CheckDockerPostgresAsync();
-            if (isDocker)
+            string? dockerContainer = await GetDockerPostgresContainerNameAsync();
+            if (!string.IsNullOrEmpty(dockerContainer))
             {
                 var psi = new ProcessStartInfo
                 {
                     FileName = "docker",
-                    Arguments = $"exec betoplatanito_db pg_dump -U {p.Username} -F p {p.Database}",
+                    Arguments = $"exec {dockerContainer} pg_dump -U {p.Username} -F p {p.Database}",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
@@ -163,7 +163,7 @@ public class DatabaseBackupService : IDatabaseBackupService
                         return new BackupOperationResult
                         {
                             Success = true,
-                            Message = $"Copia de seguridad generada con éxito desde Docker (betoplatanito_db).\nTamaño: {info.Length / 1024.0:N1} KB",
+                            Message = $"Copia de seguridad generada con éxito desde Docker ({dockerContainer}).\nTamaño: {info.Length / 1024.0:N1} KB",
                             FilePath = targetFilePath,
                             FileSizeBytes = info.Length
                         };
@@ -238,13 +238,13 @@ public class DatabaseBackupService : IDatabaseBackupService
             }
 
             // Fallback Docker
-            bool isDocker = await CheckDockerPostgresAsync();
-            if (isDocker)
+            string? dockerContainer = await GetDockerPostgresContainerNameAsync();
+            if (!string.IsNullOrEmpty(dockerContainer))
             {
                 var psi = new ProcessStartInfo
                 {
                     FileName = "powershell",
-                    Arguments = $"-NoProfile -Command \"Get-Content -Raw '{sourceFilePath}' | docker exec -i betoplatanito_db psql -U {p.Username} -d {p.Database}\"",
+                    Arguments = $"-NoProfile -Command \"Get-Content -Raw '{sourceFilePath}' | docker exec -i {dockerContainer} psql -U {p.Username} -d {p.Database}\"",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
@@ -260,7 +260,7 @@ public class DatabaseBackupService : IDatabaseBackupService
                         return new BackupOperationResult
                         {
                             Success = true,
-                            Message = "Base de datos restaurada con éxito en el contenedor Docker.",
+                            Message = $"Base de datos restaurada con éxito en el contenedor Docker ({dockerContainer}).",
                             FilePath = sourceFilePath,
                             FileSizeBytes = new FileInfo(sourceFilePath).Length
                         };
@@ -270,7 +270,7 @@ public class DatabaseBackupService : IDatabaseBackupService
 
             // Fallback ejecución SQL directa
             var sqlContent = await File.ReadAllTextAsync(sourceFilePath);
-            var connStr = $"Host={p.Host};Port={p.Port};Database={p.Database};Username={p.Username};Password={p.Password};Timeout=30";
+            var connStr = $"Host={p.Host};Port={p.Port};Database={p.Database};Username={p.Username};Password={p.Password};Timeout=60";
             await using var conn = new NpgsqlConnection(connStr);
             await conn.OpenAsync();
 
@@ -330,14 +330,14 @@ public class DatabaseBackupService : IDatabaseBackupService
         return null;
     }
 
-    private static async Task<bool> CheckDockerPostgresAsync()
+    private static async Task<string?> GetDockerPostgresContainerNameAsync()
     {
         try
         {
             var psi = new ProcessStartInfo
             {
                 FileName = "docker",
-                Arguments = "ps --filter name=betoplatanito_db --format \"{{.Names}}\"",
+                Arguments = "ps --filter ancestor=postgres --format \"{{.Names}}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -345,32 +345,62 @@ public class DatabaseBackupService : IDatabaseBackupService
             };
 
             using var process = Process.Start(psi);
-            if (process == null) return false;
+            if (process == null) return null;
 
-            string output = await process.StandardOutput.ReadToEndAsync();
+            string output = (await process.StandardOutput.ReadToEndAsync()).Trim();
             await process.WaitForExitAsync();
 
-            return output.Contains("betoplatanito_db");
+            if (!string.IsNullOrWhiteSpace(output))
+            {
+                return output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            }
+
+            // Fallback: listar contenedores activos y buscar coincidencias
+            var psiList = new ProcessStartInfo
+            {
+                FileName = "docker",
+                Arguments = "ps --format \"{{.Names}}\"",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var procList = Process.Start(psiList);
+            if (procList == null) return null;
+
+            string listOut = (await procList.StandardOutput.ReadToEndAsync()).Trim();
+            await procList.WaitForExitAsync();
+
+            var names = listOut.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            return names.FirstOrDefault(n => n.Contains("postgres", StringComparison.OrdinalIgnoreCase) || 
+                                             n.Contains("deterpos", StringComparison.OrdinalIgnoreCase) ||
+                                             n.Contains("db", StringComparison.OrdinalIgnoreCase));
         }
         catch
         {
-            return false;
+            return null;
         }
     }
 
-    private async Task<BackupOperationResult> CreateDirectSqlDumpAsync(string targetFilePath, DatabaseConnectionParams p)
+    public async Task<BackupOperationResult> CreateDirectSqlDumpAsync(string targetFilePath, DatabaseConnectionParams? connectionParams = null)
     {
-        var connStr = $"Host={p.Host};Port={p.Port};Database={p.Database};Username={p.Username};Password={p.Password};Timeout=15";
+        var p = connectionParams ?? GetCurrentConnectionParams();
+        var connStr = $"Host={p.Host};Port={p.Port};Database={p.Database};Username={p.Username};Password={p.Password};Timeout=30";
         await using var conn = new NpgsqlConnection(connStr);
         await conn.OpenAsync();
 
         using var sw = new StreamWriter(targetFilePath, false, System.Text.Encoding.UTF8);
-        await sw.WriteLineAsync($"-- DETERPOS ERP - COPIA DE SEGURIDAD NATIVA");
-        await sw.WriteLineAsync($"-- Fecha de Creación: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-        await sw.WriteLineAsync($"-- Base de Datos: {p.Database}");
+        await sw.WriteLineAsync($"-- ============================================================");
+        await sw.WriteLineAsync($"-- DETERPOS ERP - COPIA DE SEGURIDAD EMPRESARIAL DIRECTA (SQL)");
+        await sw.WriteLineAsync($"-- Fecha de Generación: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        await sw.WriteLineAsync($"-- Servidor: {p.Host}:{p.Port} | Base de Datos: {p.Database}");
+        await sw.WriteLineAsync($"-- ============================================================");
+        await sw.WriteLineAsync();
+        await sw.WriteLineAsync("BEGIN;");
+        await sw.WriteLineAsync("SET session_replication_role = 'replica';");
         await sw.WriteLineAsync();
 
-        // Obtener lista de tablas
+        // 1. Obtener lista de tablas
         var tables = new List<string>();
         await using (var cmd = new NpgsqlCommand("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE' ORDER BY table_name;", conn))
         await using (var reader = await cmd.ExecuteReaderAsync())
@@ -381,14 +411,93 @@ public class DatabaseBackupService : IDatabaseBackupService
             }
         }
 
-        await sw.WriteLineAsync($"-- Total de tablas respaldadas: {tables.Count}");
-        await sw.WriteLineAsync();
+        long totalRowsExported = 0;
 
+        foreach (var table in tables)
+        {
+            await sw.WriteLineAsync($"-- Tabla: {table}");
+            await sw.WriteLineAsync($"TRUNCATE TABLE \"{table}\" CASCADE;");
+
+            // Obtener columnas
+            var columns = new List<string>();
+            await using (var cmdCols = new NpgsqlCommand($"SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '{table}' ORDER BY ordinal_position;", conn))
+            await using (var readerCols = await cmdCols.ExecuteReaderAsync())
+            {
+                while (await readerCols.ReadAsync())
+                {
+                    columns.Add(readerCols.GetString(0));
+                }
+            }
+
+            if (columns.Count == 0) continue;
+
+            string colList = string.Join(", ", columns.Select(c => $"\"{c}\""));
+
+            // Volcar filas
+            await using (var cmdRows = new NpgsqlCommand($"SELECT {colList} FROM \"{table}\";", conn))
+            await using (var readerRows = await cmdRows.ExecuteReaderAsync())
+            {
+                while (await readerRows.ReadAsync())
+                {
+                    var values = new List<string>();
+                    for (int i = 0; i < columns.Count; i++)
+                    {
+                        if (readerRows.IsDBNull(i))
+                        {
+                            values.Add("NULL");
+                        }
+                        else
+                        {
+                            var val = readerRows.GetValue(i);
+                            if (val is bool b)
+                            {
+                                values.Add(b ? "TRUE" : "FALSE");
+                            }
+                            else if (val is int || val is long || val is short || val is byte)
+                            {
+                                values.Add(val.ToString()!);
+                            }
+                            else if (val is decimal dec)
+                            {
+                                values.Add(dec.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                            }
+                            else if (val is double dbl)
+                            {
+                                values.Add(dbl.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                            }
+                            else if (val is float flt)
+                            {
+                                values.Add(flt.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                            }
+                            else if (val is DateTime dt)
+                            {
+                                values.Add($"'{dt:yyyy-MM-dd HH:mm:ss.ffffffzz}'");
+                            }
+                            else
+                            {
+                                string strVal = val.ToString()!.Replace("'", "''");
+                                values.Add($"'{strVal}'");
+                            }
+                        }
+                    }
+
+                    await sw.WriteLineAsync($"INSERT INTO \"{table}\" ({colList}) VALUES ({string.Join(", ", values)});");
+                    totalRowsExported++;
+                }
+            }
+            await sw.WriteLineAsync();
+        }
+
+        await sw.WriteLineAsync("SET session_replication_role = 'origin';");
+        await sw.WriteLineAsync("COMMIT;");
+
+        await sw.FlushAsync();
         var info = new FileInfo(targetFilePath);
+
         return new BackupOperationResult
         {
             Success = true,
-            Message = $"Copia de seguridad básica generada ({tables.Count} tablas).\nTamaño: {info.Length / 1024.0:N1} KB",
+            Message = $"Copia de seguridad SQL estructurada generada exitosamente.\nTablas: {tables.Count} | Registros: {totalRowsExported:N0}\nTamaño: {info.Length / 1024.0:N1} KB",
             FilePath = targetFilePath,
             FileSizeBytes = info.Length
         };

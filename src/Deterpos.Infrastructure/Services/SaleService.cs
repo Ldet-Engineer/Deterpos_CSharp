@@ -53,6 +53,7 @@ public class SaleService : ISaleService
         }
 
         await using var context = GetContext();
+        await using var tx = await context.Database.BeginTransactionAsync();
 
         // 0. Validar que el turno de caja exista y esté estrictamente ABIERTO
         var activeShift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == saleDraft.CashShiftId && s.Status == CashShiftStatus.Abierta);
@@ -279,6 +280,7 @@ public class SaleService : ISaleService
 
         context.Sales.Add(sale);
         await context.SaveChangesAsync();
+        await tx.CommitAsync();
 
         AppEvents.RaiseInventoryChanged();
         AppEvents.RaiseSalesChanged();
@@ -307,6 +309,7 @@ public class SaleService : ISaleService
         }
 
         await using var context = GetContext();
+        await using var tx = await context.Database.BeginTransactionAsync();
 
         var originalSale = await context.Sales
             .Include(s => s.Customer)
@@ -472,25 +475,46 @@ public class SaleService : ISaleService
         });
 
         // Salida de caja si se devuelve efectivo en el turno actual (solo para ventas que fueron de contado)
-        if (shouldRefundCash && currentCashShiftId > 0)
+        if (shouldRefundCash)
         {
+            if (currentCashShiftId <= 0)
+            {
+                throw new InvalidOperationException("No se puede reembolsar efectivo porque no se especificó un turno de caja abierto.");
+            }
+
             var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == currentCashShiftId && s.Status == CashShiftStatus.Abierta);
-            if (shift != null)
+            if (shift == null)
+            {
+                throw new InvalidOperationException("No se puede reembolsar efectivo porque el turno de caja no está abierto.");
+            }
+
+            bool wasPaidVes = originalSale.Payments.Any(p => p.Method == PaymentMethodType.EfectivoVES);
+            decimal movUsd = 0m;
+            decimal movVes = 0m;
+
+            if (wasPaidVes)
+            {
+                shift.ExpectedAmountVES -= creditNote.TotalVES;
+                if (shift.ExpectedAmountVES < 0) shift.ExpectedAmountVES = 0;
+                movVes = creditNote.TotalVES;
+            }
+            else
             {
                 shift.ExpectedAmountUSD -= creditNote.TotalUSD;
-                shift.ExpectedAmountVES -= creditNote.TotalVES;
-
-                context.CashMovements.Add(new CashMovement
-                {
-                    CashShiftId = shift.Id,
-                    Type = TransactionType.EgresoDevolucion,
-                    AmountUSD = creditNote.TotalUSD,
-                    AmountVES = creditNote.TotalVES,
-                    Description = $"Reembolso Nota de Crédito {creditNote.InvoiceNumber} (Factura {originalSale.InvoiceNumber})",
-                    AuthorizedBy = cashierUsername,
-                    CreatedAt = DateTime.UtcNow
-                });
+                if (shift.ExpectedAmountUSD < 0) shift.ExpectedAmountUSD = 0;
+                movUsd = creditNote.TotalUSD;
             }
+
+            context.CashMovements.Add(new CashMovement
+            {
+                CashShiftId = shift.Id,
+                Type = TransactionType.EgresoDevolucion,
+                AmountUSD = movUsd,
+                AmountVES = movVes,
+                Description = $"Reembolso Nota de Crédito {creditNote.InvoiceNumber} (Factura {originalSale.InvoiceNumber})",
+                AuthorizedBy = cashierUsername,
+                CreatedAt = DateTime.UtcNow
+            });
         }
         else if (originalSale.CustomerId.HasValue)
         {
@@ -515,11 +539,12 @@ public class SaleService : ISaleService
 
         context.Sales.Add(creditNote);
         await context.SaveChangesAsync();
+        await tx.CommitAsync();
 
         AppEvents.RaiseInventoryChanged();
         AppEvents.RaiseSalesChanged();
         AppEvents.RaiseCreditChanged();
-        if (shouldRefundCash && currentCashShiftId > 0)
+        if (shouldRefundCash)
         {
             AppEvents.RaiseCashChanged();
         }
@@ -603,6 +628,8 @@ public class SaleService : ISaleService
     public async Task<bool> CancelSaleAsync(int saleId, string reason)
     {
         await using var context = GetContext();
+        await using var tx = await context.Database.BeginTransactionAsync();
+
         var sale = await context.Sales
             .Include(s => s.Details)
             .Include(s => s.Payments)
@@ -610,7 +637,13 @@ public class SaleService : ISaleService
 
         if (sale == null || sale.Status == SaleStatus.Anulada) return false;
 
-        // Revertir existencias de inventario
+        // 1. Prohibir anulación directa si ya fue declarada en Reporte Z (Normativa SENIAT)
+        if (sale.FiscalZReportNumber.HasValue)
+        {
+            throw new InvalidOperationException($"No se puede anular directamente la factura {sale.InvoiceNumber} porque ya fue declarada en el Reporte Z #{sale.FiscalZReportNumber.Value}. De acuerdo a la normativa SENIAT, debe emitir una Nota de Crédito Fiscal.");
+        }
+
+        // 2. Revertir existencias de inventario
         foreach (var item in sale.Details)
         {
             var product = await context.Products.FindAsync(item.ProductId);
@@ -638,7 +671,7 @@ public class SaleService : ISaleService
             }
         }
 
-        // Revertir deuda del cliente si la venta anulada fue a crédito
+        // 3. Revertir deuda del cliente si la venta anulada fue a crédito
         decimal creditAmount = sale.Payments.Where(p => p.Method == PaymentMethodType.Credito).Sum(p => p.AmountEquivalentUSD);
         if (creditAmount > 0 && sale.CustomerId.HasValue)
         {
@@ -649,16 +682,60 @@ public class SaleService : ISaleService
             }
         }
 
+        // 4. Si tuvo cobros en efectivo y el turno de caja sigue abierto, revertir efectivo
+        bool cashReverted = false;
+        if (sale.CashShiftId > 0)
+        {
+            var shift = await context.CashShifts.FirstOrDefaultAsync(s => s.Id == sale.CashShiftId && s.Status == CashShiftStatus.Abierta);
+            if (shift != null)
+            {
+                decimal cashUsd = sale.Payments.Where(p => p.Method == PaymentMethodType.EfectivoUSD).Sum(p => p.AmountEquivalentUSD);
+                decimal cashVes = sale.Payments.Where(p => p.Method == PaymentMethodType.EfectivoVES).Sum(p => p.AmountOriginal);
+
+                if (cashUsd > 0 || cashVes > 0)
+                {
+                    shift.ExpectedAmountUSD = Math.Max(0m, shift.ExpectedAmountUSD - cashUsd);
+                    shift.ExpectedAmountVES = Math.Max(0m, shift.ExpectedAmountVES - cashVes);
+
+                    context.CashMovements.Add(new CashMovement
+                    {
+                        CashShiftId = shift.Id,
+                        Type = TransactionType.EgresoDevolucion,
+                        AmountUSD = cashUsd,
+                        AmountVES = cashVes,
+                        Description = $"Anulación Factura {sale.InvoiceNumber}: {reason}",
+                        AuthorizedBy = "Supervisor",
+                        CreatedAt = DateTime.UtcNow
+                    });
+                    cashReverted = true;
+                }
+            }
+        }
+
+        // 5. Anular orden Cashea asociada si existiera
+        var casheaOrder = await context.CasheaOrders.FirstOrDefaultAsync(co => co.SaleId == sale.Id);
+        if (casheaOrder != null)
+        {
+            casheaOrder.Status = CasheaOrderStatus.Anulada;
+        }
+
         sale.Status = SaleStatus.Anulada;
         sale.Notes = $"{sale.Notes}\n[ANULADA]: {reason}".Trim();
 
         await context.SaveChangesAsync();
+        await tx.CommitAsync();
+
         AppEvents.RaiseInventoryChanged();
         AppEvents.RaiseSalesChanged();
         if (creditAmount > 0)
         {
             AppEvents.RaiseCreditChanged();
         }
+        if (cashReverted)
+        {
+            AppEvents.RaiseCashChanged();
+        }
+
         return true;
     }
 

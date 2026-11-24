@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows;
 using Fluent;
 using Deterpos.Application.Interfaces;
+using Deterpos.Domain.Entities;
 using Deterpos.Infrastructure.Data;
 using Deterpos.Infrastructure.Services;
 using Deterpos.WPF.ViewModels;
@@ -20,13 +21,40 @@ public partial class MainWindow : RibbonWindow
     private readonly DatabaseConfigurationService _dbConfigService;
     private readonly CasheaService _casheaService;
 
-    public MainWindow()
+    public bool IsLogoutRequested { get; set; } = false;
+
+    public MainWindow() : this(null)
+    {
+    }
+
+    public MainWindow(User? authenticatedUser)
     {
         InitializeComponent();
         _dbConfigService = new DatabaseConfigurationService();
         _backupService = new DatabaseBackupService(_dbConfigService);
         _casheaService = new CasheaService(new DeterposDbContextFactory(_dbConfigService));
+
+        if (DataContext is MainViewModel vm && authenticatedUser != null)
+        {
+            vm.CurrentUser = authenticatedUser;
+        }
+
         Loaded += MainWindow_Loaded;
+    }
+
+    private void BtnLogout_Click(object sender, RoutedEventArgs e)
+    {
+        var result = MessageBox.Show(
+            "¿Desea cerrar la sesión actual para permitir el relevo de cajero o cambio de usuario?",
+            "Cerrar Sesión / Relevo de Cajero",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result == MessageBoxResult.Yes)
+        {
+            IsLogoutRequested = true;
+            Close();
+        }
     }
 
     private void MainWindow_Loaded(object sender, System.Windows.RoutedEventArgs e)
