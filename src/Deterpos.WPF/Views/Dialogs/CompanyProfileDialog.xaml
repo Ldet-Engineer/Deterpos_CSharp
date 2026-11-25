@@ -4,6 +4,7 @@
         xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
         xmlns:ctrl="clr-namespace:Deterpos.WPF.Controls"
         Title="Perfil y Datos de la Empresa - Deterpos ERP"
+        Icon="pack://application:,,,/Resources/favicon.ico"
         Height="620" Width="560"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"

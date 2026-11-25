@@ -6,6 +6,7 @@
         xmlns:vm="clr-namespace:Deterpos.WPF.ViewModels"
         xmlns:views="clr-namespace:Deterpos.WPF.Views"
         Title="Deterpos ERP - [Sucursal Principal]" 
+        Icon="pack://application:,,,/Resources/favicon.ico"
         Height="820" Width="1300"
         MinHeight="650" MinWidth="1050"
         WindowStartupLocation="CenterScreen"
@@ -673,8 +674,8 @@
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" Background="#EDE9FE" CornerRadius="10" Width="48" Height="48" Margin="0,0,16,0" VerticalAlignment="Center">
-                                            <fluentIcons:SymbolIcon Symbol="Info" FontSize="26" Foreground="#6D28D9" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <Border Grid.Column="0" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="10" Width="48" Height="48" Margin="0,0,16,0" VerticalAlignment="Center" Padding="4">
+                                            <Image Source="pack://application:,,,/Resources/android-chrome-192x192.png" HorizontalAlignment="Center" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" />
                                         </Border>
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <TextBlock Text="Acerca de Deterpos ERP Enterprise" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
@@ -684,39 +685,51 @@
 
                                     <!-- Ficha Técnica -->
                                     <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="22" Margin="0,0,0,16">
-                                        <StackPanel>
-                                            <TextBlock Text="Deterpos ERP Enterprise Edition" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,0,4" />
-                                            <TextBlock Text="Versión 2.0.26 (Build .NET 10.0 x64 LTS)" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,16" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
 
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="180" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Deterpos ERP Enterprise Edition" FontSize="18" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,0,4" />
+                                                <TextBlock Text="Versión 2.0.26 (Build .NET 10.0 x64 LTS)" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,16" />
 
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Tecnología Core:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="Microsoft .NET 10 (C# 14) / WPF con Fluent Design UI" Margin="0,5" />
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="180" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
 
-                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Base de Datos:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="PostgreSQL 16 en Contenedor Docker / Entity Framework Core 10" Margin="0,5" />
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Tecnología Core:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Microsoft .NET 10 (C# 14) / WPF con Fluent Design UI" Margin="0,5" />
 
-                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Homologación SENIAT:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="2" Grid.Column="1" Text="Providencias 0141 (Facturación) y 000013 (IGTF 3%)" Margin="0,5" />
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Base de Datos:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="PostgreSQL 16 en Contenedor Docker / Entity Framework Core 10" Margin="0,5" />
 
-                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Valuación de Inventario:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="3" Grid.Column="1" Text="Método Costo Promedio Ponderado (CPP) con Kárdex Contable Inmutable" Margin="0,5" />
+                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Homologación SENIAT:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="Providencias 0141 (Facturación) y 000013 (IGTF 3%)" Margin="0,5" />
 
-                                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Ingeniería y Desarrollo:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="4" Grid.Column="1" Text="Desarrollado para Deterpos C.A. por Ldet-Dev &amp; Ldet-Engineer" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,5" />
-                                            </Grid>
-                                        </StackPanel>
+                                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Valuación de Inventario:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="Método Costo Promedio Ponderado (CPP) con Kárdex Contable Inmutable" Margin="0,5" />
+
+                                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Ingeniería y Desarrollo:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="Desarrollado para Deterpos C.A. por Ldet-Dev &amp; Ldet-Engineer" FontWeight="SemiBold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,5" />
+                                                </Grid>
+                                            </StackPanel>
+
+                                            <!-- Logo Oficial Deterpos en Ficha Técnica -->
+                                            <Border Grid.Column="1" Background="#F8FAFC" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="12" Width="100" Height="100" Margin="20,0,10,0" VerticalAlignment="Top" Padding="8">
+                                                <Image Source="pack://application:,,,/Resources/icon.png" RenderOptions.BitmapScalingMode="HighQuality" />
+                                            </Border>
+                                        </Grid>
                                     </Border>
                                 </StackPanel>
                             </ScrollViewer>
