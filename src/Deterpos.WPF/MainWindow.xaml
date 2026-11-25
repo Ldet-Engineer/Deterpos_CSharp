@@ -41,7 +41,7 @@
 
             <!-- Menú de la Aplicación: CONFIGURACIÓN Y GESTIÓN (Backstage) -->
             <Fluent:Ribbon.Menu>
-                <Fluent:Backstage x:Name="RibbonBackstage" Header="Configuración" Background="#004578">
+                <Fluent:Backstage x:Name="RibbonBackstage" Header="Configuración" Background="Transparent" Foreground="{StaticResource TextPrimaryBrush}">
                     <Fluent:BackstageTabControl x:Name="BackstageTabs">
 
                         <!-- PESTAÑA 1: INFORMACIÓN Y PERFIL DE EMPRESA -->
