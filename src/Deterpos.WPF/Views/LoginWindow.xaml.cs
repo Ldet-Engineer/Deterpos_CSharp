@@ -104,7 +104,6 @@ public partial class LoginWindow : Window
 
             AuthenticatedUser = user;
             DialogResult = true;
-            Close();
         }
         catch (Exception ex)
         {

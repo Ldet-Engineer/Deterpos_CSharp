@@ -2,6 +2,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
+using Deterpos.Application.Interfaces;
 using Deterpos.Infrastructure.Data;
 using Deterpos.Infrastructure.Services;
 using Deterpos.WPF.Views;
@@ -15,6 +16,7 @@ public partial class App : System.Windows.Application
 {
     public App()
     {
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
         this.DispatcherUnhandledException += App_DispatcherUnhandledException;
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
     }
@@ -36,33 +38,36 @@ public partial class App : System.Windows.Application
             System.Diagnostics.Debug.WriteLine($"[DB INIT] Aviso durante inicialización de usuario maestro: {ex.Message}");
         }
 
-        bool continueSession = true;
+        RunSession(userService);
+    }
 
-        while (continueSession)
+    private void RunSession(IUserService userService)
+    {
+        var loginWindow = new LoginWindow(userService);
+        bool? loggedIn = loginWindow.ShowDialog();
+
+        if (loggedIn != true || loginWindow.AuthenticatedUser == null)
         {
-            var loginWindow = new LoginWindow(userService);
-            bool? loggedIn = loginWindow.ShowDialog();
+            Shutdown();
+            return;
+        }
 
-            if (loggedIn != true || loginWindow.AuthenticatedUser == null)
-            {
-                Shutdown();
-                return;
-            }
+        var mainWindow = new MainWindow(loginWindow.AuthenticatedUser);
+        MainWindow = mainWindow;
 
-            var mainWindow = new MainWindow(loginWindow.AuthenticatedUser);
-            MainWindow = mainWindow;
-            mainWindow.ShowDialog();
-
+        mainWindow.Closed += (s, args) =>
+        {
             if (mainWindow.IsLogoutRequested)
             {
-                continueSession = true;
+                RunSession(userService);
             }
             else
             {
-                continueSession = false;
                 Shutdown();
             }
-        }
+        };
+
+        mainWindow.Show();
     }
 
     private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
