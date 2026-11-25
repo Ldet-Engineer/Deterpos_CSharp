@@ -31,11 +31,12 @@ public partial class App : System.Windows.Application
 
         try
         {
+            await configService.InitializeDatabaseAsync();
             await userService.EnsureAdminUserExistsAsync();
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[DB INIT] Aviso durante inicialización de usuario maestro: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[DB INIT] Aviso durante inicialización: {ex.Message}");
         }
 
         RunSession(userService);
