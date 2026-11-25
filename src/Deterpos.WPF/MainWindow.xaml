@@ -39,9 +39,9 @@
                 <Fluent:QuickAccessMenuItem Target="{Binding ElementName=BtnQatReporteZ}" />
             </Fluent:Ribbon.QuickAccessItems>
 
-            <!-- Menú de la Aplicación: ARCHIVO (Backstage estilo Office) -->
+            <!-- Menú de la Aplicación: CONFIGURACIÓN Y GESTIÓN (Backstage) -->
             <Fluent:Ribbon.Menu>
-                <Fluent:Backstage x:Name="RibbonBackstage" Header="Archivo" Background="#004578">
+                <Fluent:Backstage x:Name="RibbonBackstage" Header="Configuración" Background="#004578">
                     <Fluent:BackstageTabControl x:Name="BackstageTabs">
 
                         <!-- PESTAÑA 1: INFORMACIÓN Y PERFIL DE EMPRESA -->
@@ -63,13 +63,31 @@
                                         </StackPanel>
                                     </Grid>
 
-                                    <!-- Tarjeta 1: Identificación Legal y RIF -->
+                                    <!-- Tarjeta 1: Identificación Legal y RIF con Botón de Edición -->
                                     <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,16">
                                         <StackPanel>
-                                            <TextBlock Text="Identificación Legal y Tributaria (Venezuela)" FontWeight="Bold" FontSize="15" Margin="0,0,0,14" />
+                                            <Grid Margin="0,0,0,14">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Identificación Legal y Tributaria (Venezuela)" FontWeight="Bold" FontSize="15" VerticalAlignment="Center" />
+                                                <Button Grid.Column="1" Click="BtnEditCompanyProfile_Click" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0" Padding="14,7" Cursor="Hand" FontWeight="SemiBold">
+                                                    <Button.Resources>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="CornerRadius" Value="6" />
+                                                        </Style>
+                                                    </Button.Resources>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <fluentIcons:SymbolIcon Symbol="Edit" FontSize="15" Foreground="White" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                                        <TextBlock Text="Editar Perfil de Empresa" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="170" />
+                                                    <ColumnDefinition Width="180" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <Grid.RowDefinitions>
@@ -81,23 +99,23 @@
                                                     <RowDefinition Height="Auto" />
                                                 </Grid.RowDefinitions>
 
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Razón Social:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="Deterpos C.A." FontWeight="Bold" Margin="0,5" FontSize="13.5" />
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Razón Social:" FontWeight="SemiBold" Margin="0,6" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock x:Name="TxtCompanyBusinessName" Grid.Row="0" Grid.Column="1" Text="Deterpos C.A." FontWeight="Bold" Margin="0,6" FontSize="13.5" />
 
-                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Registro Fiscal (RIF):" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="J-40918273-0 (Contribuyente Especial)" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,5" FontSize="13.5" />
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Registro Fiscal (RIF):" FontWeight="SemiBold" Margin="0,6" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock x:Name="TxtCompanyRif" Grid.Row="1" Grid.Column="1" Text="J-40918273-0 (Contribuyente Especial)" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,6" FontSize="13.5" />
 
-                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Nombre Comercial:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="2" Grid.Column="1" Text="Deterpos ERP - Punto de Venta y Distribución" Margin="0,5" />
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Nombre Comercial:" FontWeight="SemiBold" Margin="0,6" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock x:Name="TxtCompanyTradeName" Grid.Row="2" Grid.Column="1" Text="Deterpos ERP - Punto de Venta y Distribución" Margin="0,6" />
 
-                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Domicilio Fiscal:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="3" Grid.Column="1" Text="Av. Francisco de Miranda, Edif. Torre Centro, Nivel PB, Caracas, D.C." Margin="0,5" />
+                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Domicilio Fiscal:" FontWeight="SemiBold" Margin="0,6" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock x:Name="TxtCompanyAddress" Grid.Row="3" Grid.Column="1" Text="Av. Francisco de Miranda, Edif. Torre Centro, Nivel PB, Caracas, D.C." Margin="0,6" TextWrapping="Wrap" />
 
-                                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Teléfonos de Contacto:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="4" Grid.Column="1" Text="+58 (212) 555-0199 / +58 (414) 234-5678" Margin="0,5" />
+                                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Teléfonos de Contacto:" FontWeight="SemiBold" Margin="0,6" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock x:Name="TxtCompanyPhone" Grid.Row="4" Grid.Column="1" Text="+58 (212) 555-0199 / +58 (414) 234-5678" Margin="0,6" />
 
-                                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Correo Electrónico:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="5" Grid.Column="1" Text="administracion@deterpos.com.ve" Margin="0,5" />
+                                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Correo Electrónico:" FontWeight="SemiBold" Margin="0,6" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock x:Name="TxtCompanyEmail" Grid.Row="5" Grid.Column="1" Text="administracion@deterpos.com.ve" Margin="0,6" />
                                             </Grid>
                                         </StackPanel>
                                     </Border>
@@ -108,7 +126,7 @@
                                             <TextBlock Text="Parámetros de Operación Comercial" FontWeight="Bold" FontSize="15" Margin="0,0,0,14" />
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="170" />
+                                                    <ColumnDefinition Width="180" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <Grid.RowDefinitions>
@@ -118,17 +136,17 @@
                                                     <RowDefinition Height="Auto" />
                                                 </Grid.RowDefinitions>
 
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Sucursal Activa:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CurrentBranch}" FontWeight="SemiBold" Margin="0,5" />
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Sucursal Activa:" FontWeight="SemiBold" Margin="0,6" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock x:Name="TxtCompanyBranch" Grid.Row="0" Grid.Column="1" Text="{Binding CurrentBranch}" FontWeight="SemiBold" Margin="0,6" />
 
-                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Terminal / Punto:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="Caja Principal Mostrador 01" Margin="0,5" />
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Terminal / Punto:" FontWeight="SemiBold" Margin="0,6" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock x:Name="TxtCompanyTerminal" Grid.Row="1" Grid.Column="1" Text="Caja Principal Mostrador 01" Margin="0,6" />
 
-                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Moneda Base Inmutable:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="2" Grid.Column="1" Text="Dólar ($ USD) • Valoración Contable por Costo Promedio Ponderado (CPP)" FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}" Margin="0,5" />
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Moneda Base Inmutable:" FontWeight="SemiBold" Margin="0,6" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="2" Grid.Column="1" Text="Dólar ($ USD) • Valoración Contable por Costo Promedio Ponderado (CPP)" FontWeight="SemiBold" Foreground="{StaticResource AccentGreenBrush}" Margin="0,6" />
 
-                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Moneda Legal Local:" FontWeight="SemiBold" Margin="0,5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBlock Grid.Row="3" Grid.Column="1" Text="Bolívar Digital (Bs. VES) según Tasa Oficial del Banco Central de Venezuela (BCV)" Margin="0,5" />
+                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Moneda Legal Local:" FontWeight="SemiBold" Margin="0,6" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBlock Grid.Row="3" Grid.Column="1" Text="Bolívar Digital (Bs. VES) según Tasa Oficial del Banco Central de Venezuela (BCV)" Margin="0,6" />
                                             </Grid>
                                         </StackPanel>
                                     </Border>
@@ -183,7 +201,7 @@
                                     <Border Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,16">
                                         <StackPanel>
                                             <TextBlock Text="Condición del Sujeto Pasivo Especial (SENIAT)" FontWeight="Bold" FontSize="15" Margin="0,0,0,10" />
-                                            <CheckBox Content="Empresa designada como Sujeto Pasivo Especial (Contribuyente Especial SENIAT)"
+                                            <CheckBox x:Name="ChkSpecialTaxpayerSeniat" Content="Empresa designada como Sujeto Pasivo Especial (Contribuyente Especial SENIAT)"
                                                       IsChecked="{Binding IsSpecialTaxpayer}" FontWeight="SemiBold" Margin="0,0,0,8" />
                                             <TextBlock Text="• Aplica automáticamente la percepción de la alícuota del 3% de IGTF sobre pagos recibidos en divisas extranjeras (USD, EUR, Zelle, efectivo) según Providencia SNAT/2022/000013."
                                                        FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="20,0,0,12" TextWrapping="Wrap" />
@@ -194,7 +212,9 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="Alícuota de IGTF:" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                                <TextBox Grid.Column="1" Text="3.00 % (Fijo según Providencia)" IsReadOnly="True" Width="200" HorizontalAlignment="Left" Padding="8,5" Background="#F0F0F0" FontWeight="Bold" />
+                                                <Border Grid.Column="1" Background="#FEF3C7" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="6" Padding="12,6" HorizontalAlignment="Left">
+                                                    <TextBlock Text="3.00 % (Alícuota Legal Fija según Providencia SNAT/2022/000013)" FontWeight="Bold" Foreground="#B45309" FontSize="12.5" />
+                                                </Border>
                                             </Grid>
                                         </StackPanel>
                                     </Border>
@@ -209,8 +229,8 @@
                                                     <ColumnDefinition Width="180" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Marca de Impresora Fiscal:" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                                <ComboBox Grid.Column="1" SelectedIndex="0" Padding="8,5">
+                                                <TextBlock Text="Marca de Impresora Fiscal:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <ComboBox x:Name="CmbFiscalPrinterBrand" Grid.Column="1" SelectedIndex="0" Padding="8,6" Width="360" HorizontalAlignment="Left">
                                                     <ComboBoxItem Content="The Factory HKA (Bixolon SRP-350 / HKA-80)" />
                                                     <ComboBoxItem Content="Dascom Tally (DT-230)" />
                                                     <ComboBoxItem Content="Bematech (MP-4000 TH FI)" />
@@ -225,8 +245,8 @@
                                                     <ColumnDefinition Width="180" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Puerto de Comunicación:" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                                <TextBox Grid.Column="1" Text="{Binding FiscalPort}" Padding="8,5" Width="220" HorizontalAlignment="Left" />
+                                                <TextBlock Text="Puerto de Comunicación:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBox x:Name="TxtFiscalPort" Grid.Column="1" Text="{Binding FiscalPort}" Padding="8,6" Width="260" HorizontalAlignment="Left" />
                                             </Grid>
 
                                             <Grid Margin="0,0,0,12">
@@ -234,16 +254,33 @@
                                                     <ColumnDefinition Width="180" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Serial de Máquina Fiscal:" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                                <TextBox Grid.Column="1" Text="{Binding FiscalSerial}" IsReadOnly="True" Padding="8,5" Width="220" HorizontalAlignment="Left" Background="#F9F9F9" FontWeight="Bold" />
+                                                <TextBlock Text="Serial de Máquina Fiscal:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                <TextBox x:Name="TxtFiscalSerial" Grid.Column="1" Text="{Binding FiscalSerial}" Padding="8,6" Width="260" HorizontalAlignment="Left" Background="#F9F9F9" FontWeight="Bold" />
                                             </Grid>
 
-                                            <Border Background="#E6F4EA" BorderBrush="#34A853" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,10,0,0">
+                                            <Border Background="#E6F4EA" BorderBrush="#34A853" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,6,0,14">
                                                 <StackPanel Orientation="Horizontal">
                                                     <fluentIcons:SymbolIcon Symbol="CheckmarkCircle" FontSize="18" Foreground="{StaticResource AccentGreenBrush}" Margin="0,0,10,0" VerticalAlignment="Center" />
-                                                    <TextBlock Text="{Binding FiscalDeviceStatus}" Foreground="{StaticResource AccentGreenBrush}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                    <TextBlock x:Name="TxtFiscalDeviceStatusText" Text="{Binding FiscalDeviceStatus}" Foreground="{StaticResource AccentGreenBrush}" FontWeight="SemiBold" VerticalAlignment="Center" />
                                                 </StackPanel>
                                             </Border>
+
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button x:Name="BtnSaveFiscalConfig" Click="BtnSaveFiscalConfig_Click" Content="Guardar Parámetros Fiscales" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0" Padding="16,8" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,10,0">
+                                                    <Button.Resources>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="CornerRadius" Value="6" />
+                                                        </Style>
+                                                    </Button.Resources>
+                                                </Button>
+                                                <Button x:Name="BtnTestFiscalDevice" Click="BtnTestFiscalDevice_Click" Content="Probar Comunicación Fiscal" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" Padding="16,8" FontWeight="SemiBold" Cursor="Hand">
+                                                    <Button.Resources>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="CornerRadius" Value="6" />
+                                                        </Style>
+                                                    </Button.Resources>
+                                                </Button>
+                                            </StackPanel>
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
@@ -354,49 +391,49 @@
                                             <TextBlock Text="Parámetros del Servidor y Conectividad" FontWeight="Bold" FontSize="15" Margin="0,0,0,6" />
                                             <TextBlock Text="Compatible con instalaciones de PostgreSQL nativo en Windows para clientes y entornos de desarrollo Docker." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,14" />
 
-                                            <Grid Margin="0,0,0,10">
+                                            <Grid Margin="0,0,0,12">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="200" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="Host / Dirección IP:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBox x:Name="TxtDbHost" Text="localhost" Padding="8,5" Width="280" HorizontalAlignment="Left" ToolTip="Usa 'localhost' para máquina única o la IP local (ej. 192.168.1.50) si el servidor está en red" />
+                                                <TextBox x:Name="TxtDbHost" Grid.Column="1" Text="localhost" Padding="10,6" Width="320" HorizontalAlignment="Left" ToolTip="Usa 'localhost' para máquina única o la IP local (ej. 192.168.1.50) si el servidor está en red" />
                                             </Grid>
 
-                                            <Grid Margin="0,0,0,10">
+                                            <Grid Margin="0,0,0,12">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="200" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="Puerto TCP:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBox x:Name="TxtDbPort" Text="5432" Padding="8,5" Width="280" HorizontalAlignment="Left" />
+                                                <TextBox x:Name="TxtDbPort" Grid.Column="1" Text="5432" Padding="10,6" Width="140" HorizontalAlignment="Left" />
                                             </Grid>
 
-                                            <Grid Margin="0,0,0,10">
+                                            <Grid Margin="0,0,0,12">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="200" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="Nombre Base de Datos:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBox x:Name="TxtDbName" Text="deterpos_db" Padding="8,5" Width="280" HorizontalAlignment="Left" />
+                                                <TextBox x:Name="TxtDbName" Grid.Column="1" Text="deterpos_db" Padding="10,6" Width="320" HorizontalAlignment="Left" />
                                             </Grid>
 
-                                            <Grid Margin="0,0,0,10">
+                                            <Grid Margin="0,0,0,12">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="200" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="Usuario / Rol:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBox x:Name="TxtDbUser" Text="postgres" Padding="8,5" Width="280" HorizontalAlignment="Left" />
+                                                <TextBox x:Name="TxtDbUser" Grid.Column="1" Text="postgres" Padding="10,6" Width="320" HorizontalAlignment="Left" />
                                             </Grid>
 
-                                            <Grid Margin="0,0,0,16">
+                                            <Grid Margin="0,0,0,18">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="200" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="Contraseña:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <PasswordBox x:Name="TxtDbPassword" Password="postgres" Padding="8,5" Width="280" HorizontalAlignment="Left" />
+                                                <PasswordBox x:Name="TxtDbPassword" Grid.Column="1" Password="postgres" Padding="10,6" Width="320" HorizontalAlignment="Left" />
                                             </Grid>
 
                                             <!-- Botones Probar y Guardar -->
@@ -520,59 +557,93 @@
                                             </Border>
 
                                             <!-- Parámetros del Comercio -->
-                                            <Grid Margin="0,0,0,10">
+                                            <Grid Margin="0,0,0,12">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="220" />
+                                                    <ColumnDefinition Width="260" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="Código Comercio Aliado:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBox x:Name="TxtCasheaMerchantCode" Text="CSH-MKT-001" Padding="8,5" Width="280" HorizontalAlignment="Left" ToolTip="Código asignado por Cashea a su establecimiento" />
+                                                <TextBox x:Name="TxtCasheaMerchantCode" Grid.Column="1" Text="CSH-MKT-001" Padding="10,6" Width="320" HorizontalAlignment="Left" ToolTip="Código asignado por Cashea a su establecimiento" />
                                             </Grid>
 
-                                            <Grid Margin="0,0,0,10">
+                                            <Grid Margin="0,0,0,12">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="220" />
+                                                    <ColumnDefinition Width="260" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="Nombre del Comercio Aliado:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBox x:Name="TxtCasheaMerchantName" Text="Deterpos C.A." Padding="8,5" Width="280" HorizontalAlignment="Left" />
+                                                <TextBox x:Name="TxtCasheaMerchantName" Grid.Column="1" Text="Deterpos C.A." Padding="10,6" Width="320" HorizontalAlignment="Left" />
                                             </Grid>
 
-                                            <Grid Margin="0,0,0,10">
+                                            <Grid Margin="0,0,0,12">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="220" />
+                                                    <ColumnDefinition Width="260" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="Identificador QR en Mostrador:" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBox x:Name="TxtCasheaQrCode" Text="CASHEA-MESA-01" Padding="8,5" Width="280" HorizontalAlignment="Left" ToolTip="Etiqueta o código impreso en el acrílico de caja" />
+                                                <TextBox x:Name="TxtCasheaQrCode" Grid.Column="1" Text="CASHEA-MESA-01" Padding="10,6" Width="320" HorizontalAlignment="Left" ToolTip="Etiqueta o código impreso en el acrílico de caja" />
                                             </Grid>
 
-                                            <Grid Margin="0,0,0,10">
+                                            <Grid Margin="0,0,0,12">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="220" />
+                                                    <ColumnDefinition Width="260" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="Comisión Comercial Acordada (%):" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBox x:Name="TxtCasheaCommission" Text="5.0" Padding="8,5" Width="100" HorizontalAlignment="Left" ToolTip="Porcentaje pactado de deducción comercial (habitual: 5% a 7%)" />
+                                                <TextBox x:Name="TxtCasheaCommission" Grid.Column="1" Text="5.0" Padding="10,6" Width="120" HorizontalAlignment="Left" ToolTip="Porcentaje pactado de deducción comercial (habitual: 5% a 7%)" />
                                             </Grid>
 
-                                            <Grid Margin="0,0,0,10">
+                                            <Grid Margin="0,0,0,12">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="220" />
+                                                    <ColumnDefinition Width="260" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="Plazo Estimado de Liquidación (Días):" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBox x:Name="TxtCasheaSettlementDays" Text="5" Padding="8,5" Width="100" HorizontalAlignment="Left" ToolTip="Días promedio en que Cashea transfiere al banco del comercio" />
+                                                <TextBox x:Name="TxtCasheaSettlementDays" Grid.Column="1" Text="5" Padding="10,6" Width="120" HorizontalAlignment="Left" ToolTip="Días promedio en que Cashea transfiere al banco del comercio" />
                                             </Grid>
 
                                             <Grid Margin="0,0,0,16">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="220" />
+                                                    <ColumnDefinition Width="260" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="Monto Mínimo Financiable ($ USD):" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                <TextBox x:Name="TxtCasheaMinAmount" Text="15.00" Padding="8,5" Width="100" HorizontalAlignment="Left" />
+                                                <TextBox x:Name="TxtCasheaMinAmount" Grid.Column="1" Text="15.00" Padding="10,6" Width="120" HorizontalAlignment="Left" />
                                             </Grid>
+
+                                            <!-- Tarjeta 2: Simulador Rápido de Cuotas Cashea -->
+                                            <Border Background="#F0F9FF" BorderBrush="#BAE6FD" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,16">
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <fluentIcons:SymbolIcon Symbol="Calculator" FontSize="18" Foreground="#0284C7" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                        <TextBlock Text="Simulador de Cuotas Cashea en Tiempo Real" FontWeight="Bold" FontSize="13.5" Foreground="#0369A1" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                    <TextBlock Text="Comprueba al instante cómo se distribuye una venta financiada para tus clientes según tus parámetros comerciales." FontSize="11.5" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,12" />
+
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="180" />
+                                                            <ColumnDefinition Width="160" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <StackPanel Grid.Column="0">
+                                                            <TextBlock Text="Monto Venta ($):" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                                                            <TextBox x:Name="TxtCasheaSimAmount" Text="60.00" Padding="8,5" TextChanged="TxtCasheaSimAmount_TextChanged" />
+                                                        </StackPanel>
+
+                                                        <StackPanel Grid.Column="1" Margin="14,0,0,0">
+                                                            <TextBlock Text="Inicial en Caja (40%):" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                                                            <TextBlock x:Name="TxtCasheaSimInitial" Text="$ 24.00" FontWeight="Bold" FontSize="14" Foreground="{StaticResource AccentGreenBrush}" VerticalAlignment="Center" Margin="0,5,0,0" />
+                                                        </StackPanel>
+
+                                                        <StackPanel Grid.Column="2" Margin="14,0,0,0">
+                                                            <TextBlock Text="3 Cuotas Quincenales:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                                                            <TextBlock x:Name="TxtCasheaSimInstallments" Text="3 x $ 12.00" FontWeight="Bold" FontSize="14" Foreground="{StaticResource PrimaryBrandBrush}" VerticalAlignment="Center" Margin="0,5,0,0" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
 
                                             <StackPanel Orientation="Horizontal">
                                                 <Button x:Name="BtnSaveCasheaSettings" Click="BtnSaveCasheaSettings_Click" Content="Guardar Configuración Cashea" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" 
