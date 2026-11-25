@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using Deterpos.Domain.Entities;
 using Deterpos.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -48,19 +47,6 @@ public partial class CompanyProfileDialog : Window
         TxtPhone.Text = _company.Phone;
         TxtEmail.Text = _company.Email;
         TxtBranchName.Text = string.IsNullOrWhiteSpace(currentBranch) ? "Sucursal Principal" : currentBranch;
-    }
-
-    private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (e.ChangedButton == MouseButton.Left)
-        {
-            DragMove();
-        }
-    }
-
-    private void BtnClose_Click(object sender, RoutedEventArgs e)
-    {
-        DialogResult = false;
     }
 
     private void BtnCancel_Click(object sender, RoutedEventArgs e)

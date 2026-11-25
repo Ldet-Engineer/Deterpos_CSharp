@@ -2,169 +2,143 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:fluentIcons="clr-namespace:FluentIcons.Wpf;assembly=FluentIcons.Wpf"
-        Title="Editar Perfil de la Empresa • Deterpos ERP"
-        Width="680" Height="730"
+        xmlns:ctrl="clr-namespace:Deterpos.WPF.Controls"
+        Title="Perfil y Datos de la Empresa - Deterpos ERP"
+        Height="620" Width="560"
         WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
         ResizeMode="NoResize"
-        WindowStyle="None"
-        AllowsTransparency="True"
-        Background="Transparent"
+        Background="#FFFFFF"
         FontFamily="Segoe UI, Segoe UI Variable Text, Arial">
 
-    <Window.Resources>
-        <DropShadowEffect x:Key="DialogShadow" BlurRadius="30" Direction="270" ShadowDepth="4" Opacity="0.30" Color="#000000" />
-    </Window.Resources>
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-    <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Margin="14" Effect="{StaticResource DialogShadow}">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+        <!-- Franja Contextual Reutilizable Estandarizada -->
+        <ctrl:DialogContextBar x:Name="ContextBar" Grid.Row="0"
+                               Symbol="Building"
+                               Text="Información jurídica, tributaria SENIAT y sucursal de operaciones" />
 
-            <!-- BARRA SUPERIOR / HEADER -->
-            <Border Grid.Row="0" Background="#F8FAFC" CornerRadius="12,12,0,0" Padding="20,16" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" MouseLeftButtonDown="Header_MouseLeftButtonDown">
-                <Grid>
+        <!-- Formulario Principal -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="22,16">
+            <StackPanel>
+                <!-- Bloque de Error si hay validación fallida -->
+                <Border x:Name="BrdError" Background="#FEF2F2" BorderBrush="#F87171" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,14" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <fluentIcons:SymbolIcon Symbol="Warning" FontSize="18" Foreground="#DC2626" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <TextBlock x:Name="TxtError" Foreground="#B91C1C" FontSize="12.5" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <!-- SECCIÓN 1: IDENTIFICACIÓN LEGAL Y TRIBUTARIA -->
+                <TextBlock Text="IDENTIFICACIÓN JURÍDICA Y TRIBUTARIA (SENIAT)" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,0,8" />
+
+                <!-- Razón Social -->
+                <TextBlock Text="Razón Social (Nombre Legal Registrado) *" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
+                <TextBox x:Name="TxtBusinessName" Height="34" VerticalContentAlignment="Center" Margin="0,0,0,10" FontSize="12.5" />
+
+                <!-- Nombre Comercial -->
+                <TextBlock Text="Nombre Comercial (Firma / Marca de Mostrador)" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
+                <TextBox x:Name="TxtTradeName" Height="34" VerticalContentAlignment="Center" Margin="0,0,0,10" FontSize="12.5" />
+
+                <!-- RIF con Prefijo -->
+                <TextBlock Text="Número de RIF Fiscal *" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
+                <Grid Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130" />
+                        <ColumnDefinition Width="10" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Background="#E0F2FE" CornerRadius="8" Width="36" Height="36" Margin="0,0,12,0">
-                            <fluentIcons:SymbolIcon Symbol="Building" FontSize="20" Foreground="{StaticResource PrimaryBrandBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Perfil y Datos de la Empresa" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
-                            <TextBlock Text="Información jurídica, tributaria SENIAT y sucursal de operaciones" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
-                        </StackPanel>
+                    <ComboBox x:Name="CmbRifPrefix" Height="34" VerticalContentAlignment="Center">
+                        <ComboBoxItem Content="J - Jurídico" Tag="J" IsSelected="True" />
+                        <ComboBoxItem Content="V - Venezolano" Tag="V" />
+                        <ComboBoxItem Content="G - Gobierno" Tag="G" />
+                        <ComboBoxItem Content="E - Extranjero" Tag="E" />
+                        <ComboBoxItem Content="P - Pasaporte" Tag="P" />
+                    </ComboBox>
+
+                    <TextBox x:Name="TxtRifNumber" Grid.Column="2" Height="34" VerticalContentAlignment="Center" FontSize="12.5" ToolTip="Ejemplo: 40918273-0 o 409182730" />
+                </Grid>
+
+                <!-- Sujeto Pasivo Especial -->
+                <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="10,8" Margin="0,0,0,14">
+                    <CheckBox x:Name="ChkSpecialTaxpayer" Content="Empresa designada como Sujeto Pasivo Especial (Contribuyente Especial SENIAT)" FontWeight="SemiBold" FontSize="12" />
+                </Border>
+
+                <!-- SECCIÓN 2: DOMICILIO FISCAL Y CONTACTO -->
+                <TextBlock Text="DOMICILIO FISCAL Y CANALES DE CONTACTO" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,2,0,8" />
+
+                <TextBlock Text="Domicilio Fiscal Completo (Dirección SENIAT) *" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
+                <TextBox x:Name="TxtFiscalAddress" Height="50" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,10" FontSize="12" Padding="8,5" />
+
+                <Grid Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Teléfono de Contacto" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBox x:Name="TxtPhone" Height="34" VerticalContentAlignment="Center" FontSize="12" />
                     </StackPanel>
 
-                    <Button Grid.Column="1" Click="BtnClose_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Padding="6">
-                        <fluentIcons:SymbolIcon Symbol="Dismiss" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" />
-                    </Button>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Correo Electrónico" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBox x:Name="TxtEmail" Height="34" VerticalContentAlignment="Center" FontSize="12" />
+                    </StackPanel>
                 </Grid>
-            </Border>
 
-            <!-- CUERPO DEL FORMULARIO -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,18">
-                <StackPanel>
-                    <!-- Bloque de Error si hay validación fallida -->
-                    <Border x:Name="BrdError" Background="#FEF2F2" BorderBrush="#F87171" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,14" Visibility="Collapsed">
-                        <StackPanel Orientation="Horizontal">
-                            <fluentIcons:SymbolIcon Symbol="Warning" FontSize="18" Foreground="#DC2626" Margin="0,0,8,0" VerticalAlignment="Center" />
-                            <TextBlock x:Name="TxtError" Foreground="#B91C1C" FontSize="12.5" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Border>
+                <!-- SECCIÓN 3: SUCURSAL Y TERMINAL -->
+                <TextBlock Text="SUCURSAL Y TERMINAL DE OPERACIONES" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,2,0,8" />
 
-                    <!-- GRUPO 1: IDENTIFICACIÓN JURÍDICA Y TRIBUTARIA -->
-                    <TextBlock Text="IDENTIFICACIÓN JURÍDICA Y TRIBUTARIA (SENIAT)" FontSize="12" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,0,0,10" />
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                    <!-- Razón Social -->
-                    <TextBlock Text="Razón Social (Nombre Legal Registrado):" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
-                    <TextBox x:Name="TxtBusinessName" Padding="10,7" Margin="0,0,0,12" FontSize="13" />
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Nombre de Sucursal" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBox x:Name="TxtBranchName" Height="34" VerticalContentAlignment="Center" Text="Sucursal Principal" FontSize="12" />
+                    </StackPanel>
 
-                    <!-- Nombre Comercial -->
-                    <TextBlock Text="Nombre Comercial (Firma / Marca de Mostrador):" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
-                    <TextBox x:Name="TxtTradeName" Padding="10,7" Margin="0,0,0,12" FontSize="13" />
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Terminal / Punto de Venta" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBox x:Name="TxtTerminalName" Height="34" VerticalContentAlignment="Center" Text="Caja Principal Mostrador 01" FontSize="12" />
+                    </StackPanel>
+                </Grid>
 
-                    <!-- RIF -->
-                    <Grid Margin="0,0,0,14">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="110" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
+            </StackPanel>
+        </ScrollViewer>
 
-                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="Tipo RIF:" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
-                            <ComboBox x:Name="CmbRifPrefix" Padding="8,6" FontSize="13">
-                                <ComboBoxItem Content="J - Jurídico" Tag="J" IsSelected="True" />
-                                <ComboBoxItem Content="V - Venezolano" Tag="V" />
-                                <ComboBoxItem Content="G - Gobierno" Tag="G" />
-                                <ComboBoxItem Content="E - Extranjero" Tag="E" />
-                                <ComboBoxItem Content="P - Pasaporte" Tag="P" />
-                            </ComboBox>
-                        </StackPanel>
+        <!-- Barra Inferior de Acciones -->
+        <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,1,0,0" Padding="20,12">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Click="BtnCancel_Click" Content="Cancelar" Background="Transparent" BorderBrush="#D0D7DE" BorderThickness="1"
+                        Padding="16,8" Margin="0,0,10,0" FontWeight="SemiBold" Cursor="Hand" FontSize="13">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6" />
+                        </Style>
+                    </Button.Resources>
+                </Button>
 
-                        <StackPanel Grid.Column="1">
-                            <TextBlock Text="Número de RIF (sin guiones o con formato SENIAT):" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
-                            <TextBox x:Name="TxtRifNumber" Padding="10,7" FontSize="13" ToolTip="Ejemplo: 40918273-0 o 409182730" />
-                        </StackPanel>
-                    </Grid>
-
-                    <!-- Sujeto Pasivo Especial -->
-                    <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,16">
-                        <CheckBox x:Name="ChkSpecialTaxpayer" Content="Empresa designada como Sujeto Pasivo Especial (Contribuyente Especial SENIAT)" FontWeight="SemiBold" FontSize="12.5" />
-                    </Border>
-
-                    <!-- GRUPO 2: DOMICILIO FISCAL Y CONTACTO -->
-                    <TextBlock Text="DOMICILIO FISCAL Y CANALES DE CONTACTO" FontSize="12" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,4,0,10" />
-
-                    <TextBlock Text="Domicilio Fiscal Completo (Dirección SENIAT):" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
-                    <TextBox x:Name="TxtFiscalAddress" Padding="10,7" Margin="0,0,0,12" FontSize="12.5" TextWrapping="Wrap" AcceptsReturn="True" Height="55" VerticalScrollBarVisibility="Auto" />
-
-                    <Grid Margin="0,0,0,12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                            <TextBlock Text="Teléfono Fijo / Principal:" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
-                            <TextBox x:Name="TxtPhone" Padding="10,7" FontSize="12.5" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                            <TextBlock Text="Correo Electrónico (Facturación):" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
-                            <TextBox x:Name="TxtEmail" Padding="10,7" FontSize="12.5" />
-                        </StackPanel>
-                    </Grid>
-
-                    <!-- GRUPO 3: PARÁMETROS DE SUCURSAL Y PUNTO DE VENTA -->
-                    <TextBlock Text="SUCURSAL Y TERMINAL DE OPERACIONES" FontSize="12" FontWeight="Bold" Foreground="{StaticResource PrimaryBrandBrush}" Margin="0,4,0,10" />
-
-                    <Grid Margin="0,0,0,6">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                            <TextBlock Text="Nombre de Sucursal:" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
-                            <TextBox x:Name="TxtBranchName" Text="Sucursal Principal" Padding="10,7" FontSize="12.5" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                            <TextBlock Text="Terminal / Punto de Venta:" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4" Foreground="{StaticResource TextPrimaryBrush}" />
-                            <TextBox x:Name="TxtTerminalName" Text="Caja Principal Mostrador 01" Padding="10,7" FontSize="12.5" />
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </ScrollViewer>
-
-            <!-- BARRA INFERIOR / BOTONES DE ACCIÓN -->
-            <Border Grid.Row="2" Background="#F8FAFC" CornerRadius="0,0,12,12" Padding="20,14" BorderBrush="#E2E8F0" BorderThickness="0,1,0,0">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Click="BtnCancel_Click" Content="Cancelar" Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" 
-                            Padding="16,8" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,10,0">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6" />
-                            </Style>
-                        </Button.Resources>
-                    </Button>
-
-                    <Button x:Name="BtnSave" Click="BtnSave_Click" Content="Guardar Perfil de Empresa" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0" 
-                            Padding="20,8" FontWeight="SemiBold" Cursor="Hand">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6" />
-                            </Style>
-                        </Button.Resources>
-                    </Button>
-                </StackPanel>
-            </Border>
-        </Grid>
-    </Border>
+                <Button x:Name="BtnSave" Click="BtnSave_Click" Content="Guardar Perfil de Empresa" Background="{StaticResource PrimaryBrandBrush}" Foreground="White" BorderThickness="0"
+                        Padding="20,8" FontWeight="SemiBold" Cursor="Hand" FontSize="13">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6" />
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </StackPanel>
+        </Border>
+    </Grid>
 </Window>
